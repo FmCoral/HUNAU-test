@@ -1382,8 +1382,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get funcEvaluation => 'Оценка преподавания';
 
   @override
-  String get defaultHitokoto =>
-      'ChillEast — легко и спокойно на востоке озера!';
+  String get defaultHitokoto => '牛×！';
 
   @override
   String get loggingInPleaseWait => 'Вход в систему, пожалуйста, подождите...';
@@ -1628,6 +1627,9 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get paymentFailed => 'Оплата не удалась';
+
+  @override
+  String get paymentNotDetected => 'Результат платежа не обнаружен';
 
   @override
   String get campusCard => 'Кампусная карта';
@@ -2562,6 +2564,10 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get aiApiKeyNotConfigured =>
       'API-ключ не настроен. Сначала введите его в разделе «Настройки агента»';
+
+  @override
+  String get aiDailyLimitReached =>
+      'Дневной лимит исчерпан (10 сообщений в день). Возвращайтесь завтра.';
 
   @override
   String weeksRange(String weeks) {

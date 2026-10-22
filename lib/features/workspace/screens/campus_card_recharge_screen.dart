@@ -338,87 +338,111 @@ class _CampusCardRechargeScreenState extends ConsumerState<CampusCardRechargeScr
                    ),
 
                    const SizedBox(height: AppSpacing.xxxl),
+                  ],
+                ),
+              ),
+      bottomNavigationBar: _error != null || _isLoading
+          ? null
+          : _buildPaymentBar(),
+    );
+  }
 
-                   // 右对齐的两个支付按钮 (微信支付 & 支付宝)
-                   Row(
-                     mainAxisAlignment: MainAxisAlignment.end,
-                     children: [
-                       // 微信支付按钮
-                       SizedBox(
-                         height: 48,
-                         child: ElevatedButton(
-                           onPressed: () => _handleRecharge(PaymentMethod.wechat),
-                           style: ElevatedButton.styleFrom(
-                             backgroundColor: const Color(0xFF07C160),
-                             foregroundColor: Colors.white,
-                             elevation: 0,
-                             padding: const EdgeInsets.symmetric(
-                                 horizontal: AppSpacing.lg),
-                             shape: RoundedRectangleBorder(
-                                 borderRadius: AppRadius.controlAll),
-                           ),
-                           child: Row(
-                             mainAxisSize: MainAxisSize.min,
-                             children: [
-                               SvgPicture.string(
-                                 kWechatSvg,
-                                 width: 22,
-                                 height: 22,
-                                 colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                               ),
-                               const SizedBox(width: AppSpacing.sm),
-                               Text(
-                                 context.l10n.wechatPay,
-                                 style: const TextStyle(
-                                     fontSize: 15,
-                                     fontWeight: FontWeight.w600),
-                               ),
-                             ],
-                           ),
-                         ),
-                       ),
-                       const SizedBox(width: AppSpacing.md),
-                       // 支付宝按钮
-                       SizedBox(
-                         height: 48,
-                         child: ElevatedButton(
-                           onPressed: () => _handleRecharge(PaymentMethod.alipay),
-                           style: ElevatedButton.styleFrom(
-                             backgroundColor: const Color(0xFF1677FF),
-                             foregroundColor: Colors.white,
-                             elevation: 0,
-                             padding: const EdgeInsets.symmetric(
-                                 horizontal: AppSpacing.lg),
-                             shape: RoundedRectangleBorder(
-                                 borderRadius: AppRadius.controlAll),
-                           ),
-                           child: Row(
-                             mainAxisSize: MainAxisSize.min,
-                             children: [
-                               SvgPicture.string(
-                                 kAlipaySvg,
-                                 width: 22,
-                                 height: 22,
-                                 colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                               ),
-                               const SizedBox(width: AppSpacing.sm),
-                               Text(
-                                 context.l10n.alipay,
-                                 style: const TextStyle(
-                                     fontSize: 15,
-                                     fontWeight: FontWeight.w600),
-                               ),
-                             ],
-                            ),
+  /// 固定在底部的支付方式操作区，始终可见，避免随内容滚动被挤到屏幕外。
+  Widget _buildPaymentBar() {
+    final colors = context.colors;
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(top: BorderSide(color: colors.border)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.page, AppSpacing.md,
+              AppSpacing.page, AppSpacing.md),
+          child: Row(
+            children: [
+              // 微信支付
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => _handleRecharge(PaymentMethod.wechat),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF07C160),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: AppRadius.controlAll),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.string(
+                          kWechatSvg,
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn),
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(
+                          child: Text(
+                            context.l10n.wechatPay,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: AppSpacing.xxxl),
-                  ],
+                  ),
                 ),
               ),
+              const SizedBox(width: AppSpacing.md),
+              // 支付宝支付
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => _handleRecharge(PaymentMethod.alipay),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1677FF),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: AppRadius.controlAll),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.string(
+                          kAlipaySvg,
+                          width: 16,
+                          height: 16,
+                          colorFilter: const ColorFilter.mode(
+                              Colors.white, BlendMode.srcIn),
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(
+                          child: Text(
+                            context.l10n.alipay,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

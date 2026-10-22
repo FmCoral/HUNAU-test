@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../state/locale_provider.dart';
 import '../mcp/services/mcp_tool_registry.dart';
@@ -283,6 +284,47 @@ class AiAssistantNotifier extends StateNotifier<AiAssistantState> {
 
   bool _isSending = false;
 
+  /// 内置默认 API 的每日对话上限（自定义 Key 不受限）
+  static const int dailyMessageLimit = 10;
+  static const String _quotaDayKey = 'ai_daily_quota_day';
+  static const String _quotaUsedKey = 'ai_daily_quota_used';
+
+  String _quotaDay() {
+    final now = DateTime.now();
+    final month = now.month.toString().padLeft(2, '0');
+    final day = now.day.toString().padLeft(2, '0');
+    return '${now.year}-$month-$day';
+  }
+
+  /// 使用内置 Key 时检查今日剩余次数；自定义 Key 直接放行。
+  Future<bool> _hasRemainingQuota() async {
+    if (state.hasCustomApiKey) return true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getString(_quotaDayKey) != _quotaDay()) return true;
+      return (prefs.getInt(_quotaUsedKey) ?? 0) < dailyMessageLimit;
+    } catch (_) {
+      // 本地计数异常时不影响正常对话
+      return true;
+    }
+  }
+
+  /// 成功完成一次对话后计数一次（按自然日重置）。
+  Future<void> _consumeQuota() async {
+    if (state.hasCustomApiKey) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final today = _quotaDay();
+      if (prefs.getString(_quotaDayKey) != today) {
+        await prefs.setString(_quotaDayKey, today);
+        await prefs.setInt(_quotaUsedKey, 1);
+      } else {
+        await prefs.setInt(
+            _quotaUsedKey, (prefs.getInt(_quotaUsedKey) ?? 0) + 1);
+      }
+    } catch (_) {}
+  }
+
   /// 发送消息给 AI（支持附带本地图片并按 MiMo/OpenAI 多模态规范转为 Base64 Data URI）
   Future<void> sendMessage(String text, {String? imagePath}) async {
     final query = text.trim();
@@ -305,6 +347,14 @@ class AiAssistantNotifier extends StateNotifier<AiAssistantState> {
       state = state.copyWith(
         status: AiAssistantStatus.error,
         errorMessage: l10n.aiApiKeyNotConfigured,
+      );
+      return;
+    }
+
+    if (!await _hasRemainingQuota()) {
+      state = state.copyWith(
+        status: AiAssistantStatus.error,
+        errorMessage: l10n.aiDailyLimitReached,
       );
       return;
     }
@@ -396,6 +446,8 @@ class AiAssistantNotifier extends StateNotifier<AiAssistantState> {
           await ref.read(aiMemoryProvider.notifier).reloadFromStorage();
         } catch (_) {}
       }
+
+      await _consumeQuota();
 
       state = state.copyWith(
         status: AiAssistantStatus.success,

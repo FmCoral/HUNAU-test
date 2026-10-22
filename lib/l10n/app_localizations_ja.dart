@@ -1350,7 +1350,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get funcEvaluation => '授業評価システム';
 
   @override
-  String get defaultHitokoto => '自在東湖、湖の東で心地よく！';
+  String get defaultHitokoto => '牛×！';
 
   @override
   String get loggingInPleaseWait => 'ログイン中、しばらくお待ちください...';
@@ -1589,6 +1589,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get paymentFailed => '支払い失敗';
+
+  @override
+  String get paymentNotDetected => '支払い結果を確認できませんでした';
 
   @override
   String get campusCard => '学生証';
@@ -2486,6 +2489,9 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get aiApiKeyNotConfigured =>
       'APIキーが設定されていません。先に「AIアシスタント設定」でAPIキーを入力してください';
+
+  @override
+  String get aiDailyLimitReached => '本日の会話回数の上限（1日10回）に達しました。また明日ご利用ください';
 
   @override
   String weeksRange(String weeks) {

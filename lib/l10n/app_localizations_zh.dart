@@ -1341,7 +1341,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get funcEvaluation => '教评系统';
 
   @override
-  String get defaultHitokoto => '牛×5在湖东！';
+  String get defaultHitokoto => '牛×！';
 
   @override
   String get loggingInPleaseWait => '正在登录，请稍候...';
@@ -1577,6 +1577,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get paymentFailed => '支付失败';
+
+  @override
+  String get paymentNotDetected => '未检测到支付结果';
 
   @override
   String get campusCard => '校园卡';
@@ -2465,6 +2468,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiApiKeyNotConfigured => '未配置 API Key，请先在「AI 助理设置」中填入 API Key';
+
+  @override
+  String get aiDailyLimitReached => '今日对话次数已用完（每天 10 次），明天再来吧';
 
   @override
   String weeksRange(String weeks) {
@@ -4486,7 +4492,7 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
   String get funcEvaluation => '教評系統';
 
   @override
-  String get defaultHitokoto => '自在東湖在湖東！';
+  String get defaultHitokoto => '牛×！';
 
   @override
   String get loggingInPleaseWait => '正在登入，請稍候...';
@@ -4722,6 +4728,9 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get paymentFailed => '支付失敗';
+
+  @override
+  String get paymentNotDetected => '未偵測到支付結果';
 
   @override
   String get campusCard => '校園卡';
@@ -5610,6 +5619,9 @@ class AppLocalizationsZhHk extends AppLocalizationsZh {
 
   @override
   String get aiApiKeyNotConfigured => '未設定 API Key，請先在「AI 助理設定」中填入 API Key';
+
+  @override
+  String get aiDailyLimitReached => '今日對話次數已用完（每日 10 次），聽日再嚟啦';
 
   @override
   String weeksRange(String weeks) {
@@ -7621,7 +7633,7 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
   String get funcEvaluation => '教評系統';
 
   @override
-  String get defaultHitokoto => '自在東湖在湖東！';
+  String get defaultHitokoto => '牛×！';
 
   @override
   String get loggingInPleaseWait => '正在登入，請稍候...';
@@ -7857,6 +7869,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get paymentFailed => '付款失敗';
+
+  @override
+  String get paymentNotDetected => '未偵測到付款結果';
 
   @override
   String get campusCard => '校園卡';
@@ -8745,6 +8760,9 @@ class AppLocalizationsZhTw extends AppLocalizationsZh {
 
   @override
   String get aiApiKeyNotConfigured => '尚未設定 API Key，請先在「AI 助理設定」中輸入 API Key';
+
+  @override
+  String get aiDailyLimitReached => '今日對話次數已用完（每天 10 次），明天再來吧';
 
   @override
   String weeksRange(String weeks) {

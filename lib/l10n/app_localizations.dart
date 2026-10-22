@@ -2654,7 +2654,7 @@ abstract class AppLocalizations {
   /// No description provided for @defaultHitokoto.
   ///
   /// In zh, this message translates to:
-  /// **'牛×5在湖东！'**
+  /// **'牛×！'**
   String get defaultHitokoto;
 
   /// No description provided for @loggingInPleaseWait.
@@ -3094,6 +3094,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'支付失败'**
   String get paymentFailed;
+
+  /// No description provided for @paymentNotDetected.
+  ///
+  /// In zh, this message translates to:
+  /// **'未检测到支付结果'**
+  String get paymentNotDetected;
 
   /// No description provided for @campusCard.
   ///
@@ -4703,6 +4709,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'未配置 API Key，请先在「AI 助理设置」中填入 API Key'**
   String get aiApiKeyNotConfigured;
+
+  /// No description provided for @aiDailyLimitReached.
+  ///
+  /// In zh, this message translates to:
+  /// **'今日对话次数已用完（每天 10 次），明天再来吧'**
+  String get aiDailyLimitReached;
 
   /// No description provided for @weeksRange.
   ///

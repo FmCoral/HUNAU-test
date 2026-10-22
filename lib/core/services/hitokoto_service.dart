@@ -5,7 +5,7 @@ import '../network/dio_client.dart';
 
 class HitokotoService {
   static const String _cacheKey = 'hitokoto_cache';
-  static const String _defaultHitokoto = '牛×5在湖东！';
+  static const String _defaultHitokoto = '牛×！';
   static String get _apiUrl => 'https://v1.hitokoto.cn/?c=i'; // c=i 为诗词
 
   final Dio _dio = Dio();

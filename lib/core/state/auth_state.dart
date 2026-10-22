@@ -304,6 +304,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _runPostLoginWork(String? username,
       {required bool includeLibrary}) async {
+    // 资料刷新（姓名/头像）不依赖云端备份，先发出去，避免头像被备份拉取阻塞。
+    unawaited(_refreshUserInfo());
+
     // 1. 启动并在自动静默登录后，优先尝试拉取云端最新备份并覆盖应用到本地
     await _pullCloudBackupSilently();
 
@@ -315,7 +318,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (includeLibrary) {
       unawaited(_ref.read(cachedLibraryReserveProvider.notifier).refresh());
     }
-    unawaited(_refreshUserInfo());
     unawaited(_ref.read(campusCardServiceProvider).authenticate());
     unawaited(_pullTimetableSilently());
   }
@@ -527,8 +529,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.authenticating);
       await _ref.read(authServiceProvider).login(username, password);
 
-      // 标记为已登录
-      state = AuthState.authenticated(username: username).copyWith(
+      // 登录链已解析出门户身份，先立即写入姓名/学号，
+      // 头像与 uid 由随后的资料刷新补齐，避免首登后资料位空白。
+      final profile = _ref.read(authServiceProvider).lastLoginProfile;
+      state = AuthState.authenticated(
+        username: profile?.username ?? username,
+        realName: profile?.realName,
+      ).copyWith(
         isInitialized: true,
       );
 

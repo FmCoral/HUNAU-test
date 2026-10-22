@@ -768,7 +768,7 @@
   "remark": "备注",
   "addRemarkHint": "添加备注信息",
   "funcEvaluation": "教评系统",
-  "defaultHitokoto": "牛×5在湖东！",
+  "defaultHitokoto": "牛×！",
   "loggingInPleaseWait": "正在登录，请稍候...",
   "whatsNewHint": "有什么新鲜事？",
   "enableClassReminderHere": "在这里开启上课提醒",
@@ -898,6 +898,7 @@
   "campusCardPayment": "校园卡支付",
   "alipayPayment": "支付宝支付",
   "paymentFailed": "支付失败",
+  "paymentNotDetected": "未检测到支付结果",
   "campusCard": "校园卡",
   "balanceAmount": "余额 ￥{balance}",
   "@balanceAmount": {
@@ -1479,6 +1480,7 @@
     }
   },
   "aiApiKeyNotConfigured": "未配置 API Key，请先在「AI 助理设置」中填入 API Key",
+  "aiDailyLimitReached": "今日对话次数已用完（每天 10 次），明天再来吧",
   "weeksRange": "第{weeks}周",
   "@weeksRange": {
     "placeholders": {

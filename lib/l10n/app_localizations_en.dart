@@ -1372,7 +1372,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get funcEvaluation => 'Teaching Evaluation';
 
   @override
-  String get defaultHitokoto => 'ChillEast, ease in lake east!';
+  String get defaultHitokoto => '牛×！';
 
   @override
   String get loggingInPleaseWait => 'Logging in, please wait...';
@@ -1612,6 +1612,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentFailed => 'Payment Failed';
+
+  @override
+  String get paymentNotDetected => 'Payment result not detected';
 
   @override
   String get campusCard => 'Campus Card';
@@ -2542,6 +2545,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiApiKeyNotConfigured =>
       'API Key is not configured. Please enter API Key in AI Assistant Settings first.';
+
+  @override
+  String get aiDailyLimitReached =>
+      'Daily chat limit reached (10 messages per day). Please come back tomorrow.';
 
   @override
   String weeksRange(String weeks) {

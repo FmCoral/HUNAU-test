@@ -113,7 +113,8 @@ class AiAssistantService {
     return v == legacyDefaultModel || v == 'worker-default';
   }
 
-  /// 从 CI / 构建环境通过 --dart-define=DEFAULT_AI_API_KEY=xxx 注入的默认 Key
+  /// 内置 Worker 共享密钥：所有用户默认可用，无需自行配置 API。
+  /// Key 不入库，统一在构建时通过 --dart-define=DEFAULT_AI_API_KEY=... 注入。
   static const String defaultApiKey = String.fromEnvironment(
     'DEFAULT_AI_API_KEY',
     defaultValue: '',

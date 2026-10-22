@@ -39,11 +39,15 @@ class _CampusCardPaymentSheetState extends ConsumerState<CampusCardPaymentSheet>
   bool _isConfirming = true;
   bool _isPaying = false;
   bool _isSuccess = false;
+  bool _isUnconfirmed = false;
   bool _isCheckingResult = false;
   bool _isExecutingSecondary = false;
   String? _error;
   String? _secondaryError;
   String? _htmlForm;
+
+  /// 轮询上限：每 3 秒一次，共 30 秒；超时后收口为可关闭的「未检测到支付结果」
+  static const int _maxPolls = 10;
 
   WeChatRechargeOrder? _weChatOrder;
   Timer? _pollingTimer;
@@ -80,6 +84,7 @@ class _CampusCardPaymentSheetState extends ConsumerState<CampusCardPaymentSheet>
     setState(() {
       _isConfirming = false;
       _isPaying = true;
+      _isUnconfirmed = false;
       _error = null;
     });
 
@@ -145,8 +150,13 @@ class _CampusCardPaymentSheetState extends ConsumerState<CampusCardPaymentSheet>
     int pollCount = 0;
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       pollCount++;
-      if (pollCount > 25 || _isSuccess || !mounted) {
+      if (_isSuccess || !mounted) {
         timer.cancel();
+        return;
+      }
+      if (pollCount > _maxPolls) {
+        timer.cancel();
+        _finishUnconfirmed();
         return;
       }
       await _checkAlipayStatus(isManual: false);
@@ -158,11 +168,27 @@ class _CampusCardPaymentSheetState extends ConsumerState<CampusCardPaymentSheet>
     int pollCount = 0;
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       pollCount++;
-      if (pollCount > 25 || _isSuccess || !mounted) {
+      if (_isSuccess || !mounted) {
         timer.cancel();
         return;
       }
+      if (pollCount > _maxPolls) {
+        timer.cancel();
+        _finishUnconfirmed();
+        return;
+      }
       await _checkWeChatStatus(isManual: false);
+    });
+  }
+
+  /// 轮询超时或用户取消支付后收口：停止轮询，切到可关闭的「未检测到支付结果」状态。
+  void _finishUnconfirmed() {
+    _pollingTimer?.cancel();
+    if (!mounted || _isSuccess || _isExecutingSecondary) return;
+    setState(() {
+      _isPaying = false;
+      _isCheckingResult = false;
+      _isUnconfirmed = true;
     });
   }
 
@@ -256,6 +282,7 @@ class _CampusCardPaymentSheetState extends ConsumerState<CampusCardPaymentSheet>
       if (mounted) {
         setState(() {
           _isPaying = false;
+          _isUnconfirmed = false;
           _isExecutingSecondary = true;
           _error = null;
           _secondaryError = null;
@@ -286,6 +313,7 @@ class _CampusCardPaymentSheetState extends ConsumerState<CampusCardPaymentSheet>
         setState(() {
           _isSuccess = true;
           _isPaying = false;
+          _isUnconfirmed = false;
         });
       }
     }
@@ -345,11 +373,15 @@ window.onload = function() {
                         ? Icons.sync
                         : (_secondaryError != null
                             ? Icons.warning_amber_rounded
-                            : (_isPaying ? Icons.hourglass_empty : Icons.payment_outlined))),
+                            : (_isUnconfirmed
+                                ? Icons.help_outline
+                                : (_isPaying
+                                    ? Icons.hourglass_empty
+                                    : Icons.payment_outlined)))),
                 size: 20,
                 color: _isSuccess
                     ? colors.brand
-                    : (_secondaryError != null
+                    : (_secondaryError != null || _isUnconfirmed
                         ? colors.warning
                         : (_isExecutingSecondary ? colors.brand : _themeColor)),
               ),
@@ -362,14 +394,16 @@ window.onload = function() {
                           ? (widget.successTitle ?? context.l10n.paymentSuccess)
                           : (_isExecutingSecondary
                               ? context.l10n.recharging
-                              : (_isPaying
-                                  ? context.l10n.paying
-                                  : context.l10n.paymentConfirmationMethod(_isWeChat ? context.l10n.wechatPay : context.l10n.alipay)))),
+                              : (_isUnconfirmed
+                                  ? context.l10n.paymentNotDetected
+                                  : (_isPaying
+                                      ? context.l10n.paying
+                                      : context.l10n.paymentConfirmationMethod(_isWeChat ? context.l10n.wechatPay : context.l10n.alipay))))),
                   style: AppText.bodyDense.copyWith(
                     fontWeight: FontWeight.w500,
                     color: _isSuccess
                         ? colors.brandText
-                        : (_secondaryError != null
+                        : (_secondaryError != null || _isUnconfirmed
                             ? colors.warning
                             : (_isExecutingSecondary ? colors.brandText : _themeColor)),
                   ),
@@ -464,6 +498,47 @@ window.onload = function() {
                         : const Icon(Icons.check, size: 16),
                     label: Text(_isCheckingResult ? context.l10n.checkingPaymentStatus : context.l10n.completed),
                   ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextButton(
+                    onPressed: _finishUnconfirmed,
+                    child: Text(context.l10n.cancel),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+
+          // 超时或用户取消支付后：可关闭、可重试，不再无限转圈
+          if (_isUnconfirmed) ...[
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    _isWeChat
+                        ? context.l10n.paymentProcessingWechatHint
+                        : context.l10n.paymentProcessingAlipayHint,
+                    textAlign: TextAlign.center,
+                    style: AppText.bodyDense.copyWith(color: colors.textMuted),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  OutlinedButton.icon(
+                    onPressed: _isCheckingResult
+                        ? null
+                        : () => _isWeChat
+                            ? _checkWeChatStatus(isManual: true)
+                            : _checkAlipayStatus(isManual: true),
+                    icon: _isCheckingResult
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh, size: 16),
+                    label: Text(_isCheckingResult
+                        ? context.l10n.checkingPaymentStatus
+                        : context.l10n.retry),
+                  ),
                 ],
               ),
             ),
@@ -495,6 +570,15 @@ window.onload = function() {
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     context.l10n.ok,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+
+              if (_isUnconfirmed)
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    context.l10n.close,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),

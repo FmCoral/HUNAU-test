@@ -28,6 +28,10 @@ class AuthService {
   PortalIdentity? _lastLoginProfile;
   int _sessionGeneration = 0;
 
+  /// 本次登录过程中从门户页面解析到的身份信息（姓名/学号），
+  /// 供登录成功后立即渲染，避免等资料刷新回来才有名字。
+  PortalIdentity? get lastLoginProfile => _lastLoginProfile;
+
   /// Reuse the authenticated HTML parsed in this login attempt. Campus-card
   /// OAuth is started once by AuthNotifier and must not block profile rendering.
   Future<Map<String, String?>> fetchFullUserInfo() async {
