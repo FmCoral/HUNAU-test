@@ -1,5 +1,8 @@
 allprojects {
     repositories {
+        // 与 settings.gradle.kts 保持一致：镜像优先，规避 Maven Central 429 限流
+        maven("https://maven.aliyun.com/repository/public")
+        maven("https://maven-central.storage-download.googleapis.com/maven2/")
         google()
         mavenCentral()
     }

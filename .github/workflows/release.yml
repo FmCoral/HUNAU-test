@@ -37,8 +37,6 @@ jobs:
 
       - name: Set up and validate Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-provider: basic
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -80,21 +78,41 @@ jobs:
       - name: Build Universal Release APK (Fat)
         run: |
           mkdir -p dist
-          flutter build apk --release --no-pub \
-            --obfuscate --split-debug-info=build/symbols \
-            --dart-define=DEFAULT_AI_API_KEY="${{ secrets.DEFAULT_AI_API_KEY }}" \
-            --dart-define=DEFAULT_AI_API_URL="${{ secrets.DEFAULT_AI_API_URL }}" \
-            --dart-define=DEFAULT_AI_MODEL="${{ secrets.DEFAULT_AI_MODEL }}"
+          ok=0
+          for attempt in 1 2 3; do
+            echo "Universal APK build attempt $attempt"
+            if flutter build apk --release --no-pub \
+              --obfuscate --split-debug-info=build/symbols \
+              --dart-define=DEFAULT_AI_API_KEY="${{ secrets.DEFAULT_AI_API_KEY }}" \
+              --dart-define=DEFAULT_AI_API_URL="${{ secrets.DEFAULT_AI_API_URL }}" \
+              --dart-define=DEFAULT_AI_MODEL="${{ secrets.DEFAULT_AI_MODEL }}"; then
+              ok=1
+              break
+            fi
+            echo "::warning::Universal APK attempt $attempt failed, retrying in 20s"
+            sleep 20
+          done
+          test "$ok" = "1"
           cp build/app/outputs/flutter-apk/app-release.apk dist/app-universal-release.apk
           echo "Successfully built true Universal APK (app-universal-release.apk)"
 
       - name: Build Split Release APKs
         run: |
-          flutter build apk --release --no-pub --split-per-abi \
-            --obfuscate --split-debug-info=build/symbols \
-            --dart-define=DEFAULT_AI_API_KEY="${{ secrets.DEFAULT_AI_API_KEY }}" \
-            --dart-define=DEFAULT_AI_API_URL="${{ secrets.DEFAULT_AI_API_URL }}" \
-            --dart-define=DEFAULT_AI_MODEL="${{ secrets.DEFAULT_AI_MODEL }}"
+          ok=0
+          for attempt in 1 2 3; do
+            echo "Split APK build attempt $attempt"
+            if flutter build apk --release --no-pub --split-per-abi \
+              --obfuscate --split-debug-info=build/symbols \
+              --dart-define=DEFAULT_AI_API_KEY="${{ secrets.DEFAULT_AI_API_KEY }}" \
+              --dart-define=DEFAULT_AI_API_URL="${{ secrets.DEFAULT_AI_API_URL }}" \
+              --dart-define=DEFAULT_AI_MODEL="${{ secrets.DEFAULT_AI_MODEL }}"; then
+              ok=1
+              break
+            fi
+            echo "::warning::Split APK attempt $attempt failed, retrying in 20s"
+            sleep 20
+          done
+          test "$ok" = "1"
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk dist/
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk dist/
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk dist/
