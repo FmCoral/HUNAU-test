@@ -1,64 +1,49 @@
-![icon](img/icon/chill_east.png)
+# 牛×5
 
-# 牛×5（ChillEast）
+湖南农业大学第三方客户端，基于 Flutter 开发，面向本科生的校园服务聚合应用。
 
-访问网页：[chilleast.soilzhu.su](https://chilleast.soilzhu.su)
+## 下载
 
-使用 Flutter 编写的湖南农业大学第三方客户端，主力服务于本科生的日常生活。
+| 系统 | Release | 国内镜像 |
+|------|---------|----------|
+| Android | [GitHub Release](https://github.com/FmCoral/HUNAU-test/releases/latest) | [R2 CDN](https://apk.hunau.fmcoral.com/latest/app-release.apk) |
+| iOS | 暂无 | 暂无 |
 
-> “自在”取“心境安闲、身心舒畅，不受拘束、不被世俗烦恼困扰的自由状态”之意，“东湖”则源自东湖街道办、东湖公园、东湖宿舍区、东湖食堂、东湖小区与夜市，故指代农大。
+## 功能
 
-> 图标中的曲线来自学校南侧的浏阳河，河道在此处形成的“第七道湾”，呈“几”字形弯折。
+### 原生实现
+- **课程表**：周视图、自动同步、ICS 日历订阅、自定义课程颜色
+- **日程首页**：今日课程、考试、作业、通知聚合
+- **考试安排**
+- **成绩查询**
+- **作业列表**：超星平台同步，支持手动添加
+- **通知公告**：学习通通知与课程实况通知
+- **图书馆**：馆藏搜索、座位预约、研修间预约
+- **空教室查询**
+- **校园卡**：付款码、充值（微信 / 支付宝）、交易流水、扫码
+- **电费充值**：支持两个宿舍同时充值
+- **我的宿舍**：楼宇、单元、楼层、床号信息
+- **请假申请**
+- **阳光服务**：诉求提交与进度查询
+- **学工问卷**
+- **报修平台**
+- **实时校车**：地图实时追踪
+- **AI 助手**：对接校内 AI 中转服务
+- **WebVPN 链接转换**
+- **平板分屏**：大屏设备支持左右分屏浏览
 
-# 下载
-
-|系统|应用商店|Release|镜像(供中国内地网络环境下载)|
-|---|---|---|---|
-|Android|[咕咕咕]|[GitHub Release](https://github.com/soilzhu/ChillEast/releases/latest)|[Cloudflare R2](https://eastchill-apk.soilzhu.su/latest/app-release.apk)|
-|iOS|[咕咕咕]|[咕咕咕]|[咕咕咕]|
-
-# 关于项目
-
-> ⚠️ 本项目完全 Vibe Coding 开发，请您谨慎考虑是否使用本应用。代码质量可能无法保证，Bug 可能较多。
-
-> 🎉 欢迎各位同学前来贡献协助本项目。
-
-> 📞 欢迎使用 Mac 和 iPhone 的同学参与 iOS 端构建调试！
-
-一个尽可能好用点的湖南农大用的 App 。
-
-### 目前已经使用原生 UI 实现的功能：
-- 课程表（支持在线日历订阅与自定义颜色）
-- 考试安排
-- 图书馆
-- 阳光服务（诉求反馈与进度查看）
-- 空教室查询
-- 作业列表
-- 成绩查询
-- 校园卡付款码
-- 校园卡充值（支持微信与支付宝）
-- 电费充值（支持双宿舍）
-- 学习通通知
-- 课程实况通知
-- AI 助手
-- WebVPN 链接转换
-- 报修平台
-- 平板分屏
-
-### 目前使用 WebView 加载官方网页的功能：
+### WebView 加载
 - 学工系统
-- 实时校车
-- 长沙实时公交
+- 办事大厅
 - 场馆预约
 - 教评系统
-- 讲座预约
-- 办事大厅
+- 更多小程序
+- 长沙实时公交
 
-# 贡献者
+## 多语言支持
+简体中文 / 繁体中文（台湾）/ 繁体中文（香港）/ 英语 / 日语 / 法语 / 西班牙语 / 葡萄牙语 / 俄语
 
-![cr](https://contrib.rocks/image?repo=SoilZhu/ChillEast)
-
-# 预览
+## 预览
 
 | 首页 | 日程 | 课表 | 作业 |
 | :---: | :---: | :---: | :---: |
@@ -66,25 +51,11 @@
 | **通知** | **功能** | **付款码** |
 | ![通知](img/screenshot/notification.png) | ![功能](img/screenshot/function_page.png) | ![付款码](img/screenshot/pay_code.png) |
 
-# TODO
-- [ ] 场馆预约的原生UI实现
-- [ ] 学工系统的原生UI实现
-- [ ] 实时校车的原生UI实现
+## 反馈
 
-# 感谢
+- 应用内「帮助与反馈」页面
+- GitHub Issues
 
-灵感来源：[Life@USTC](https://github.com/Life-USTC/Life-USTC) ；
+## 致谢
 
-WebVPN 的链接转换则参考了 [spencerwooo/bit-webvpn-converter](https://github.com/spencerwooo/bit-webvpn-converter) ；
-
-日语翻译部分由 @OIOooo 提供；
-
-感谢 Flutter 社区开源的组件们，将会尽力同步于应用中的“开源声明”页面。
-
-# 寻求帮助
-
-- 邮件反馈： soilzhu80@gmail.com
-
-- telegram 上联系： @mintrainy
-
-- issue 反馈
+本项目基于原作者 [SoilZhu](https://github.com/soilzhu) 的 ChillEast 二次开发，感谢原作者的开源工作。
