@@ -81,6 +81,7 @@ jobs:
         run: |
           mkdir -p dist
           flutter build apk --release --no-pub \
+            --obfuscate --split-debug-info=build/symbols \
             --dart-define=DEFAULT_AI_API_KEY="${{ secrets.DEFAULT_AI_API_KEY }}" \
             --dart-define=DEFAULT_AI_API_URL="${{ secrets.DEFAULT_AI_API_URL }}" \
             --dart-define=DEFAULT_AI_MODEL="${{ secrets.DEFAULT_AI_MODEL }}"
@@ -90,6 +91,7 @@ jobs:
       - name: Build Split Release APKs
         run: |
           flutter build apk --release --no-pub --split-per-abi \
+            --obfuscate --split-debug-info=build/symbols \
             --dart-define=DEFAULT_AI_API_KEY="${{ secrets.DEFAULT_AI_API_KEY }}" \
             --dart-define=DEFAULT_AI_API_URL="${{ secrets.DEFAULT_AI_API_URL }}" \
             --dart-define=DEFAULT_AI_MODEL="${{ secrets.DEFAULT_AI_MODEL }}"
