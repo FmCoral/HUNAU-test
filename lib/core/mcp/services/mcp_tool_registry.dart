@@ -1,0 +1,315 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/mcp_protocol.dart';
+import '../models/mcp_tool.dart';
+import '../tools/timetable_tool.dart';
+import '../tools/timetable_rule_tool.dart';
+import '../tools/homework_tools.dart';
+import '../tools/classroom_tool.dart';
+import '../tools/score_tool.dart';
+import '../tools/campus_card_tool.dart';
+import '../tools/electricity_tool.dart';
+import '../tools/notice_tool.dart';
+import '../tools/library_tool.dart';
+import '../tools/sunshine_tool.dart';
+import '../tools/questionnaire_tool.dart';
+import '../tools/leave_tool.dart';
+import '../tools/transaction_tool.dart';
+import '../tools/repair_tool.dart';
+import '../tools/exam_tool.dart';
+import '../tools/memory_tool.dart';
+import '../tools/open_page_tool.dart';
+import '../tools/settings_tool.dart';
+import '../../services/app_settings_service.dart';
+import '../../ai/providers/ai_memory_provider.dart';
+import '../../../features/workspace/services/electricity_service.dart';
+import '../../../features/workspace/services/campus_card_service.dart';
+import '../../../features/workspace/services/transaction_service.dart';
+import '../../../features/library/providers/library_provider.dart';
+import '../../../features/sunshine/services/sunshine_service.dart';
+import '../../../features/questionnaire/services/questionnaire_service.dart';
+import '../../../features/leave/services/leave_service.dart';
+import '../../../features/repairs/services/repair_service.dart';
+import '../../../features/homework/providers/homework_provider.dart';
+import '../../../features/exam/providers/exam_provider.dart';
+
+/// MCP Tool Registry Provider
+final mcpToolRegistryProvider = Provider<McpToolRegistry>((ref) {
+  final electricityService = ref.watch(electricityServiceProvider);
+  final campusCardService = ref.watch(campusCardServiceProvider);
+  final libraryService = ref.watch(libraryServiceProvider);
+  final libraryBookService = ref.watch(libraryBookServiceProvider);
+  final sunshineService = ref.watch(sunshineServiceProvider);
+  final questionnaireService = ref.watch(questionnaireServiceProvider);
+  final leaveService = ref.watch(leaveServiceProvider);
+  final transactionService = ref.watch(transactionServiceProvider);
+  final repairService = ref.watch(repairServiceProvider);
+  final homeworkStorage = ref.watch(homeworkStorageProvider);
+  final examStorage = ref.watch(examStorageProvider);
+  final examService = ref.watch(examServiceProvider);
+  final memoryStorage = ref.watch(aiMemoryStorageProvider);
+
+  final registry = McpToolRegistry();
+
+  Future<void> reloadHomework() async {
+    try {
+      await ref.read(homeworkProvider.notifier).reloadFromStorage();
+    } catch (_) {}
+  }
+
+  Future<void> reloadExams() async {
+    try {
+      await ref.read(examProvider.notifier).reloadFromStorage();
+    } catch (_) {}
+  }
+
+  Future<void> reloadMemories() async {
+    try {
+      await ref.read(aiMemoryProvider.notifier).reloadFromStorage();
+    } catch (_) {}
+  }
+
+  // 注册标准 MCP 工具
+  // 1. 课表查询
+  registry.register(TimetableTool.create());
+
+  // 1.1 课表规则管理（调休、停课、手动添加课程、删除规则）
+  registry.register(TimetableRuleTool.create());
+
+  // 2. 作业查询
+  registry.register(HomeworkQueryTool.create(storage: homeworkStorage));
+
+  // 3. 作业添加（写文件后刷新 homeworkProvider，否则作业页看不到）
+  registry.register(
+    HomeworkAddTool.create(
+      storage: homeworkStorage,
+      onChanged: reloadHomework,
+    ),
+  );
+
+  // 4. 作业完成（仅限手动添加）
+  registry.register(
+    HomeworkCompleteTool.create(
+      storage: homeworkStorage,
+      onChanged: reloadHomework,
+    ),
+  );
+
+  // 5. 空教室查询
+  registry.register(ClassroomTool.create());
+
+  // 6. 成绩查询
+  registry.register(ScoreTool.create());
+
+  // 7. 校园卡余额查询
+  registry.register(CampusCardTool.create(service: campusCardService));
+
+  // 8. 电费充值与查询 (同时注册 recharge_electricity 与 query_electricity 别名以提高模型兼容度)
+  registry.register(ElectricityTool.create(service: electricityService));
+  registry.register(ElectricityTool.create(service: electricityService, toolName: 'query_electricity'));
+
+  // 9. 通知查询
+  registry.register(NoticeTool.create());
+
+  // 10. 图书馆上次座位查询
+  registry.register(LibraryLastSeatQueryTool.create(service: libraryService));
+
+  // 11. 图书馆座位预约（支持默认上次座位与强制确认）
+  registry.register(LibraryReserveTool.create(service: libraryService));
+
+  // 11.0 图书馆快速预约 (智能匹配空闲座位，同时注册 quick_reserve 别名)
+  registry.register(LibraryQuickReserveTool.create(service: libraryService));
+  registry.register(LibraryQuickReserveTool.create(service: libraryService, toolName: 'quick_reserve'));
+
+  // 11.1 图书馆图书检索 (同时注册 search_library_books 与 query_books 别名)
+  registry.register(LibraryBookSearchTool.create(service: libraryBookService));
+  registry.register(LibraryBookSearchTool.create(service: libraryBookService, toolName: 'query_books'));
+
+  // 11.2 图书馆图书详情与馆藏查询 (同时注册 query_library_book_detail 与 query_book_detail 别名)
+  registry.register(LibraryBookDetailTool.create(service: libraryBookService));
+  registry.register(LibraryBookDetailTool.create(service: libraryBookService, toolName: 'query_book_detail'));
+
+  // 12. 阳光服务受理部门查询
+  registry.register(SunshineDepartmentsQueryTool.create(service: sunshineService));
+
+  // 13. 阳光服务诉求快速提交
+  registry.register(SunshineSubmitTool.create(service: sunshineService));
+
+  // 14. 学工问卷列表查询
+  registry.register(QuestionnaireListTool.create(service: questionnaireService));
+
+  // 15. 学工问卷题目查询
+  registry.register(QuestionnaireDetailTool.create(service: questionnaireService));
+
+  // 16. 学工问卷代填提交（需用户确认）
+  registry.register(QuestionnaireSubmitTool.create(service: questionnaireService));
+
+  // 17. 请假记录查询
+  registry.register(LeaveListTool.create(service: leaveService));
+
+  // 18. 请假单详情查询
+  registry.register(LeaveDetailTool.create(service: leaveService));
+
+  // 19. 请假代提交（需用户确认）
+  registry.register(LeaveSubmitTool.create(service: leaveService));
+
+  // 20. 校园卡账单查询 (同时注册 query_card_transactions 与 query_bill 别名)
+  registry.register(TransactionTool.create(service: transactionService));
+  registry.register(TransactionTool.create(service: transactionService, toolName: 'query_bill'));
+
+  // 21. 报修工单查询 (同时注册 query_repairs 与 query_repair_orders 别名)
+  registry.register(RepairOrdersQueryTool.create(service: repairService));
+  registry.register(RepairOrdersQueryTool.create(service: repairService, toolName: 'query_repair_orders'));
+
+  // 22. 报修工单详情查询
+  registry.register(RepairDetailTool.create(service: repairService));
+
+  // 23. 报修工单提交（后勤报修必带图，需用户确认）
+  registry.register(RepairSubmitTool.create(service: repairService));
+
+  // 24. 报修工单取消（需用户确认）
+  registry.register(RepairCancelTool.create(service: repairService));
+
+  // 25. 考试日程与安排查询 (同时注册 query_exams 与 query_exam_schedule 别名)
+  registry.register(ExamQueryTool.create(storage: examStorage, service: examService));
+  registry.register(ExamQueryTool.create(storage: examStorage, service: examService, toolName: 'query_exam_schedule'));
+
+  // 26. 考试日程手动添加 (同时注册 add_exam 与 add_exam_schedule 别名)
+  registry.register(ExamAddTool.create(storage: examStorage, onChanged: reloadExams));
+  registry.register(ExamAddTool.create(storage: examStorage, onChanged: reloadExams, toolName: 'add_exam_schedule'));
+
+  // 27. 记忆沉淀与管理 (同时注册 add_memory 与 save_memory 别名)
+  registry.register(MemoryAddTool.create(storage: memoryStorage, onChanged: reloadMemories));
+  registry.register(MemoryAddTool.create(storage: memoryStorage, onChanged: reloadMemories, toolName: 'save_memory'));
+
+  // 28. 记忆查询 (query_memories)
+  registry.register(MemoryQueryTool.create(storage: memoryStorage));
+
+  // 29. 记忆删除 (delete_memory)
+  registry.register(MemoryDeleteTool.create(storage: memoryStorage, onChanged: reloadMemories));
+
+  // 30. 打开具体页面与切换 Tab (同时注册 navigate_to_page 与 open_screen 别名)
+  registry.register(OpenPageTool.create());
+  registry.register(OpenPageTool.create(toolName: 'navigate_to_page'));
+  registry.register(OpenPageTool.create(toolName: 'open_screen'));
+
+  // 31. 应用设置查询与修改 (同时注册 configure_settings 与 query_settings 别名)
+  final settingsService = AppSettingsService(ref);
+  registry.register(SettingsTool.create(service: settingsService));
+  registry.register(SettingsTool.create(service: settingsService, toolName: 'configure_settings'));
+  registry.register(SettingsTool.create(service: settingsService, toolName: 'query_settings'));
+
+  return registry;
+});
+
+/// MCP Tool Registry for managing and invoking standard MCP tools.
+class McpToolRegistry {
+  final Map<String, McpTool> _tools = {};
+
+  McpToolRegistry([List<McpTool>? initialTools]) {
+    if (initialTools != null) {
+      for (final tool in initialTools) {
+        register(tool);
+      }
+    }
+  }
+
+  /// Register an MCP tool
+  void register(McpTool tool) {
+    _tools[tool.name] = tool;
+  }
+
+  /// Unregister a tool by name
+  void unregister(String name) {
+    _tools.remove(name);
+  }
+
+  /// Get a registered tool by name
+  McpTool? getTool(String name) => _tools[name];
+
+  /// Get all registered tools
+  List<McpTool> getAllTools() => _tools.values.toList();
+
+  /// List all tool definitions conforming to the MCP specification (`tools/list`)
+  List<Map<String, dynamic>> listTools() {
+    return _tools.values.map((tool) => tool.toJson()).toList();
+  }
+
+  /// Call a registered tool by name with arguments (`tools/call`)
+  Future<McpToolResult> callTool(String name, [Map<String, dynamic>? arguments]) async {
+    final tool = _tools[name];
+    if (tool == null) {
+      return McpToolResult.error('未知 MCP 工具: $name');
+    }
+    return await tool.execute(arguments ?? {});
+  }
+
+  /// Handle an incoming MCP JSON-RPC 2.0 request
+  Future<McpResponse> handleRequest(McpRequest request) async {
+    switch (request.method) {
+      case 'initialize':
+        return McpResponse.success(
+          id: request.id,
+          result: {
+            'protocolVersion': '2024-11-05',
+            'serverInfo': {
+              'name': 'ChillEast-MCP-Server',
+              'version': '1.0.0',
+            },
+            'capabilities': {
+              'tools': {
+                'listChanged': false,
+              },
+            },
+          },
+        );
+
+      case 'ping':
+        return McpResponse.success(id: request.id, result: {});
+
+      case 'tools/list':
+        return McpResponse.success(
+          id: request.id,
+          result: {
+            'tools': listTools(),
+          },
+        );
+
+      case 'tools/call':
+        final params = request.params;
+        if (params == null) {
+          return McpResponse.error(
+            id: request.id,
+            code: McpError.invalidParams,
+            message: '缺少请求参数 params',
+          );
+        }
+
+        final toolName = params['name'] as String?;
+        if (toolName == null || toolName.isEmpty) {
+          return McpResponse.error(
+            id: request.id,
+            code: McpError.invalidParams,
+            message: '缺少工具名称 params.name',
+          );
+        }
+
+        final rawArgs = params['arguments'];
+        final Map<String, dynamic> arguments = rawArgs is Map
+            ? Map<String, dynamic>.from(rawArgs)
+            : <String, dynamic>{};
+        final result = await callTool(toolName, arguments);
+
+        return McpResponse.success(
+          id: request.id,
+          result: result.toJson(),
+        );
+
+      default:
+        return McpResponse.error(
+          id: request.id,
+          code: McpError.methodNotFound,
+          message: '未知的 MCP 方法: ${request.method}',
+        );
+    }
+  }
+}
