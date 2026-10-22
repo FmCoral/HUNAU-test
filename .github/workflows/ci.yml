@@ -53,6 +53,7 @@ jobs:
         run: |
           flutter --version
           java -version
+          chmod +x android/gradlew
           ./android/gradlew --version
 
       - name: Verify Gradle Wrapper
@@ -78,7 +79,7 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v7
         with:
-          name: chilleast-debug-${{ github.sha }}
+          name: app-debug-${{ github.sha }}
           path: build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
           retention-days: 7
