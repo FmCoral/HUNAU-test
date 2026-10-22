@@ -112,6 +112,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # 从 tag / pubspec 提取版本号，生成 version.json 供应用内检查更新消费
+      - name: Generate version.json
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          # tag 触发用 tag 名；手动触发时从 pubspec.yaml 读取版本号
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            VERSION="${RELEASE_TAG#v}"
+          else
+            VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1)
+          fi
+          NOTES=$(git log -1 --pretty=%B | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()))')
+          if [ -z "$NOTES" ] || [ "$NOTES" = '""' ]; then NOTES='"例行更新"'; fi
+          printf '{"version": "%s", "notes": %s}\n' "$VERSION" "$NOTES" > dist/version.json
+          cat dist/version.json
+
       # R2 是正式发布的必要目标；凭据缺失或上传失败时应让发布失败，不能静默跳过。
       # 上传至 R2 时，将体积更小的 arm64-v8a 命名为 app-release.apk，供 CDN 快速分发与应用内更新
       - name: Upload to Cloudflare R2
@@ -126,7 +142,12 @@ jobs:
             s3://${R2_BUCKET_NAME}/latest/app-release.apk \
             --endpoint-url https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com \
             --cache-control "public, max-age=300, s-maxage=300"
-          echo "Successfully uploaded app-arm64-v8a-release.apk as latest/app-release.apk to Cloudflare R2"
+          aws s3 cp dist/version.json \
+            s3://${R2_BUCKET_NAME}/latest/version.json \
+            --endpoint-url https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com \
+            --content-type "application/json" \
+            --cache-control "public, max-age=60, s-maxage=60"
+          echo "Successfully uploaded app-release.apk and version.json to Cloudflare R2"
 
       # CDN 清缓存是可选步骤。使用前置步骤检查 Secrets，避免在步骤自己的 if 中
       # 判断尚未映射的 env，导致 Secrets 已配置却仍被静默跳过。
@@ -153,6 +174,6 @@ jobs:
             "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/purge_cache" \
             -H "Authorization: Bearer ${CF_API_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data '{"files":["https://apk.hunau.fmcoral.com/latest/app-release.apk"]}')
+            --data '{"files":["https://apk.hunau.fmcoral.com/latest/app-release.apk","https://apk.hunau.fmcoral.com/latest/version.json"]}')
           echo "Cloudflare Purge Cache Response: $PURGE_RES"
           python3 -c 'import json,sys; data=json.load(sys.stdin); sys.exit(0 if data.get("success") is True else 1)' <<< "$PURGE_RES"

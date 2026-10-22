@@ -17,8 +17,7 @@ class UpdateService {
   final Dio _dio = Dio();
   final Logger _logger = Logger();
   
-  static const String _githubRepo = 'soilzhu/chilleast';
-  static const String _apiUrl = 'https://api.github.com/repos/$_githubRepo/releases/latest';
+  static const String _versionUrl = 'https://apk.hunau.fmcoral.com/latest/version.json';
   static const String _downloadUrl = 'https://apk.hunau.fmcoral.com/latest/app-release.apk';
 
   /// 自动扫描并清理历史下载的 APK 安装包以释放手机存储空间
@@ -63,15 +62,15 @@ class UpdateService {
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;
       
-      // 2. 获取最新版本信息 (从 GitHub 获取版本号和更新日志)
-      final response = await _dio.get(_apiUrl);
+      // 2. 获取最新版本信息 (从 R2 version.json 获取版本号和更新日志)
+      final response = await _dio.get(_versionUrl);
       if (response.statusCode != 200) {
         throw Exception('Failed to fetch version information');
       }
-      
+
       final data = response.data;
-      final latestVersion = (data['tag_name'] as String).replaceAll('v', '');
-      final releaseNotes = data['body'] as String;
+      final latestVersion = data['version'] as String;
+      final releaseNotes = (data['notes'] as String?) ?? '';
       
       // 3. 比较版本
       if (_isNewerVersion(latestVersion, currentVersion)) {
