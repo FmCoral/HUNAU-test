@@ -56,7 +56,7 @@ void main() {
     test('AiAssistantService prompt construction', () async {
       final service = AiAssistantService();
       final prompt = await service.buildSystemPrompt();
-      expect(prompt.contains('自在东湖'), isTrue);
+      expect(prompt.contains('牛×5'), isTrue);
       expect(prompt.contains('MCP'), isTrue);
     });
 

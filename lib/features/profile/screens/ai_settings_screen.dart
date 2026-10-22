@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/ai/ai_provider.dart';
 import '../../../core/ai/ai_service.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import 'ai_memory_screen.dart';
@@ -142,7 +143,6 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
           SnackBar(
             content:
                 Text('✅ ${context.l10n.aiTestSuccess(latency.inMilliseconds)}'),
-            backgroundColor: const Color(0xFF09C489),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -153,7 +153,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('❌ ${context.l10n.aiTestFailed(errorMsg)}'),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -209,7 +209,6 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     ? '获取成功，共 ${models.length} 个模型，已默认选择第 1 个'
                     : context.l10n.aiNoModelsFound,
               ),
-              backgroundColor: const Color(0xFF09C489),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -221,7 +220,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMsg),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -284,131 +283,45 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    const primaryColor = Color(0xFF09C489);
+    final colors = context.colors;
     final aiState = ref.watch(aiAssistantProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          context.l10n.agentSettings,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-        ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
+        title: Text(context.l10n.agentSettings),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.page),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // API 接口地址 (Base URL) - 校园卡充值同款 Outlined 样式
+            // API 接口地址 (Base URL)
             TextField(
               controller: _apiUrlController,
-              style: TextStyle(
-                fontSize: 15,
-                color: isDark ? Colors.white : const Color(0xFF202124),
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.text),
               decoration: InputDecoration(
                 labelText: context.l10n.aiApiUrl,
-                labelStyle: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.grey[700],
-                  fontSize: 14,
-                ),
                 hintText: context.l10n.aiApiUrlHint,
-                hintStyle: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white38 : Colors.grey[400],
-                ),
-                filled: isDark,
-                fillColor: isDark ? Colors.white.withOpacity(0.05) : null,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.3),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.3),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: const BorderSide(color: primaryColor, width: 1.5),
-                ),
                 prefixIcon: Icon(
                   Icons.link_rounded,
                   size: 20,
-                  color: isDark ? Colors.white60 : Colors.grey[600],
+                  color: colors.textMuted,
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
 
             // 模型名称 (Model Name)
             TextField(
               controller: _modelController,
-              style: TextStyle(
-                fontSize: 15,
-                color: isDark ? Colors.white : const Color(0xFF202124),
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.text),
               decoration: InputDecoration(
                 labelText: context.l10n.aiModelName,
-                labelStyle: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.grey[700],
-                  fontSize: 14,
-                ),
                 hintText: context.l10n.aiModelNameHint,
-                hintStyle: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white38 : Colors.grey[400],
-                ),
-                filled: isDark,
-                fillColor: isDark ? Colors.white.withOpacity(0.05) : null,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.3),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.3),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: const BorderSide(color: primaryColor, width: 1.5),
-                ),
                 prefixIcon: Icon(
                   Icons.memory_outlined,
                   size: 20,
-                  color: isDark ? Colors.white60 : Colors.grey[600],
+                  color: colors.textMuted,
                 ),
                 suffixIcon: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -438,55 +351,22 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.lg),
 
             // API Key
             TextField(
               controller: _apiKeyController,
               obscureText: _obscureApiKey,
-              style: TextStyle(
-                fontSize: 15,
-                color: isDark ? Colors.white : const Color(0xFF202124),
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.text),
               decoration: InputDecoration(
-                labelText: aiState.hasCustomApiKey ? context.l10n.aiApiKeyCustom : context.l10n.aiApiKeyDefault,
-                labelStyle: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.grey[700],
-                  fontSize: 14,
-                ),
+                labelText: aiState.hasCustomApiKey
+                    ? context.l10n.aiApiKeyCustom
+                    : context.l10n.aiApiKeyDefault,
                 hintText: context.l10n.aiApiKeyHint,
-                hintStyle: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white38 : Colors.grey[400],
-                ),
-                filled: isDark,
-                fillColor: isDark ? Colors.white.withOpacity(0.05) : null,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.3),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: BorderSide(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.grey.withOpacity(0.3),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: const BorderSide(color: primaryColor, width: 1.5),
-                ),
                 prefixIcon: Icon(
                   Icons.vpn_key_outlined,
                   size: 20,
-                  color: isDark ? Colors.white60 : Colors.grey[600],
+                  color: colors.textMuted,
                 ),
                 suffixIcon: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -497,7 +377,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                             ? Icons.visibility_off_outlined
                             : Icons.visibility_outlined,
                         size: 20,
-                        color: isDark ? Colors.white60 : Colors.grey[600],
+                        color: colors.textMuted,
                       ),
                       onPressed: () {
                         setState(() {
@@ -509,7 +389,7 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                       icon: Icon(
                         Icons.paste_rounded,
                         size: 20,
-                        color: isDark ? Colors.white60 : Colors.grey[600],
+                        color: colors.textMuted,
                       ),
                       tooltip: context.l10n.paste,
                       onPressed: _pasteFromClipboard,
@@ -518,45 +398,52 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
 
             // 记忆管理入口
-            InkWell(
-              borderRadius: BorderRadius.circular(6),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  createSlideUpRoute(const AiMemoryScreen()),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '记忆管理',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xFF202124),
+            Container(
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: AppRadius.cardAll,
+                border: Border.all(color: colors.border),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    createSlideUpRoute(const AiMemoryScreen()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '记忆管理',
+                        style: AppText.body.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colors.text,
+                        ),
                       ),
-                    ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: isDark ? Colors.white54 : Colors.grey[400],
-                    ),
-                  ],
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 20,
+                        color: colors.textMuted,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
 
             if (!_isDefaultConfig) ...[
               // 测试连接按钮
               SizedBox(
                 width: double.infinity,
-                height: 48,
                 child: OutlinedButton.icon(
                   onPressed: _isTestingConnection ? null : _testConnection,
                   icon: _isTestingConnection
@@ -570,34 +457,17 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                     _isTestingConnection
                         ? context.l10n.aiTestingConnection
                         : context.l10n.aiTestConnection,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: primaryColor,
-                    side: const BorderSide(color: primaryColor, width: 1.2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
             ],
 
-            // 保存按钮
+            // 保存按钮（主按钮交给全局 elevatedButtonTheme）
             SizedBox(
               width: double.infinity,
-              height: 48,
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveSettings,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
                 child: _isSaving
                     ? const SizedBox(
                         width: 20,
@@ -607,32 +477,18 @@ class _AiSettingsScreenState extends ConsumerState<AiSettingsScreen> {
                           valueColor: AlwaysStoppedAnimation(Colors.white),
                         ),
                       )
-                    : Text(
-                        context.l10n.saveSettings,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                      ),
+                    : Text(context.l10n.saveSettings),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
 
             // 恢复默认配置按钮
             SizedBox(
               width: double.infinity,
-              height: 44,
               child: OutlinedButton.icon(
                 onPressed: _resetDefaults,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: Text(context.l10n.resetDefaults),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: isDark ? Colors.white70 : Colors.grey[700],
-                  side: BorderSide(
-                    color: isDark ? Colors.white24 : Colors.grey[300]!,
-                    width: 1,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
               ),
             ),
           ],
@@ -691,14 +547,14 @@ class _ModelSelectionModalState extends State<_ModelSelectionModal> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    const primaryColor = Color(0xFF09C489);
+    final colors = context.colors;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.72,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        color: colors.surface,
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(AppRadius.card)),
       ),
       child: Column(
         children: [
@@ -709,14 +565,15 @@ class _ModelSelectionModalState extends State<_ModelSelectionModal> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.grey[300],
+                color: colors.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             child: Row(
               children: [
                 Expanded(
@@ -725,18 +582,13 @@ class _ModelSelectionModalState extends State<_ModelSelectionModal> {
                     children: [
                       Text(
                         context.l10n.aiSelectModel,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppText.sectionTitle.copyWith(color: colors.text),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '共 ${widget.initialModels.length} 个模型',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white54 : Colors.grey[600],
-                        ),
+                        style:
+                            AppText.caption.copyWith(color: colors.textMuted),
                       ),
                     ],
                   ),
@@ -755,7 +607,8 @@ class _ModelSelectionModalState extends State<_ModelSelectionModal> {
           ),
           // Search box
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: 6),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -769,27 +622,28 @@ class _ModelSelectionModalState extends State<_ModelSelectionModal> {
                     : null,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                filled: isDark,
-                fillColor:
-                    isDark ? Colors.white.withOpacity(0.06) : Colors.grey[100],
+                filled: true,
+                fillColor: colors.surfaceSubtle,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.controlAll,
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.controlAll,
                   borderSide: BorderSide.none,
                 ),
               ),
             ),
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: colors.border),
           // Models list
           Expanded(
             child: _filteredModels.isEmpty
                 ? Center(
                     child: Text(
                       context.l10n.aiNoModelsFound,
-                      style: TextStyle(
-                        color: isDark ? Colors.white54 : Colors.grey[600],
-                        fontSize: 14,
-                      ),
+                      style:
+                          AppText.bodyDense.copyWith(color: colors.textMuted),
                     ),
                   )
                 : ListView.builder(
@@ -801,26 +655,20 @@ class _ModelSelectionModalState extends State<_ModelSelectionModal> {
                         leading: Icon(
                           Icons.memory_outlined,
                           size: 20,
-                          color: isSelected
-                              ? primaryColor
-                              : (isDark ? Colors.white60 : Colors.grey[600]),
+                          color: isSelected ? colors.brand : colors.textMuted,
                         ),
                         title: Text(
                           model,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected
-                                ? primaryColor
-                                : (isDark
-                                    ? Colors.white
-                                    : const Color(0xFF202124)),
+                          style: AppText.bodyDense.copyWith(
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: isSelected ? colors.brandText : colors.text,
                           ),
                         ),
                         trailing: isSelected
-                            ? const Icon(Icons.check_rounded,
-                                color: primaryColor, size: 20)
+                            ? Icon(Icons.check_rounded,
+                                color: colors.brand, size: 20)
                             : null,
                         onTap: () {
                           widget.onModelSelected(model);

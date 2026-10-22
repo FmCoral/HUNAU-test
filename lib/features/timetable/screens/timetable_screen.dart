@@ -23,6 +23,7 @@ import '../../exam/models/exam_schedule_model.dart';
 import '../../exam/services/exam_storage.dart';
 import '../../workspace/screens/webview_detail_screen.dart';
 import '../../../core/state/auth_state.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../profile/providers/settings_provider.dart';
 import '../../../core/widgets/login_required_placeholder.dart';
 import '../../../core/constants/app_constants.dart';
@@ -431,7 +432,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.timetableRefreshFailed(e.toString())), backgroundColor: Colors.red),
+          SnackBar(content: Text(context.l10n.timetableRefreshFailed(e.toString())), backgroundColor: context.colors.danger),
         );
       }
     } finally {
@@ -535,7 +536,6 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
     );
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Column(
         children: [
           _buildSubHeader(),
@@ -546,10 +546,11 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
   }
 
   Widget _buildSubHeader() {
+    final colors = context.colors;
     return Container(
       height: 52,
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: colors.bg,
       ),
       child: Row(
         children: [
@@ -560,11 +561,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
               tabAlignment: TabAlignment.start,
               padding: EdgeInsets.zero,
               labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-              labelColor: Theme.of(context).primaryColor,
-              unselectedLabelColor:
-                  Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white60
-                      : Colors.grey[600],
+              labelColor: colors.brandText,
+              unselectedLabelColor: colors.textMuted,
               labelStyle:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               unselectedLabelStyle:
@@ -572,7 +570,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
               indicatorSize: TabBarIndicatorSize.label,
               dividerColor: Colors.transparent,
               indicator: MD2Indicator(
-                color: Theme.of(context).primaryColor,
+                color: colors.brand,
                 indicatorHeight: 4,
                 radius: 4,
               ),
@@ -584,41 +582,28 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
           ),
           // 💡 右侧操作按钮（调整/刷新常驻：无本地课表时也能加课或手动同步）
           IconButton(
-            icon: Icon(Icons.tune_rounded,
-                size: 22,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white70
-                    : const Color(0xFF5F6368)),
+            icon: Icon(Icons.tune_rounded, size: 22, color: colors.textMuted),
             onPressed: _handleModifyRulesClick,
             tooltip: context.l10n.adjustTimetable,
           ),
           if (_hasLocalTimetable) ...[
             IconButton(
               icon: Icon(Icons.today_rounded,
-                  size: 22,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white70
-                      : const Color(0xFF5F6368)),
+                  size: 22, color: colors.textMuted),
               onPressed: _handleTodayClick,
               tooltip: context.l10n.backToToday,
             ),
           ],
           IconButton(
             icon: Icon(Icons.download_rounded,
-                size: 22,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white70
-                    : const Color(0xFF5F6368)),
+                size: 22, color: colors.textMuted),
             onPressed: _isLoading ? null : _handleManualRefresh,
             tooltip: context.l10n.refreshTimetable,
           ),
           if (_hasLocalTimetable) ...[
             IconButton(
               icon: Icon(Icons.share_rounded,
-                  size: 20,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white70
-                      : const Color(0xFF5F6368)),
+                  size: 20, color: colors.textMuted),
               onPressed: _shareTimetable,
               tooltip: context.l10n.shareTimetable,
             ),
@@ -680,15 +665,16 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
 
   Widget _buildAgendaView() {
     if (_agendaTimeline.isEmpty) {
+      final colors = context.colors;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.event_busy_rounded,
-                size: 48, color: Theme.of(context).hintColor.withOpacity(0.3)),
-            const SizedBox(height: 16),
+                size: 48, color: colors.textMuted.withValues(alpha: 0.4)),
+            const SizedBox(height: AppSpacing.lg),
             Text(context.l10n.noCoursesThisSemester,
-                style: TextStyle(color: Theme.of(context).hintColor)),
+                style: AppText.bodyDense.copyWith(color: colors.textMuted)),
           ],
         ),
       );
@@ -740,9 +726,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
         style: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : const Color(0xFF202124),
+          color: context.colors.text,
           height: 1.0, // 紧凑行高进一步上移
         ),
       ),
@@ -763,6 +747,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
     final now = DateTime.now();
     final isToday =
         date.year == now.year && date.month == now.month && date.day == now.day;
+    final colors = context.colors;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
@@ -776,11 +761,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
               children: [
                 Text(dayName,
                     style: TextStyle(
-                      color: isToday
-                          ? Theme.of(context).primaryColor
-                          : (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white70
-                              : Colors.grey[600]),
+                      color: isToday ? colors.brandText : colors.textMuted,
                       fontSize: 13,
                       fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     )),
@@ -789,8 +770,9 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
+                    // 今天：brand 12% 底 + brandText 加粗文字（不只靠颜色区分）
                     color: isToday
-                        ? Theme.of(context).primaryColor
+                        ? colors.statusBg(colors.brand)
                         : Colors.transparent,
                     shape: BoxShape.circle,
                   ),
@@ -798,9 +780,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
                   child: Text(
                     '${date.day}',
                     style: TextStyle(
-                      color: isToday
-                          ? Colors.white
-                          : Theme.of(context).textTheme.bodyLarge?.color,
+                      color: isToday ? colors.brandText : colors.text,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -829,6 +809,9 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
 
   Widget _buildCourseAgendaCard(CourseModel course) {
     final baseColor = CourseColorUtils.getColorForCourse(course.name);
+    final brightness = Theme.of(context).brightness;
+    final bgColor = CourseColorUtils.blockBackground(baseColor, brightness);
+    final fgColor = CourseColorUtils.blockForeground(baseColor, brightness);
 
     final startTime =
         DateCalculator.getSectionTime(course.startPeriod)['start']!;
@@ -843,8 +826,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
       padding: const EdgeInsets.symmetric(horizontal: 14),
       height: 60,
       decoration: BoxDecoration(
-        color: baseColor,
-        borderRadius: BorderRadius.circular(6),
+        color: bgColor,
+        borderRadius: AppRadius.controlAll,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -852,8 +835,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
         children: [
           Text(
             course.name,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: fgColor,
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
@@ -865,8 +848,8 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
             [timeRange, course.classroom.trim(), course.teacher.trim()]
                 .where((s) => s.isNotEmpty)
                 .join(', '),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: fgColor.withValues(alpha: 0.75),
               fontSize: 12,
             ),
             maxLines: 1,
@@ -878,13 +861,14 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
   }
 
   Widget _buildErrorState() {
+    final colors = context.colors;
     return Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+      Icon(Icons.error_outline, size: 64, color: colors.danger),
       const SizedBox(height: 16),
       Text(context.l10n.loadFailed),
       Text(_errorMessage!,
-          style: TextStyle(color: Theme.of(context).hintColor),
+          style: TextStyle(color: colors.textMuted),
           textAlign: TextAlign.center),
       const SizedBox(height: 24),
       ElevatedButton(onPressed: _loadLocalTimetable, child: Text(context.l10n.retry)),
@@ -894,7 +878,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
   Widget _buildMetadataMissingState() {
     return Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      const Icon(Icons.info_outline, size: 64, color: Colors.orange),
+      Icon(Icons.info_outline, size: 64, color: context.colors.warning),
       const SizedBox(height: 16),
       Text(context.l10n.timetableInfoIncomplete),
       Text(context.l10n.pleaseReDownloadTimetable),
@@ -926,7 +910,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
   }
 
   Widget _buildExamAgendaTask(ExamScheduleModel item) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final timeStr = DateFormat('HH:mm').format(item.time);
     final location = item.location?.trim() ?? '';
     final timeLocation = location.isNotEmpty ? '$timeStr @ $location' : timeStr;
@@ -961,19 +945,19 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF382326) : const Color(0xFFFFEBEE),
-          borderRadius: BorderRadius.circular(6),
+          color: colors.statusBg(colors.danger),
+          borderRadius: AppRadius.controlAll,
           border: Border.all(
-            color: const Color(0xFFE53935).withValues(alpha: isDark ? 0.3 : 0.2),
+            color: colors.danger.withValues(alpha: 0.25),
             width: 1,
           ),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.quiz_outlined,
               size: 22,
-              color: Color(0xFFE53935),
+              color: colors.danger,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -989,9 +973,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             height: 1.2,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF2D3436),
+                            color: colors.text,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1003,15 +985,15 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE53935).withValues(alpha: 0.12),
+                            color: colors.statusBg(colors.danger),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             item.status,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFE53935),
+                              color: colors.danger,
                             ),
                           ),
                         ),
@@ -1023,9 +1005,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
                     timeLocation,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark
-                          ? Colors.white70
-                          : const Color(0xFF7F8C8D),
+                      color: colors.textMuted,
                     ),
                   ),
                 ],
@@ -1060,20 +1040,19 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
   }
 
   Widget _buildHomeworkAgendaTask(HomeworkModel item) {
+    final colors = context.colors;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF3D3D29)
-            : const Color(0xFFFFF9E6),
-        borderRadius: BorderRadius.circular(6),
+        color: colors.statusBg(colors.warning),
+        borderRadius: AppRadius.controlAll,
       ),
       child: Row(
         children: [
-          const Icon(Icons.assignment_late_outlined,
-              size: 18, color: Color(0xFFF39C12)),
+          Icon(Icons.assignment_late_outlined,
+              size: 18, color: colors.warning),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1084,9 +1063,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white
-                        : const Color(0xFF2D3436),
+                    color: colors.text,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1095,9 +1072,7 @@ class _TimetableScreenState extends ConsumerState<TimetableScreen>
                   '${item.courseName} · ${context.l10n.deadlinePrefix} ${item.endTime != null ? DateFormat('HH:mm').format(item.endTime!) : context.l10n.noDeadline}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : const Color(0xFF7F8C8D),
+                    color: colors.textMuted,
                   ),
                 ),
               ],

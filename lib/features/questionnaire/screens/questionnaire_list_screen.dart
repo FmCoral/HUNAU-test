@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../models/questionnaire_models.dart';
@@ -78,18 +79,12 @@ class _QuestionnaireListScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
     final filtered = _items.where((item) => _filter.matches(item)).toList();
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.studentWorkQuestionnaire),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             tooltip: context.l10n.refresh,
@@ -100,34 +95,30 @@ class _QuestionnaireListScreenState
       ),
       body: _loading && _items.isEmpty
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : RefreshIndicator(
-              color: const Color(0xFF09C489),
               onRefresh: _load,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.page, AppSpacing.lg, AppSpacing.page, 40),
                 children: [
                   if (_loading) const LinearProgressIndicator(),
                   if (_error != null)
                     Container(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.12)
-                              : const Color(0xFFE0E0E0),
-                        ),
+                        color: colors.surface,
+                        borderRadius: AppRadius.cardAll,
+                        border: Border.all(color: colors.border),
                       ),
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.card),
                       child: Center(
                         child: Column(
                           children: [
                             Text(_error!),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.sm),
                             TextButton(
                               onPressed: _load,
                               child: Text(context.l10n.retry),
@@ -137,57 +128,53 @@ class _QuestionnaireListScreenState
                       ),
                     ),
                   Wrap(
-                    spacing: 8,
+                    spacing: AppSpacing.sm,
                     children: QuestionnaireFilter.values
-                        .map((filter) => _buildFilterChip(filter, isDark))
+                        .map((filter) => _buildFilterChip(filter, colors))
                         .toList(),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   if (filtered.isEmpty && _error == null)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 36),
                       child: Center(
                         child: Text(
                           context.l10n.noQuestionnairesFound,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? Colors.white38 : Colors.grey,
-                          ),
+                          style: AppText.bodyDense
+                              .copyWith(color: colors.textMuted),
                         ),
                       ),
                     ),
-                  ...filtered.map((item) => _buildItemCard(item, isDark)),
+                  ...filtered.map((item) => _buildItemCard(item, colors)),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildFilterChip(QuestionnaireFilter filter, bool isDark) {
+  Widget _buildFilterChip(QuestionnaireFilter filter, AppSemanticColors colors) {
     final isSelected = _filter == filter;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => setState(() => _filter = filter),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.controlAll,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
+            color: isSelected
+                ? colors.statusBg(colors.brand)
+                : Colors.transparent,
+            borderRadius: AppRadius.controlAll,
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white24 : const Color(0xFFDADCE0)),
+              color: isSelected ? colors.brand : colors.border,
             ),
           ),
           child: Text(
             filter.getLocalizedLabel(context),
-            style: TextStyle(
-              fontSize: 13,
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white70 : Colors.black87),
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            style: AppText.caption.copyWith(
+              color: isSelected ? colors.brandText : colors.text,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ),
@@ -195,25 +182,21 @@ class _QuestionnaireListScreenState
     );
   }
 
-  Widget _buildItemCard(QuestionnaireItem item, bool isDark) {
+  Widget _buildItemCard(QuestionnaireItem item, AppSemanticColors colors) {
     final statusColor = item.isSubmitted
-        ? const Color(0xFF09C489)
-        : (item.isExpired ? Colors.grey : const Color(0xFFE63476));
+        ? colors.brand
+        : (item.isExpired ? colors.textMuted : colors.info);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () async {
             final changed = await Navigator.of(context).push<bool>(
               createSlideUpRoute(QuestionnaireDetailScreen(item: item)),
@@ -221,7 +204,7 @@ class _QuestionnaireListScreenState
             if (changed == true && mounted) _load();
           },
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -231,40 +214,42 @@ class _QuestionnaireListScreenState
                     Expanded(
                       child: Text(
                         item.title.isEmpty ? context.l10n.unnamedQuestionnaire : item.title,
-                        style: TextStyle(
+                        style: AppText.sectionTitle.copyWith(
+                          color: colors.text,
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : const Color(0xFF222222),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 13,
-                      color: isDark ? Colors.white24 : Colors.grey[400],
+                      color: colors.textMuted,
                     ),
                   ],
                 ),
                 if (item.timeRange.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     item.timeRange,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white60 : Colors.black54,
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ],
-                const SizedBox(height: 8),
-                Text(
-                  item.getLocalizedStatus(context),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: statusColor,
-                    fontWeight: item.isSubmitted
-                        ? FontWeight.bold
-                        : FontWeight.normal,
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colors.statusBg(statusColor),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                  child: Text(
+                    item.getLocalizedStatus(context),
+                    style: AppText.caption.copyWith(
+                      fontSize: 12,
+                      color: statusColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

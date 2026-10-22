@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../utils/library_time_utils.dart';
 
@@ -12,7 +13,6 @@ Future<LibraryTimeRangeSelection?> showLibraryTimeRangePicker({
   String? initialStartTime,
   String? initialEndTime,
 }) async {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
   final openedAt = DateTime.now();
   final allSlots = LibraryTimeUtils.buildTimeSlots();
   final availableStarts = LibraryTimeUtils.availableStartSlots(
@@ -40,13 +40,10 @@ Future<LibraryTimeRangeSelection?> showLibraryTimeRangePicker({
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-    ),
     builder: (ctx) {
       return StatefulBuilder(
         builder: (context, setModalState) {
+          final colors = context.colors;
           final startIndex =
               tempStart == null ? -1 : allSlots.indexOf(tempStart!);
           final canConfirm = tempStart != null &&
@@ -69,59 +66,55 @@ Future<LibraryTimeRangeSelection?> showLibraryTimeRangePicker({
                   children: [
                     Text(
                       context.l10n.selectReservationPeriod,
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
+                      style:
+                          AppText.sectionTitle.copyWith(color: colors.text),
                     ),
                     IconButton(
                       icon: Icon(
                         Icons.close,
-                        color: isDark ? Colors.white60 : Colors.black54,
+                        color: colors.textMuted,
                       ),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   context.l10n.startTime,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white60 : Colors.grey[700],
+                  style: AppText.caption.copyWith(
+                    color: colors.textMuted,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 SizedBox(
                   height: 38,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: availableStarts.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(width: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       final slot = availableStarts[index];
                       final isSelected = slot == tempStart;
                       return ChoiceChip(
                         label: Text(slot),
                         selected: isSelected,
-                        selectedColor:
-                            const Color(0xFF09C489).withValues(alpha: 0.15),
-                        labelStyle: TextStyle(
-                          fontSize: 13,
+                        selectedColor: colors.statusBg(colors.brand),
+                        labelStyle: AppText.caption.copyWith(
                           color: isSelected
-                              ? const Color(0xFF09C489)
-                              : (isDark ? Colors.white70 : Colors.black87),
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
+                              ? colors.brandText
+                              : colors.text,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: AppRadius.controlAll,
                           side: BorderSide(
                             color: isSelected
-                                ? const Color(0xFF09C489)
-                                : (isDark ? Colors.white12 : Colors.grey[300]!),
+                                ? colors.brand
+                                : colors.border,
                           ),
                         ),
                         onSelected: (selected) {
@@ -142,31 +135,30 @@ Future<LibraryTimeRangeSelection?> showLibraryTimeRangePicker({
                   ),
                 ),
                 if (availableStarts.isEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     context.l10n.noAvailableSlotsForDate,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? Colors.orange[300] : Colors.orange[800],
+                    style: AppText.caption.copyWith(
+                      color: colors.warning,
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 Text(
                   context.l10n.endTime,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white60 : Colors.grey[700],
+                  style: AppText.caption.copyWith(
+                    color: colors.textMuted,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 SizedBox(
                   height: 38,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: candidateEnds.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(width: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       final slot = candidateEnds[index];
                       final isAvailable =
@@ -175,24 +167,21 @@ Future<LibraryTimeRangeSelection?> showLibraryTimeRangePicker({
                       return ChoiceChip(
                         label: Text(slot),
                         selected: isSelected,
-                        selectedColor:
-                            const Color(0xFF09C489).withValues(alpha: 0.15),
-                        labelStyle: TextStyle(
-                          fontSize: 13,
+                        selectedColor: colors.statusBg(colors.brand),
+                        labelStyle: AppText.caption.copyWith(
                           color: !isAvailable
-                              ? (isDark ? Colors.white24 : Colors.grey[400])
-                              : (isSelected
-                                  ? const Color(0xFF09C489)
-                                  : (isDark ? Colors.white70 : Colors.black87)),
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
+                              ? colors.textMuted.withValues(alpha: 0.5)
+                              : (isSelected ? colors.brandText : colors.text),
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: AppRadius.controlAll,
                           side: BorderSide(
                             color: isSelected
-                                ? const Color(0xFF09C489)
-                                : (isDark ? Colors.white12 : Colors.grey[300]!),
+                                ? colors.brand
+                                : colors.border,
                           ),
                         ),
                         onSelected: isAvailable
@@ -206,22 +195,11 @@ Future<LibraryTimeRangeSelection?> showLibraryTimeRangePicker({
                     },
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
                 SizedBox(
                   width: double.infinity,
-                  height: 42,
+                  height: 48,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF09C489),
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor:
-                          const Color(0xFF09C489).withValues(alpha: 0.35),
-                      disabledForegroundColor: Colors.white70,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
                     onPressed: canConfirm
                         ? () => Navigator.pop(
                               ctx,
@@ -234,7 +212,7 @@ Future<LibraryTimeRangeSelection?> showLibraryTimeRangePicker({
                     child: Text(
                       context.l10n.confirmPeriod,
                       style:
-                          const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),

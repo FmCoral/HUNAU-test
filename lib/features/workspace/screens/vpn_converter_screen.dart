@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 
 // 使用前缀导入 PointyCastle 以彻底解决命名冲突并确保所有组件可用
 import 'package:pointycastle/export.dart' as pc;
@@ -9,6 +8,7 @@ import 'package:pointycastle/export.dart' as pc;
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/l10n_extension.dart';
+import '../../../core/theme/app_tokens.dart';
 
 /// WebVPN 链接转换器 - 原生 UI 版
 class VpnConverterScreen extends StatefulWidget {
@@ -162,37 +162,35 @@ class _VpnConverterScreenState extends State<VpnConverterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.webVpnConverter),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
-              // 顶部横幅 - MD2 风格提示
+              const SizedBox(height: AppSpacing.lg),
+              // 顶部提示横幅
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F3F4),
-                  borderRadius: BorderRadius.circular(6),
+                  color: colors.statusBg(colors.info),
+                  borderRadius: AppRadius.innerAll,
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.shield_outlined, color: Color(0xFF5F6368), size: 20),
-                    const SizedBox(width: 12),
+                    Icon(Icons.shield_outlined, color: colors.textMuted, size: 20),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Text(
                         context.l10n.webVpnDescription,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF5F6368),
+                        style: AppText.caption.copyWith(
+                          color: colors.textMuted,
                           height: 1.5,
                         ),
                       ),
@@ -200,32 +198,15 @@ class _VpnConverterScreenState extends State<VpnConverterScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxxl),
               
-              // MD2 风格输入框 (带悬浮标签)
+              // 输入框 (样式走全局主题)
               TextField(
                 controller: _urlController,
-                style: const TextStyle(fontSize: 15),
+                style: AppText.bodyDense.copyWith(fontSize: 15, color: colors.text),
                 decoration: InputDecoration(
                   labelText: context.l10n.originalUrl,
-                  labelStyle: TextStyle(color: Colors.grey[600], fontSize: 14),
-                  floatingLabelStyle: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.w500),
                   hintText: 'https://jwxt.hunau.edu.cn/...',
-                  hintStyle: TextStyle(color: Colors.grey[350], fontSize: 14),
-                  filled: false,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: BorderSide(color: Colors.grey[400]!),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: BorderSide(color: Colors.grey[400]!),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                    borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
-                  ),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.content_paste_outlined, size: 20),
                     onPressed: () async {
@@ -240,41 +221,35 @@ class _VpnConverterScreenState extends State<VpnConverterScreen> {
                 onChanged: (_) => _convert(),
               ),
               
-              const SizedBox(height: 40),
+              const SizedBox(height: AppSpacing.xxxl),
               
               // 转换结果展示
               if (_convertedUrl.isNotEmpty) ...[
                 Text(
                   context.l10n.conversionResult,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF202124),
-                    letterSpacing: 0.25,
-                  ),
+                  style: AppText.sectionTitle.copyWith(color: colors.text),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 
                 // 代码块样式的链接显示
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F3F4),
-                    borderRadius: BorderRadius.circular(6),
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.innerAll,
                   ),
                   child: SelectableText(
                     _convertedUrl,
-                    style: const TextStyle(
+                    style: AppText.caption.copyWith(
                       fontFamily: 'monospace',
-                      fontSize: 13,
-                      color: Color(0xFF1967D2),
+                      color: colors.info,
                       height: 1.4,
                     ),
                   ),
                 ),
                 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 
                 // 右对齐的动作按钮栏
                 Row(
@@ -286,29 +261,17 @@ class _VpnConverterScreenState extends State<VpnConverterScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(context.l10n.copiedToClipboard),
-                            behavior: SnackBarBehavior.floating,
                           ),
                         );
                       },
                       icon: const Icon(Icons.copy_outlined, size: 18),
                       label: Text(context.l10n.copy),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF5F6368),
-                        side: const BorderSide(color: Color(0xFFDADCE0)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                      ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     ElevatedButton.icon(
                       onPressed: _openInBrowser,
                       icon: const Icon(Icons.open_in_new_rounded, size: 18),
                       label: Text(context.l10n.visit),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                      ),
                     ),
                   ],
                 ),
@@ -317,19 +280,19 @@ class _VpnConverterScreenState extends State<VpnConverterScreen> {
                 Center(
                   child: Column(
                     children: [
-                      const SizedBox(height: 40),
-                      Icon(Icons.link_off_outlined, size: 48, color: Colors.grey[200]),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AppSpacing.xxxl),
+                      Icon(Icons.link_off_outlined, size: 48, color: colors.textMuted),
+                      const SizedBox(height: AppSpacing.lg),
                       Text(
                         context.l10n.pasteUrlToConvertHint,
-                        style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                        style: AppText.caption.copyWith(color: colors.textMuted),
                       ),
                     ],
                   ),
                 ),
               ],
               
-              const SizedBox(height: 60),
+              const SizedBox(height: AppSpacing.xxxl),
             ],
           ),
         ),

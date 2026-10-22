@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/exceptions/app_exceptions.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../models/library_models.dart';
 import '../providers/library_provider.dart';
 import '../widgets/library_quick_reserve_sheet.dart';
@@ -33,11 +34,10 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
             content: Row(
               children: [
                 const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Text(context.l10n.checkInSuccessEnjoy),
               ],
             ),
-            backgroundColor: const Color(0xFF09C489),
           ),
         );
       }
@@ -55,40 +55,26 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
   }
 
   Future<void> _handleSignBack(LibraryReserveModel reserve) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        title: Text(context.l10n.confirmCheckOutTitle,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text(context.l10n.confirmCheckOutTitle),
         content: Text(
           context.l10n.confirmCheckOutMessage(reserve.thirdLevelName, reserve.seatNum),
         ),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: isDark ? Colors.white60 : Colors.black54,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            ),
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.l10n.thinkAgain, style: const TextStyle(fontSize: 14)),
+            child: Text(context.l10n.thinkAgain),
           ),
-          const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4D4F),
+              backgroundColor: context.colors.danger,
               foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               minimumSize: const Size(0, 36),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(context.l10n.confirmCheckOut,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            child: Text(context.l10n.confirmCheckOut),
           ),
         ],
       ),
@@ -137,45 +123,25 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
   }
 
   Future<void> _handleCancelReservation(LibraryReserveModel reserve) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        title: Text(context.l10n.confirmCancelReservationTitle,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: Text(context.l10n.confirmCancelReservationTitle),
         content: Text(
             context.l10n.confirmCancelReservationMessage(reserve.thirdLevelName, reserve.seatNum)),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: isDark ? Colors.white60 : Colors.black54,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            ),
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.l10n.thinkAgain, style: const TextStyle(fontSize: 14)),
+            child: Text(context.l10n.thinkAgain),
           ),
-          const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4D4F),
+              backgroundColor: context.colors.danger,
               foregroundColor: Colors.white,
-              elevation: 0,
-              shadowColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               minimumSize: const Size(0, 36),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
-              context.l10n.confirmCancel,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
+            child: Text(context.l10n.confirmCancel),
           ),
         ],
       ),
@@ -223,12 +189,10 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
       builder: (ctx) => PopScope(
         canPop: false,
         child: AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           content: Row(
             children: [
-              const CircularProgressIndicator(color: Color(0xFF09C489)),
-              const SizedBox(width: 16),
+              const CircularProgressIndicator(),
+              const SizedBox(width: AppSpacing.lg),
               Text(context.l10n.submittingReservation),
             ],
           ),
@@ -263,15 +227,11 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
           context: context,
           barrierDismissible: false,
           builder: (ctx) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Row(
               children: [
-                const Icon(Icons.check_circle, color: Color(0xFF09C489)),
-                const SizedBox(width: 8),
-                Text(context.l10n.reservationSuccess,
-                    style:
-                        const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Icon(Icons.check_circle, color: context.colors.brand),
+                const SizedBox(width: AppSpacing.sm),
+                Text(context.l10n.reservationSuccess),
               ],
             ),
             content: Column(
@@ -279,34 +239,27 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(context.l10n.readingRoomLabel(item.fullRoomName)),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(context.l10n.seatNumberLabel(
                     result.seatNum.isNotEmpty ? result.seatNum : item.seatNum)),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(context.l10n.dateLabel(selection.day)),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(context.l10n.timeValueLabel('${selection.startTime} ~ ${selection.endTime}')),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   context.l10n.reservationNotice,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: AppText.caption.copyWith(color: context.colors.textMuted),
                 ),
               ],
             ),
-            actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             actions: [
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
                   minimumSize: const Size(0, 36),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
                 ),
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(context.l10n.done,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(context.l10n.done),
               ),
             ],
           ),
@@ -320,34 +273,23 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Row(
               children: [
-                const Icon(Icons.error_outline, color: Colors.red),
-                const SizedBox(width: 8),
-                Text(context.l10n.reservationFailed,
-                    style:
-                        const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Icon(Icons.error_outline, color: context.colors.danger),
+                const SizedBox(width: AppSpacing.sm),
+                Text(context.l10n.reservationFailed),
               ],
             ),
             content: Text(
               errorMsg.isNotEmpty ? errorMsg : context.l10n.reservationFailed,
             ),
-            actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             actions: [
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
                   minimumSize: const Size(0, 36),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
                 ),
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(context.l10n.iUnderstand,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(context.l10n.iUnderstand),
               ),
             ],
           ),
@@ -363,16 +305,10 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final indexDataAsync = ref.watch(libraryIndexProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.library),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -384,25 +320,26 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
       body: indexDataAsync.when(
         data: (data) => _buildContent(data),
         loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF09C489)),
+          child: CircularProgressIndicator(),
         ),
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline,
-                  size: 48, color: Colors.redAccent),
-              const SizedBox(height: 12),
-              Text(err.toString().replaceAll('Exception:', '').trim()),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
+              Icon(Icons.error_outline,
+                  size: 48, color: context.colors.danger),
+              const SizedBox(height: AppSpacing.md),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+                child: Text(
+                  err.toString().replaceAll('Exception:', '').trim(),
+                  textAlign: TextAlign.center,
+                  style: AppText.bodyDense
+                      .copyWith(color: context.colors.textMuted),
                 ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ElevatedButton(
                 onPressed: () =>
                     ref.read(libraryIndexProvider.notifier).refresh(),
                 child: Text(context.l10n.retry),
@@ -418,33 +355,53 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
     final activeList = data.curReserves;
 
     return RefreshIndicator(
-      color: const Color(0xFF09C489),
       onRefresh: () => ref.read(libraryIndexProvider.notifier).refresh(),
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.page),
         children: [
           // 1. 当前预约状态看板 (Active Reservation Cards) - 有预约才显示，无预约不显示任何卡片
           if (activeList.isNotEmpty) ...[
             for (int i = 0; i < activeList.length; i++) ...[
               _buildActiveReservationCard(activeList[i]),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
             ],
           ],
 
           // 2. 快速预约入口 (单个卡片)
-          _buildQuickReserveCard(),
-          const SizedBox(height: 12),
+          _buildEntryCard(
+            icon: Icons.bolt_rounded,
+            label: context.l10n.quickReserve,
+            onTap: () {
+              Navigator.push(
+                  context, createSlideUpRoute(const LibraryQuickReserveScreen()));
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
 
           // 3. 预约选座入口 (单个卡片)
-          _buildQuickActionCard(),
-          const SizedBox(height: 12),
+          _buildEntryCard(
+            icon: Icons.event_seat_rounded,
+            label: context.l10n.reserveSeat,
+            onTap: () {
+              Navigator.push(
+                  context, createSlideUpRoute(const LibraryRoomScreen()));
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
 
           // 4. 图书馆图书查询入口 (单个卡片)
-          _buildBookSearchCard(),
+          _buildEntryCard(
+            icon: Icons.menu_book_rounded,
+            label: context.l10n.bookSearch,
+            onTap: () {
+              Navigator.push(
+                  context, createSlideUpRoute(const LibraryBookSearchScreen()));
+            },
+          ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
-          // 3. 历史与近期预约记录 (顶格显示，无分割线)
+          // 5. 历史与近期预约记录 (顶格显示，无分割线)
           _buildRecentReservationsHeader(),
           const SizedBox(height: 6),
           if (data.nearReserves.isEmpty)
@@ -467,41 +424,31 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
     final timeFormat = DateFormat('HH:mm');
     final startTimeStr = timeFormat.format(reserve.startTime);
     final endTimeStr = timeFormat.format(reserve.endTime);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final canSignBack = reserve.reserveStatus.canSignBack;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: context.colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: context.colors.border),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.card, AppSpacing.card, AppSpacing.card, AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 座位号
           Text(
             context.l10n.seatWithNumber(reserve.seatNum),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF222222),
-            ),
+            style: AppText.keyNumber.copyWith(color: context.colors.text),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
 
           // 位置
           Text(
             reserve.fullRoomName,
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.white70 : Colors.black87,
+            style: AppText.bodyDense.copyWith(
+              color: context.colors.text,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -511,18 +458,16 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
           Row(
             children: [
               Icon(Icons.access_time_rounded,
-                  size: 14, color: isDark ? Colors.white38 : Colors.grey),
+                  size: 14, color: context.colors.textMuted),
               const SizedBox(width: 6),
               Text(
                 '${reserve.today}  $startTimeStr - $endTimeStr',
-                style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.grey[700]),
+                style: AppText.caption.copyWith(color: context.colors.textMuted),
               ),
             ],
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
 
           // 操作按钮：待签到时取消/签到，已入座相关状态时仅显示退座
           Row(
@@ -530,38 +475,21 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
             children: [
               if (!canSignBack) ...[
                 TextButton(
-                  style: TextButton.styleFrom(
-                    foregroundColor: isDark ? Colors.white60 : Colors.black54,
-                    elevation: 0,
-                    shadowColor: Colors.transparent,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  ),
                   onPressed: _isProcessingAction
                       ? null
                       : () => _handleCancelReservation(reserve),
-                  child: Text(context.l10n.cancelReservation, style: const TextStyle(fontSize: 13)),
+                  child: Text(context.l10n.cancelReservation),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF09C489),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6)),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     minimumSize: const Size(0, 36),
                   ),
                   icon: const Icon(
                     Icons.check_circle_outline_rounded,
                     size: 16,
                   ),
-                  label: Text(
-                    context.l10n.checkIn,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
+                  label: Text(context.l10n.checkIn),
                   onPressed: _isProcessingAction
                       ? null
                       : () => _handleSignIn(reserve),
@@ -569,19 +497,12 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
               ] else
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF4D4F),
+                    backgroundColor: context.colors.danger,
                     foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6)),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     minimumSize: const Size(0, 36),
                   ),
                   icon: const Icon(Icons.logout_rounded, size: 16),
-                  label: Text(context.l10n.checkOut,
-                      style:
-                          const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                  label: Text(context.l10n.checkOut),
                   onPressed: _isProcessingAction
                       ? null
                       : () => _handleSignBack(reserve),
@@ -593,159 +514,41 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
     );
   }
 
-  Widget _buildBookSearchCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+  Widget _buildEntryCard({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: context.colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: context.colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
-          onTap: () {
-            Navigator.push(
-                context, createSlideUpRoute(const LibraryBookSearchScreen()));
-          },
+          borderRadius: AppRadius.cardAll,
+          onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.card, vertical: 14),
             child: Row(
               children: [
-                const Icon(
-                  Icons.menu_book_rounded,
-                  color: Color(0xFF09C489),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
+                Icon(icon, color: context.colors.brand, size: 20),
+                const SizedBox(width: AppSpacing.md),
                 Text(
-                  context.l10n.bookSearch,
-                  style: TextStyle(
+                  label,
+                  style: AppText.sectionTitle.copyWith(
                     fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: context.colors.text,
                   ),
                 ),
                 const Spacer(),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: isDark ? Colors.white38 : Colors.grey,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickReserveCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(6),
-          onTap: () {
-            Navigator.push(
-                context, createSlideUpRoute(const LibraryQuickReserveScreen()));
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.bolt_rounded,
-                  color: Color(0xFF09C489),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  context.l10n.quickReserve,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: isDark ? Colors.white38 : Colors.grey,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(6),
-          onTap: () {
-            Navigator.push(
-                context, createSlideUpRoute(const LibraryRoomScreen()));
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.event_seat_rounded,
-                  color: Color(0xFF09C489),
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  context.l10n.reserveSeat,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: isDark ? Colors.white38 : Colors.grey,
+                  color: context.colors.textMuted,
                 ),
               ],
             ),
@@ -756,27 +559,23 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
   }
 
   Widget _buildRecentReservationsHeader() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
       context.l10n.recentReservations,
-      style: TextStyle(
+      style: AppText.sectionTitle.copyWith(
         fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white : Colors.black87,
+        color: context.colors.text,
       ),
     );
   }
 
   Widget _buildEmptyHistoryCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           context.l10n.noReservationRecords,
-          style: TextStyle(
-              fontSize: 14, color: isDark ? Colors.white38 : Colors.grey),
+          style: AppText.bodyDense.copyWith(color: context.colors.textMuted),
         ),
       ),
     );
@@ -789,10 +588,9 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
     final timeFormat = DateFormat('HH:mm');
     final startTimeStr = timeFormat.format(item.startTime);
     final endTimeStr = timeFormat.format(item.endTime);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -803,57 +601,44 @@ class _LibraryHomeScreenState extends ConsumerState<LibraryHomeScreen> {
                 // 1. 座位号（字体加大加粗，无 #）
                 Text(
                   item.seatNum,
-                  style: TextStyle(
+                  style: AppText.sectionTitle.copyWith(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : const Color(0xFF222222),
+                    fontWeight: FontWeight.w700,
+                    color: context.colors.text,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
 
                 // 2. 位置
                 Text(
                   item.fullRoomName,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppText.bodyDense.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white70 : Colors.black87,
+                    color: context.colors.text,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
 
                 // 3. 时间
                 Text(
                   '${item.today}  $startTimeStr - $endTimeStr',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white38 : Colors.grey[600],
-                  ),
+                  style: AppText.caption.copyWith(color: context.colors.textMuted),
                 ),
               ],
             ),
           ),
           if (showReserveButton) ...[
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09C489),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 6),
                 minimumSize: const Size(60, 32),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
               ),
               onPressed: _isProcessingAction
                   ? null
                   : () => _handleQuickReserve(item),
-              child: Text(
-                context.l10n.reserve,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-              ),
+              child: Text(context.l10n.reserve),
             ),
           ],
         ],

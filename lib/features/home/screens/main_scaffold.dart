@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../cloudisk/screens/cloud_sync_prompt_screen.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/route_utils.dart';
 import '../../../core/services/update_service.dart';
 import '../../../core/services/app_navigator.dart';
@@ -470,18 +471,30 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                     ? null
                     : _buildGlobalTopBar(context, authState),
                 drawer: Drawer(
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   child: Column(
                     children: [
                       UserAccountsDrawerHeader(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.8),
+                          color: Theme.of(context).colorScheme.surface,
+                          border: Border(
+                            bottom: BorderSide(color: context.colors.border),
+                          ),
                         ),
-                        accountName: Text(context.l10n.appTitle),
-                        accountEmail: const Text('v1.0.0'),
+                        accountName: Text(
+                          context.l10n.appTitle,
+                          style: AppText.sectionTitle
+                              .copyWith(color: context.colors.text),
+                        ),
+                        accountEmail: Text(
+                          'v1.0.0',
+                          style: AppText.caption
+                              .copyWith(color: context.colors.textMuted),
+                        ),
                         currentAccountPicture: CircleAvatar(
-                          backgroundColor: Theme.of(context).cardColor,
-                          child: Icon(Icons.school, color: Theme.of(context).primaryColor),
+                          backgroundColor: context.colors.surfaceSubtle,
+                          child: Icon(Icons.school,
+                              color: context.colors.brand),
                         ),
                       ),
                       ListTile(
@@ -549,33 +562,34 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                 bottomNavigationBar: isTabletOrLandscape
                     ? null
                     : Material(
-                        color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
-                        elevation: 8,
+                        color: Theme.of(context).colorScheme.surface,
+                        elevation: 0,
                         child: SafeArea(
                           child: Container(
                             height: 60,
                             decoration: BoxDecoration(
                               border: Border(
                                 top: BorderSide(
-                                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.05) : const Color(0x0D000000), 
-                                  width: 0.5
+                                  color: context.colors.border,
+                                  width: 1,
                                 ),
                               ),
                             ),
                             child: TabBar(
                               controller: _tabController,
-                              indicator: const MD2TopIndicator(
-                                color: Color(0xFF09C489),
+                              indicator: MD2TopIndicator(
+                                color: context.colors.brand,
                                 indicatorHeight: 3,
                                 radius: 3,
                               ),
                               indicatorSize: TabBarIndicatorSize.label,
                               // 这里不再需要 hacky 的 padding，因为自定义指示器就在顶部绘制
                               indicatorPadding: EdgeInsets.zero,
-                              labelColor: const Color(0xFF09C489),
-                              unselectedLabelColor: Theme.of(context).brightness == Brightness.dark ? Colors.white54 : Colors.grey,
+                              labelColor: context.colors.brand,
+                              unselectedLabelColor: context.colors.textMuted,
+                              dividerColor: Colors.transparent,
                               labelPadding: EdgeInsets.zero,
-                              labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                              labelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
                               unselectedLabelStyle: const TextStyle(fontSize: 10),
                               onTap: (index) {
                                 // 如果正在登录中，拦截通知页的访问 (index 3)
@@ -779,13 +793,11 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
       key: const ValueKey('tablet_navigation_rail'),
       width: 76,
       decoration: BoxDecoration(
-        color: Theme.of(context).bottomNavigationBarTheme.backgroundColor,
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
           right: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : const Color(0x0D000000),
-            width: 0.5,
+            color: context.colors.border,
+            width: 1,
           ),
         ),
       ),
@@ -831,7 +843,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                     width: 24,
                     height: 24,
                     colorFilter: ColorFilter.mode(
-                      isDark ? Colors.white54 : Colors.grey,
+                      context.colors.textMuted,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -856,8 +868,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
     required bool isSelected,
     required bool isDark,
   }) {
-    const activeColor = Color(0xFF09C489);
-    final unselectedColor = isDark ? Colors.white54 : Colors.grey;
+    final activeColor = context.colors.brand;
+    final unselectedColor = context.colors.textMuted;
 
     return Material(
       color: Colors.transparent,
@@ -902,9 +914,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                     child: Container(
                       width: 3,
                       height: 24,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: activeColor,
-                        borderRadius: BorderRadius.horizontal(
+                        borderRadius: const BorderRadius.horizontal(
                           left: Radius.circular(3),
                         ),
                       ),
@@ -985,8 +997,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                           style: TextStyle(
                             fontSize: 16,
                             height: 1.2,
-                            color:
-                                isDark ? Colors.white54 : Colors.grey[800],
+                            color: context.colors.textMuted,
                           ),
                         )
                       : const SizedBox.shrink(
@@ -1007,7 +1018,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                       width: 24,
                       height: 24,
                       colorFilter: ColorFilter.mode(
-                        isDark ? Colors.white54 : Colors.grey,
+                        context.colors.textMuted,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -1030,7 +1041,6 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
 
   /// AI 模式悬浮底栏（原顶栏）
   Widget _buildAiBottomBar(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final aiState = ref.watch(aiAssistantProvider);
     final isLimitReached = aiState.isRoundLimitReached;
     final canSend = !isLimitReached &&
@@ -1041,21 +1051,17 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(8), // MD2 圆角 8
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.card),
         boxShadow: [
           BoxShadow(
-            color: isDark
-                ? Colors.black.withOpacity(0.5)
-                : Colors.black.withOpacity(0.2),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
         ],
         border: Border.all(
-          color: isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.grey.withOpacity(0.1),
+          color: context.colors.border,
           width: 1.0,
         ),
       ),
@@ -1077,11 +1083,11 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                     enabled: !isLimitReached,
                     textInputAction: TextInputAction.send,
                     onSubmitted: canSend ? _submitAiQuery : null,
-                    cursorColor: const Color(0xFF09C489),
+                    cursorColor: context.colors.brand,
                     style: TextStyle(
                       fontSize: 16,
                       height: 1.2,
-                      color: isDark ? Colors.white : const Color(0xFF202124),
+                      color: context.colors.text,
                     ),
                     decoration: InputDecoration(
                       hintText: isLimitReached
@@ -1090,7 +1096,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                       hintStyle: TextStyle(
                         fontSize: isLimitReached ? 14 : 16,
                         height: 1.2,
-                        color: isDark ? Colors.white38 : Colors.grey[400],
+                        color: context.colors.textMuted,
                       ),
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -1122,12 +1128,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                     height: 36,
                     padding: const EdgeInsets.only(left: 3, right: 8),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(6),
+                      color: context.colors.surfaceSubtle,
+                      borderRadius: BorderRadius.circular(AppRadius.control),
                       border: Border.all(
-                        color: const Color(0xFF09C489).withOpacity(0.4),
+                        color: context.colors.brand.withValues(alpha: 0.4),
                         width: 1.0,
                       ),
                     ),
@@ -1154,7 +1158,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                           child: Icon(
                             Icons.close_rounded,
                             size: 16,
-                            color: isDark ? Colors.white70 : Colors.black54,
+                            color: context.colors.textMuted,
                           ),
                         ),
                       ],
@@ -1173,10 +1177,10 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                             ? Icons.image_rounded
                             : Icons.image_outlined,
                         color: isLimitReached
-                            ? (isDark ? Colors.white24 : Colors.grey[400])
+                            ? context.colors.textMuted
                             : (_selectedImagePath != null
-                                ? const Color(0xFF09C489)
-                                : (isDark ? Colors.white70 : Colors.grey[600])),
+                                ? context.colors.brand
+                                : context.colors.textMuted),
                         size: 22,
                       ),
                     ),
@@ -1194,17 +1198,15 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                         padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
                           color: canSend
-                              ? const Color(0xFF09C489)
-                              : (isDark
-                                  ? Colors.white.withOpacity(0.1)
-                                  : Colors.grey[300]),
+                              ? context.colors.primaryButtonBg
+                              : context.colors.surfaceSubtle,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.arrow_upward_rounded,
                           color: canSend
                               ? Colors.white
-                              : (isDark ? Colors.white38 : Colors.grey[500]),
+                              : context.colors.textMuted,
                           size: 16,
                         ),
                       ),
@@ -1242,12 +1244,13 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
               alignment: Alignment.center,
               children: [
                 if (authState.status == AuthStatus.authenticating)
-                  const SizedBox(
+                  SizedBox(
                     width: 40,
                     height: 40,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.orange),
+                      valueColor:
+                          AlwaysStoppedAnimation(context.colors.warning),
                     ),
                   )
                 else
@@ -1257,18 +1260,17 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: _getAuthStatusColor(authState.status),
+                        color: _getAuthStatusColor(context, authState.status),
                         width: 2,
                       ),
                     ),
                   ),
                 CircleAvatar(
                   radius: 16,
-                  backgroundColor:
-                      isDark ? Colors.white10 : const Color(0xFFEEEEEE),
+                  backgroundColor: context.colors.surfaceSubtle,
                   backgroundImage: _getAvatarImage(authState),
                   child: _getAvatarImage(authState) == null
-                      ? const Icon(Icons.person, size: 20, color: Colors.grey)
+                      ? Icon(Icons.person, size: 20, color: context.colors.textMuted)
                       : null,
                 ),
                 // 登录失败/身份过期显示感叹号
@@ -1279,8 +1281,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
                     bottom: 0,
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
+                      decoration: BoxDecoration(
+                        color: context.colors.danger,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1314,14 +1316,14 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> with TickerProvider
     return null;
   }
   
-  Color _getAuthStatusColor(AuthStatus status) {
+  Color _getAuthStatusColor(BuildContext context, AuthStatus status) {
     switch (status) {
       case AuthStatus.authenticated:
-        return Colors.green;
+        return context.colors.brand;
       case AuthStatus.unauthenticated:
-        return Colors.red;
+        return context.colors.danger;
       case AuthStatus.authenticating:
-        return Colors.orange;
+        return context.colors.warning;
     }
   }
 }

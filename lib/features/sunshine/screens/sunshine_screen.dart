@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../models/sunshine_models.dart';
@@ -81,20 +82,14 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
     final letters = _letters
         .where((letter) => _filter.matches(letter))
         .toList();
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.sunshineService),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             tooltip: context.l10n.refresh,
@@ -105,35 +100,30 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
       ),
       body: _loading && _letters.isEmpty
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : RefreshIndicator(
-              color: const Color(0xFF09C489),
               onRefresh: _load,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.page, AppSpacing.lg, AppSpacing.page, 40),
                 children: [
                   if (_loading) const LinearProgressIndicator(),
                   if (_error != null)
                     Container(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.12)
-                              : const Color(0xFFE0E0E0),
-                          width: 1,
-                        ),
+                        color: colors.surface,
+                        borderRadius: AppRadius.cardAll,
+                        border: Border.all(color: colors.border),
                       ),
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.card),
                       child: Center(
                         child: Column(
                           children: [
                             Text(_error!),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.sm),
                             TextButton(
                               onPressed: _load,
                               child: Text(context.l10n.retry),
@@ -143,28 +133,24 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
                       ),
                     ),
 
-                  // 1. 填写诉求入口（与图书馆预约选座风格一致的卡片）
-                  _buildQuickActionCard(isDark),
+                  // 1. 填写诉求入口卡片
+                  _buildQuickActionCard(colors),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.xxl),
 
                   // 2. 近期公开诉求模块
                   Text(
                     context.l10n.recentPublicAppeals,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: AppText.sectionTitle.copyWith(color: colors.text),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
-                    spacing: 8,
+                    spacing: AppSpacing.sm,
                     children: SunshineFilter.values
-                        .map((filter) => _buildFilterChip(filter, isDark))
+                        .map((filter) => _buildFilterChip(filter, colors))
                         .toList(),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
 
                   if (letters.isEmpty && _error == null)
                     Padding(
@@ -172,38 +158,31 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
                       child: Center(
                         child: Text(
                           context.l10n.noPublicAppeals,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? Colors.white38 : Colors.grey,
-                          ),
+                          style: AppText.bodyDense
+                              .copyWith(color: colors.textMuted),
                         ),
                       ),
                     ),
 
-                  // 3. 诉求列表卡片（无阴影，细灰色描边）
-                  ...letters.map((letter) => _buildLetterCard(letter, isDark)),
+                  // 3. 诉求列表卡片
+                  ...letters.map((letter) => _buildLetterCard(letter, colors)),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildQuickActionCard(bool isDark) {
+  Widget _buildQuickActionCard(AppSemanticColors colors) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () async {
             final submitted = await Navigator.of(context).push<bool>(
               createSlideUpRoute(const SunshineFormScreen()),
@@ -211,28 +190,25 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
             if (submitted == true && mounted) _load();
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.card, vertical: 14),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.edit_note_rounded,
-                  color: Color(0xFF09C489),
+                  color: colors.brand,
                   size: 22,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Text(
                   context.l10n.writeAppeal,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+                  style: AppText.sectionTitle.copyWith(color: colors.text),
                 ),
                 const Spacer(),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: isDark ? Colors.white38 : Colors.grey,
+                  color: colors.textMuted,
                 ),
               ],
             ),
@@ -242,33 +218,29 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
     );
   }
 
-  Widget _buildFilterChip(SunshineFilter filter, bool isDark) {
+  Widget _buildFilterChip(SunshineFilter filter, AppSemanticColors colors) {
     final isSelected = _filter == filter;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => setState(() => _filter = filter),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.controlAll,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            color: isSelected
+                ? colors.statusBg(colors.brand)
+                : Colors.transparent,
+            borderRadius: AppRadius.controlAll,
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white24 : const Color(0xFFDADCE0)),
-              width: 1,
+              color: isSelected ? colors.brand : colors.border,
             ),
           ),
           child: Text(
             filter.getLocalizedLabel(context),
-            style: TextStyle(
-              fontSize: 13,
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white70 : Colors.black87),
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            style: AppText.caption.copyWith(
+              color: isSelected ? colors.brandText : colors.text,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ),
@@ -276,23 +248,19 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
     );
   }
 
-  Widget _buildLetterCard(SunshineLetter letter, bool isDark) {
+  Widget _buildLetterCard(SunshineLetter letter, AppSemanticColors colors) {
+    final statusColor = letter.status == '2' ? colors.brand : colors.textMuted;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () {
             Navigator.of(context).push(
               createSlideUpRoute(
@@ -304,7 +272,7 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -314,58 +282,47 @@ class _SunshineScreenState extends ConsumerState<SunshineScreen> {
                     Expanded(
                       child: Text(
                         letter.title,
-                        style: TextStyle(
+                        style: AppText.sectionTitle.copyWith(
+                          color: colors.text,
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : const Color(0xFF222222),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 13,
-                      color: isDark ? Colors.white24 : Colors.grey[400],
+                      color: colors.textMuted,
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   letter.department,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white60 : Colors.black54,
-                  ),
+                  style: AppText.caption.copyWith(color: colors.textMuted),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Wrap(
-                  spacing: 12,
+                  spacing: AppSpacing.md,
                   runSpacing: 4,
                   children: [
                     Text(
                       letter.type,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white38 : Colors.grey[600],
-                      ),
+                      style:
+                          AppText.caption.copyWith(color: colors.textMuted),
                     ),
                     Text(
                       letter.date,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white38 : Colors.grey[600],
-                      ),
+                      style:
+                          AppText.caption.copyWith(color: colors.textMuted),
                     ),
                     Text(
                       letter.getLocalizedStatus(context),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: letter.status == '2'
-                            ? const Color(0xFF09C489)
-                            : (isDark ? Colors.white38 : Colors.grey[600]),
+                      style: AppText.caption.copyWith(
+                        color: statusColor,
                         fontWeight: letter.status == '2'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                            ? FontWeight.w600
+                            : FontWeight.w400,
                       ),
                     ),
                   ],

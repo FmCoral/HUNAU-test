@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/state/auth_state.dart';
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/date_format_utils.dart';
 import '../../../../core/utils/l10n_extension.dart';
 import '../../auth/screens/login_screen.dart';
@@ -63,78 +64,47 @@ class _DownloadTimetableScreenState extends ConsumerState<DownloadTimetableScree
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    // 标准 MD2 输入框装饰样式
+    final colors = context.colors;
+
+    // 输入框装饰交给全局 inputDecorationTheme，仅提供标签与前缀图标
     InputDecoration md2InputDecoration(String label, IconData icon) => InputDecoration(
       labelText: label,
-      labelStyle: TextStyle(
-        color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(0xFF5F6368), 
-        fontWeight: FontWeight.w400, 
-        fontSize: 14
-      ),
-      floatingLabelStyle: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
       prefixIcon: Icon(icon, size: 20),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: BorderSide(
-          color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : const Color(0xFFDADCE0), 
-          width: 1
-        ),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: BorderSide(
-          color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : const Color(0xFFDADCE0), 
-          width: 1
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: BorderSide(color: theme.primaryColor, width: 2),
-      ),
-      filled: true,
-      fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.05) : Colors.white,
     );
 
     return PopScope(
       canPop: !_isLoading, // 加载中时禁用手势/物理返回
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
-          surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
           automaticallyImplyLeading: false, // 禁用默认返回
           leading: IconButton(
             icon: Icon(
-              Icons.close, 
-              color: _isLoading 
-                  ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[300]) 
-                  : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(0xFF5F6368))
+              Icons.close,
+              color: _isLoading
+                  ? colors.textMuted.withValues(alpha: 0.4)
+                  : colors.textMuted,
             ),
             onPressed: _isLoading ? null : () => Navigator.maybePop(context),
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
           child: Column(
             children: [
-              const SizedBox(height: 24),
-              
+              const SizedBox(height: AppSpacing.xxl),
+
               // 学年学期选择
               DropdownButtonFormField<String>(
                 value: _selectedSemester,
                 decoration: md2InputDecoration(context.l10n.academicSemester, Icons.calendar_today_outlined),
                 isExpanded: true,
                 icon: Icon(
-                  Icons.arrow_drop_down, 
-                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(0xFF5F6368)
+                  Icons.arrow_drop_down,
+                  color: colors.textMuted,
                 ),
-                dropdownColor: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(6),
+                dropdownColor: colors.surface,
+                borderRadius: AppRadius.controlAll,
                 items: _semesters.map((semester) {
                   return DropdownMenuItem(
                     value: semester,
@@ -147,13 +117,13 @@ class _DownloadTimetableScreenState extends ConsumerState<DownloadTimetableScree
                   });
                 },
               ),
-              
-              const SizedBox(height: 28),
-              
+
+              const SizedBox(height: AppSpacing.xxl),
+
               // 第一周周一日期选择
               InkWell(
                 onTap: _isLoading ? null : _selectDate,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: AppRadius.controlAll,
                 child: IgnorePointer(
                   child: TextFormField(
                     controller: TextEditingController(
@@ -191,7 +161,7 @@ class _DownloadTimetableScreenState extends ConsumerState<DownloadTimetableScree
                           _syncStatus,
                           style: TextStyle(
                             fontSize: 12,
-                            color: theme.primaryColor,
+                            color: colors.brandText,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -205,21 +175,8 @@ class _DownloadTimetableScreenState extends ConsumerState<DownloadTimetableScree
                   ),
                 ElevatedButton.icon(
                   onPressed: (_canConfirm() && !_isLoading) ? _confirm : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.primaryColor,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: theme.primaryColor.withOpacity(0.12),
-                    disabledForegroundColor: theme.primaryColor.withOpacity(0.38),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    minimumSize: const Size(88, 36),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                    elevation: 0,
-                  ),
                   icon: const Icon(Icons.download_rounded, size: 18),
-                  label: Text(
-                    context.l10n.importButton,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
+                  label: Text(context.l10n.importButton),
                 ),
               ],
             ),
@@ -240,20 +197,22 @@ class _DownloadTimetableScreenState extends ConsumerState<DownloadTimetableScree
       lastDate: DateTime(now.year + 1),
       helpText: context.l10n.selectFirstWeekMondayHelp,
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: Theme.of(context).copyWith(
             useMaterial3: true,
-            colorScheme: Theme.of(context).brightness == Brightness.dark 
+            colorScheme: isDark
               ? const ColorScheme.dark(
-                  primary: Colors.orange, // 深色模式下用亮色点缀
-                  onPrimary: Colors.black,
-                  surface: Color(0xFF1E1E1E),
+                  primary: AppColors.brandDark,
+                  onPrimary: AppColors.bgDark,
+                  surface: AppColors.surfaceDark,
+                  onSurface: AppColors.textDark,
                 )
-              : ColorScheme.light(
-                  primary: Theme.of(context).primaryColor,
+              : const ColorScheme.light(
+                  primary: AppColors.brand,
                   onPrimary: Colors.white,
-                  surface: Colors.white,
-                  onSurface: const Color(0xFF202124),
+                  surface: AppColors.surface,
+                  onSurface: AppColors.text,
                 ),
           ),
           child: child!,
@@ -309,8 +268,8 @@ class _DownloadTimetableScreenState extends ConsumerState<DownloadTimetableScree
         // 在全局提示成功
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.timetableImportSuccess), 
-            backgroundColor: const Color(0xFF09C489),
+            content: Text(l10n.timetableImportSuccess),
+            backgroundColor: context.colors.brand,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -318,7 +277,7 @@ class _DownloadTimetableScreenState extends ConsumerState<DownloadTimetableScree
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.importFailed(e.toString())), backgroundColor: Colors.red),
+          SnackBar(content: Text(l10n.importFailed(e.toString())), backgroundColor: context.colors.danger),
         );
       }
     } finally {

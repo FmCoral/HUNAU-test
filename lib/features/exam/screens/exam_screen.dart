@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../workspace/screens/webview_detail_screen.dart';
 import '../models/exam_schedule_model.dart';
 import '../providers/exam_provider.dart';
@@ -29,18 +30,14 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
   @override
   Widget build(BuildContext context) {
     final examsAsync = ref.watch(currentSemesterExamsProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final error = examsAsync.hasError ? examsAsync.error : null;
     final exams = examsAsync.valueOrNull ?? [];
     final bool showErrorCard = error != null && _dismissedError != error;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.examSchedule),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
@@ -70,24 +67,25 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
             ? const Center(child: CircularProgressIndicator())
             : ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.page, vertical: AppSpacing.md),
                 children: [
                   if (showErrorCard) ...[
-                    _buildErrorCard(context, error, isDark),
-                    const SizedBox(height: 12),
+                    _buildErrorCard(context, error),
+                    const SizedBox(height: AppSpacing.md),
                   ],
                   if (exams.isEmpty)
-                    _buildEmptyState(context, isDark)
+                    _buildEmptyState(context)
                   else
                     for (final exam in exams)
-                      _buildExamCard(context, exam, isDark),
+                      _buildExamCard(context, exam),
                 ],
               ),
       ),
     );
   }
 
-  Widget _buildErrorCard(BuildContext context, Object error, bool isDark) {
+  Widget _buildErrorCard(BuildContext context, Object error) {
     var errorMsg = error.toString().replaceFirst('Exception: ', '');
     if (errorMsg.contains('超星') &&
         (errorMsg.contains('验证') ||
@@ -98,39 +96,36 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF382326) : const Color(0xFFFFEBEE),
-        borderRadius: BorderRadius.circular(6),
+        color: context.colors.statusBg(context.colors.danger),
+        borderRadius: AppRadius.innerAll,
         border: Border.all(
-          color: const Color(0xFFE53935).withValues(alpha: isDark ? 0.3 : 0.2),
-          width: 1,
+          color: context.colors.danger.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline_rounded,
             size: 20,
-            color: Color(0xFFE53935),
+            color: context.colors.danger,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               errorMsg,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? const Color(0xFFFFCDD2) : const Color(0xFFC62828),
-              ),
+              style: AppText.caption.copyWith(color: context.colors.danger),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
 
           IconButton(
             icon: const Icon(Icons.close_rounded, size: 18),
-            color: isDark ? Colors.white60 : Colors.black54,
+            color: context.colors.textMuted,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             style: IconButton.styleFrom(
@@ -150,9 +145,10 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, bool isDark) {
+  Widget _buildEmptyState(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+      padding: const EdgeInsets.symmetric(
+          vertical: 48, horizontal: AppSpacing.xxl),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -160,28 +156,19 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
             Icon(
               Icons.assignment_turned_in_outlined,
               size: 64,
-              color: isDark ? Colors.white38 : Colors.grey[400],
+              color: context.colors.textMuted,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               context.l10n.noCurrentSemesterExams,
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark ? Colors.white60 : Colors.grey[600],
-              ),
+              style:
+                  AppText.body.copyWith(color: context.colors.textMuted),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             ElevatedButton.icon(
               onPressed: () => _showAddExamSheet(context),
               icon: const Icon(Icons.add_rounded),
               label: Text(context.l10n.addExam),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09C489),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
             ),
           ],
         ),
@@ -189,12 +176,9 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
     );
   }
 
-  Widget _buildExamCard(BuildContext context, ExamScheduleModel exam, bool isDark) {
+  Widget _buildExamCard(BuildContext context, ExamScheduleModel exam) {
     final now = DateTime.now();
     final isPast = exam.time.isBefore(now);
-    final cardColor = isDark
-        ? Theme.of(context).cardTheme.color ?? const Color(0xFF1E1E1E)
-        : Colors.white;
 
     final primaryTitle =
         exam.courseName.isNotEmpty ? exam.courseName : exam.title;
@@ -207,19 +191,17 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
     final statusChip = _buildStatusChip(context, exam, isPast);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark ? Colors.white12 : const Color(0xFFE0E0E0),
-        ),
+        color: context.colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: context.colors.border),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.cardAll,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: exam.detailUrl.isNotEmpty
               ? () {
                   Navigator.push(
@@ -235,7 +217,7 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                 }
               : null,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -246,22 +228,20 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                     Expanded(
                       child: Text(
                         primaryTitle,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF202124),
+                        style: AppText.sectionTitle.copyWith(
+                          color: context.colors.text,
                         ),
                       ),
                     ),
                     if (statusChip != null) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       statusChip,
                     ],
                     if (exam.isManual) ...[
                       const SizedBox(width: 6),
                       IconButton(
                         icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                        color: Colors.red[400],
+                        color: context.colors.danger,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         style: IconButton.styleFrom(
@@ -276,16 +256,15 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                   ],
                 ),
                 if (secondaryTitle.isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     secondaryTitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white60 : Colors.grey[600],
+                    style: AppText.caption.copyWith(
+                      color: context.colors.textMuted,
                     ),
                   ),
                 ],
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSpacing.md),
                 // 时间行
                 Builder(
                   builder: (context) {
@@ -309,17 +288,14 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                         Icon(
                           Icons.access_time_rounded,
                           size: 16,
-                          color: isDark ? Colors.white60 : Colors.grey[600],
+                          color: context.colors.textMuted,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
                             timeDisplay,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.87)
-                                  : const Color(0xFF3C4043),
+                            style: AppText.bodyDense.copyWith(
+                              color: context.colors.text,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -330,21 +306,20 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                 ),
                 // 地点行 (若有)
                 if (exam.location != null && exam.location!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Row(
                     children: [
                       Icon(
                         Icons.location_on_outlined,
                         size: 16,
-                        color: isDark ? Colors.white60 : Colors.grey[600],
+                        color: context.colors.textMuted,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           exam.location!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark ? Colors.white70 : Colors.grey[800],
+                          style: AppText.caption.copyWith(
+                            color: context.colors.text,
                           ),
                         ),
                       ),
@@ -353,7 +328,7 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                 ],
                 // 备注行 (若有)
                 if (exam.remarks != null && exam.remarks!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -362,16 +337,15 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                         child: Icon(
                           Icons.notes_rounded,
                           size: 16,
-                          color: isDark ? Colors.white60 : Colors.grey[600],
+                          color: context.colors.textMuted,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           exam.remarks!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark ? Colors.white60 : Colors.grey[600],
+                          style: AppText.caption.copyWith(
+                            color: context.colors.textMuted,
                           ),
                         ),
                       ),
@@ -380,22 +354,21 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                 ],
                 // 学习通考试点击跳转提示 (若有跳转链接)
                 if (exam.detailUrl.isNotEmpty) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppSpacing.md),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
                         context.l10n.openInChaoXing,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF1E88E5),
+                        style: AppText.caption.copyWith(
+                          color: context.colors.info,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.chevron_right_rounded,
                         size: 16,
-                        color: Color(0xFF1E88E5),
+                        color: context.colors.info,
                       ),
                     ],
                   ),
@@ -418,31 +391,32 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
       }
       label = exam.status;
       if (exam.status == '已完成') {
-        color = Colors.green;
+        color = context.colors.brand;
       } else if (exam.status == '未交') {
-        color = Colors.orange;
+        color = context.colors.warning;
       } else if (exam.status == '进行中') {
-        color = Colors.blue;
+        color = context.colors.info;
       } else {
-        color = isPast ? Colors.grey : const Color(0xFF09C489);
+        color = isPast ? context.colors.textMuted : context.colors.brand;
       }
     } else {
       if (!isPast) {
         return null;
       }
       label = context.l10n.examStatusEnded;
-      color = Colors.grey;
+      color = context.colors.textMuted;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        color: context.colors.statusBg(color),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: AppText.caption.copyWith(
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: color,
@@ -474,7 +448,8 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                 SnackBar(content: Text(deletedMessage)),
               );
             },
-            child: Text(context.l10n.delete, style: const TextStyle(color: Colors.red)),
+            child: Text(context.l10n.delete,
+                style: TextStyle(color: context.colors.danger)),
           ),
         ],
       ),
@@ -491,24 +466,18 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
           final timeStr = selectedTime != null
               ? DateFormat('yyyy-MM-dd HH:mm').format(selectedTime!)
               : null;
 
-          return Container(
+          return Padding(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF242424) : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.xl),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,9 +487,9 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                     children: [
                       Text(
                         context.l10n.addExam,
-                        style: const TextStyle(
+                        style: AppText.sectionTitle.copyWith(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          color: context.colors.text,
                         ),
                       ),
                       IconButton(
@@ -529,33 +498,31 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   // 所属课程（必填）
                   TextField(
                     autofocus: true,
                     decoration: InputDecoration(
                       labelText: context.l10n.examCourse,
                       hintText: context.l10n.inputExamCourseHint,
-                      border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.school_outlined),
                     ),
                     onChanged: (v) => course = v,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   // 考试名称（选填）
                   TextField(
                     decoration: InputDecoration(
                       labelText: context.l10n.examTitle,
                       hintText: context.l10n.inputExamTitleHint,
-                      border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.quiz_outlined),
                     ),
                     onChanged: (v) => title = v,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   // 考试时间（必填）
                   InkWell(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: AppRadius.controlAll,
                     onTap: () async {
                       final now = DateTime.now();
                       final today = DateTime(now.year, now.month, now.day);
@@ -593,7 +560,6 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                     child: InputDecorator(
                       decoration: InputDecoration(
                         labelText: context.l10n.examTime,
-                        border: const OutlineInputBorder(),
                         prefixIcon: const Icon(Icons.access_time_rounded),
                         suffixIcon: selectedTime != null
                             ? IconButton(
@@ -606,49 +572,39 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                       ),
                       child: Text(
                         timeStr ?? context.l10n.selectExamTimeHint,
-                        style: TextStyle(
+                        style: AppText.bodyDense.copyWith(
                           color: timeStr != null
-                              ? (isDark ? Colors.white : Colors.black87)
-                              : Colors.grey[500],
+                              ? context.colors.text
+                              : context.colors.textMuted,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   // 考场地点（可选）
                   TextField(
                     decoration: InputDecoration(
                       labelText: context.l10n.examLocation,
                       hintText: context.l10n.inputExamLocationHint,
-                      border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.location_on_outlined),
                     ),
                     onChanged: (v) => location = v,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   // 备注（可选）
                   TextField(
                     decoration: InputDecoration(
                       labelText: context.l10n.examRemarks,
                       hintText: context.l10n.inputExamRemarksHint,
-                      border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.notes_rounded),
                     ),
                     onChanged: (v) => remarks = v,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.xl),
                   // 保存按钮
                   SizedBox(
                     width: double.infinity,
-                    height: 48,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09C489),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
                       onPressed: () async {
                         final effCourse = course.trim();
                         final effTitle = title.trim();
@@ -683,16 +639,10 @@ class _ExamScreenState extends ConsumerState<ExamScreen> {
                           SnackBar(content: Text(addedMessage)),
                         );
                       },
-                      child: Text(
-                        context.l10n.save,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: Text(context.l10n.save),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                 ],
               ),
             ),

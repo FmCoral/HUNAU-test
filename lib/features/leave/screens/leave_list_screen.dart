@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../models/leave_models.dart';
@@ -87,34 +88,28 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) {
-        final base = Theme.of(context);
-        return Theme(
-          data: ThemeData.from(
-            colorScheme: base.colorScheme,
-            useMaterial3: false,
+        final colors = context.colors;
+        return AlertDialog(
+          title: Text(context.l10n.cancelLeavePromptTitle),
+          content: Text(
+            context.l10n.confirmRevokeLeaveItem(
+              item.typeName.isEmpty ? context.l10n.leaveApplication : item.typeName,
+              item.timeRange,
+            ),
           ),
-          child: AlertDialog(
-            title: Text(context.l10n.cancelLeavePromptTitle),
-            content: Text(
-              context.l10n.confirmRevokeLeaveItem(
-                item.typeName.isEmpty ? context.l10n.leaveApplication : item.typeName,
-                item.timeRange,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                context.l10n.revoke,
+                style: TextStyle(color: colors.danger),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(context.l10n.cancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(
-                  context.l10n.revoke,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
+          ],
         );
       },
     );
@@ -145,18 +140,12 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
     final filtered = _items.where((item) => _filter.matches(item)).toList();
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.leaveApplication),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             tooltip: context.l10n.refresh,
@@ -167,34 +156,30 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
       ),
       body: _loading && _items.isEmpty
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : RefreshIndicator(
-              color: const Color(0xFF09C489),
               onRefresh: _load,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.page, AppSpacing.lg, AppSpacing.page, 40),
                 children: [
                   if (_loading) const LinearProgressIndicator(),
                   if (_error != null)
                     Container(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.12)
-                              : const Color(0xFFE0E0E0),
-                        ),
+                        color: colors.surface,
+                        borderRadius: AppRadius.cardAll,
+                        border: Border.all(color: colors.border),
                       ),
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.card),
                       child: Center(
                         child: Column(
                           children: [
                             Text(_error!),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: AppSpacing.sm),
                             TextButton(
                               onPressed: _load,
                               child: Text(context.l10n.retry),
@@ -203,75 +188,66 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
                         ),
                       ),
                     ),
-                  _buildApplyCard(isDark),
-                  const SizedBox(height: 20),
+                  _buildApplyCard(colors),
+                  const SizedBox(height: AppSpacing.xl),
                   Wrap(
-                    spacing: 8,
+                    spacing: AppSpacing.sm,
                     children: LeaveFilter.values
-                        .map((filter) => _buildFilterChip(filter, isDark))
+                        .map((filter) => _buildFilterChip(filter, colors))
                         .toList(),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   if (filtered.isEmpty && _error == null)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 36),
                       child: Center(
                         child: Text(
                           context.l10n.noLeaveRecordsFound,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? Colors.white38 : Colors.grey,
-                          ),
+                          style: AppText.bodyDense
+                              .copyWith(color: colors.textMuted),
                         ),
                       ),
                     ),
-                  ...filtered.map((item) => _buildItemCard(item, isDark)),
+                  ...filtered.map((item) => _buildItemCard(item, colors)),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildApplyCard(bool isDark) {
+  Widget _buildApplyCard(AppSemanticColors colors) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: _openApply,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.card, vertical: 14),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.edit_note_rounded,
-                  color: Color(0xFF09C489),
+                  color: colors.brand,
                   size: 22,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Text(
                   context.l10n.leaveApplication,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+                  style:
+                      AppText.sectionTitle.copyWith(color: colors.text),
                 ),
                 const Spacer(),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: isDark ? Colors.white38 : Colors.grey,
+                  color: colors.textMuted,
                 ),
               ],
             ),
@@ -281,31 +257,29 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
     );
   }
 
-  Widget _buildFilterChip(LeaveFilter filter, bool isDark) {
+  Widget _buildFilterChip(LeaveFilter filter, AppSemanticColors colors) {
     final isSelected = _filter == filter;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => setState(() => _filter = filter),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.controlAll,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(6),
+            color: isSelected
+                ? colors.statusBg(colors.brand)
+                : Colors.transparent,
+            borderRadius: AppRadius.controlAll,
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white24 : const Color(0xFFDADCE0)),
+              color: isSelected ? colors.brand : colors.border,
             ),
           ),
           child: Text(
             filter.getLocalizedLabel(context),
-            style: TextStyle(
-              fontSize: 13,
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white70 : Colors.black87),
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            style: AppText.caption.copyWith(
+              color: isSelected ? colors.brandText : colors.text,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ),
@@ -313,12 +287,12 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
     );
   }
 
-  Widget _buildItemCard(LeaveRecord item, bool isDark) {
+  Widget _buildItemCard(LeaveRecord item, AppSemanticColors colors) {
     final statusColor = switch (item.auditStatus) {
-      '0' => const Color(0xFFE63476),
-      '8' => Colors.orange,
-      '9' => const Color(0xFF09C489),
-      _ => Colors.grey,
+      '0' => colors.info,
+      '8' => colors.warning,
+      '9' => colors.brand,
+      _ => colors.textMuted,
     };
     final typeTitle = item.typeName.isEmpty ? context.l10n.leaveApplication : item.typeName;
     final duration = item.getLocalizedDuration(context);
@@ -327,18 +301,14 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () async {
             final changed = await Navigator.of(context).push<bool>(
               createSlideUpRoute(LeaveDetailScreen(item: item)),
@@ -346,7 +316,7 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
             if (changed == true && mounted) _load();
           },
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -356,14 +326,13 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
                     Expanded(
                       child: Text(
                         titleText,
-                        style: TextStyle(
+                        style: AppText.sectionTitle.copyWith(
+                          color: colors.text,
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : const Color(0xFF222222),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     if (item.canDelete)
                       InkWell(
                         onTap: () => _delete(item),
@@ -373,10 +342,8 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
                               horizontal: 8, vertical: 4),
                           child: Text(
                             context.l10n.revoke,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: isDark ? Colors.white60 : Colors.black54,
-                            ),
+                            style: AppText.caption
+                                .copyWith(color: colors.textMuted),
                           ),
                         ),
                       )
@@ -384,18 +351,15 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
                       Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 13,
-                        color: isDark ? Colors.white24 : Colors.grey[400],
+                        color: colors.textMuted,
                       ),
                   ],
                 ),
                 if (item.timeRange.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     item.timeRange,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white60 : Colors.black54,
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ],
                 if (item.reason.isNotEmpty) ...[
@@ -404,19 +368,24 @@ class _LeaveListScreenState extends ConsumerState<LeaveListScreen> {
                     item.reason,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white60 : Colors.black54,
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ],
-                const SizedBox(height: 8),
-                Text(
-                  item.getLocalizedStatus(context),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colors.statusBg(statusColor),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                  child: Text(
+                    item.getLocalizedStatus(context),
+                    style: AppText.caption.copyWith(
+                      fontSize: 12,
+                      color: statusColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

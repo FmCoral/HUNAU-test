@@ -3,6 +3,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/location_helper.dart';
 
@@ -105,14 +106,15 @@ class _BusTrackingScreenState extends State<BusTrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.bg,
       body: Column(
         children: [
           // 填充状态栏
           Container(
             height: MediaQuery.of(context).padding.top,
-            color: const Color(0xFFF4F4F4),
+            color: colors.bg,
           ),
           Expanded(
             child: PopScope(
@@ -166,28 +168,27 @@ class _BusTrackingScreenState extends State<BusTrackingScreen> {
                       child: LinearProgressIndicator(
                         value: _progress > 0 ? _progress : null,
                         backgroundColor: Colors.transparent,
-                        valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(colors.brand),
                       ),
                     ),
-                    
+
                   // 3. 加载指示器 (加载时始终挡住 WebView 以防闪烁)
                   if (_isLoading)
                     Container(
-                      color: Colors.white,
+                      color: colors.bg,
                       child: const Center(child: CircularProgressIndicator()),
                     ),
 
-                  // 5. 🔴 浮动功能胶囊
+                  // 5. 浮动功能胶囊
                   Positioned(
                     top: 8,
                     right: 16,
                     child: Container(
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.black12, width: 0.5),
-                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                        border: Border.all(color: colors.border, width: 1),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -202,18 +203,18 @@ class _BusTrackingScreenState extends State<BusTrackingScreen> {
                                 _webViewController?.reload();
                               }
                             },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Icon(Icons.refresh_rounded, size: 18, color: Colors.black87),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Icon(Icons.refresh_rounded, size: 18, color: colors.text),
                             ),
                           ),
-                          Container(width: 0.5, height: 16, color: Colors.black12),
+                          Container(width: 1, height: 16, color: colors.border),
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () => Navigator.pop(context),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 12),
-                              child: Icon(Icons.close_rounded, size: 18, color: Colors.black87),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Icon(Icons.close_rounded, size: 18, color: colors.text),
                             ),
                           ),
                         ],
@@ -224,16 +225,16 @@ class _BusTrackingScreenState extends State<BusTrackingScreen> {
                   // 6. 错误提示
                   if (_getErrorMessage(context) != null)
                     Container(
-                      color: Colors.white,
+                      color: colors.bg,
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.location_off_rounded, size: 60, color: Colors.grey[200]),
+                            Icon(Icons.location_off_rounded, size: 60, color: colors.border),
                             const SizedBox(height: 16),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 40),
-                              child: Text(_getErrorMessage(context)!, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[600])),
+                              child: Text(_getErrorMessage(context)!, textAlign: TextAlign.center, style: TextStyle(color: colors.textMuted)),
                             ),
                             const SizedBox(height: 24),
                             OutlinedButton(
@@ -241,9 +242,6 @@ class _BusTrackingScreenState extends State<BusTrackingScreen> {
                                 setState(() { _isLoading = true; _errorType = null; _customError = null; });
                                 _fetchLocationAndLoad();
                               },
-                              style: OutlinedButton.styleFrom(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                              ),
                               child: Text(context.l10n.retry),
                             ),
                           ],

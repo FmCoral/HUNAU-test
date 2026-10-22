@@ -1,6 +1,6 @@
 ![icon](img/icon/chill_east.png)
 
-# 自在东湖（ChillEast）
+# 牛×5（ChillEast）
 
 访问网页：[chilleast.soilzhu.su](https://chilleast.soilzhu.su)
 

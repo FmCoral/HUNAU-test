@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/questionnaire_models.dart';
 import '../services/questionnaire_service.dart';
@@ -212,35 +213,29 @@ class _QuestionnaireDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
     final detail = _detail;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           detail?.title.isNotEmpty == true ? detail!.title : widget.item.title,
         ),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : _error != null && detail == null
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(AppSpacing.xxl),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(_error!),
-                        const SizedBox(height: 12),
-                        FilledButton(
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(
                           onPressed: _load,
                           child: Text(context.l10n.retry),
                         ),
@@ -249,31 +244,27 @@ class _QuestionnaireDetailScreenState
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.page, AppSpacing.md, AppSpacing.page, 32),
                   children: [
                     ...?detail?.questions
-                        .map((q) => _buildQuestion(q, isDark)),
-                    const SizedBox(height: 8),
+                        .map((q) => _buildQuestion(q, colors)),
+                    const SizedBox(height: AppSpacing.sm),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: FilledButton(
+                      child: ElevatedButton(
                         onPressed: _submitting ? null : _submit,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF09C489),
-                          foregroundColor: Colors.white,
+                        style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 28, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
                         ),
                         child: _submitting
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                               )
                             : Text(context.l10n.submit,
@@ -285,24 +276,23 @@ class _QuestionnaireDetailScreenState
     );
   }
 
-  Widget _buildQuestion(QuestionnaireQuestion question, bool isDark) {
+  Widget _buildQuestion(QuestionnaireQuestion question, AppSemanticColors colors) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             text: TextSpan(
-              style: TextStyle(
-                fontSize: 15,
+              style: AppText.body.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : const Color(0xFF222222),
+                color: colors.text,
               ),
               children: [
                 if (question.required)
-                  const TextSpan(
+                  TextSpan(
                     text: '* ',
-                    style: TextStyle(color: Color(0xFFE63476)),
+                    style: TextStyle(color: colors.danger),
                   ),
                 TextSpan(text: question.title),
               ],
@@ -312,25 +302,22 @@ class _QuestionnaireDetailScreenState
             const SizedBox(height: 6),
             Text(
               question.desc.trim(),
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white38 : Colors.grey[600],
-              ),
+              style: AppText.caption.copyWith(color: colors.textMuted),
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           if (question.isChoice)
-            _buildChoice(question, isDark)
+            _buildChoice(question, colors)
           else if (question.isDate)
-            _buildDateField(question, isDark)
+            _buildDateField(question, colors)
           else
-            _buildTextField(question),
+            _buildTextField(question, colors),
         ],
       ),
     );
   }
 
-  Widget _buildChoice(QuestionnaireQuestion question, bool isDark) {
+  Widget _buildChoice(QuestionnaireQuestion question, AppSemanticColors colors) {
     if (question.isMultiChoice) {
       final selected =
           (_answers[question.dm] as List?)?.map((e) => e.toString()).toSet() ??
@@ -351,11 +338,11 @@ class _QuestionnaireDetailScreenState
                 _answers[question.dm] = next.toList();
               });
             },
-            title: Text(option.name, style: const TextStyle(fontSize: 14)),
+            title: Text(option.name,
+                style: AppText.bodyDense.copyWith(color: colors.text)),
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
             dense: true,
-            activeColor: const Color(0xFF09C489),
           );
         }).toList(),
       );
@@ -370,17 +357,18 @@ class _QuestionnaireDetailScreenState
         children: question.options.map((option) {
           return RadioListTile<String>(
             value: option.dm,
-            title: Text(option.name, style: const TextStyle(fontSize: 14)),
+            title: Text(option.name,
+                style: AppText.bodyDense.copyWith(color: colors.text)),
             contentPadding: EdgeInsets.zero,
             dense: true,
-            activeColor: const Color(0xFF09C489),
           );
         }).toList(),
       ),
     );
   }
 
-  Widget _buildDateField(QuestionnaireQuestion question, bool isDark) {
+  Widget _buildDateField(
+      QuestionnaireQuestion question, AppSemanticColors colors) {
     final value = (_answers[question.dm] ?? '').toString();
     return InkWell(
       onTap: () => _pickDate(question),
@@ -389,24 +377,18 @@ class _QuestionnaireDetailScreenState
         isEmpty: value.isEmpty,
         decoration: InputDecoration(
           hintText: context.l10n.pleaseSelectDate,
-          filled: false,
-          border: const OutlineInputBorder(),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
           suffixIcon: const Icon(Icons.calendar_month_outlined),
         ),
         child: Text(
           value,
-          style: TextStyle(
-            fontSize: 14,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
+          style: AppText.bodyDense.copyWith(color: colors.text),
         ),
       ),
     );
   }
 
-  Widget _buildTextField(QuestionnaireQuestion question) {
+  Widget _buildTextField(
+      QuestionnaireQuestion question, AppSemanticColors colors) {
     final controller = _controllers.putIfAbsent(
         question.dm, () => TextEditingController());
     final isMultiline = question.title.contains('地址') ||
@@ -423,8 +405,6 @@ class _QuestionnaireDetailScreenState
           : null,
       decoration: InputDecoration(
         hintText: question.isPhone ? context.l10n.pleaseEnterPhone : context.l10n.pleaseEnter,
-        filled: false,
-        border: const OutlineInputBorder(),
       ),
     );
   }

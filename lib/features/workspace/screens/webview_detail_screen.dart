@@ -11,6 +11,7 @@ import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'scanner_screen.dart';
 import '../../../core/utils/l10n_extension.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../utils/info_portal_theme.dart';
 
 /// WebView 详情页 - 终极重构版（带小程序胶囊菜单）
@@ -184,14 +185,14 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = widget.appBarColor ?? Colors.white;
+    final bgColor = widget.appBarColor ?? context.colors.surface;
     // 判断亮度，决定图标颜色
     final isDarkBackground = bgColor.computeLuminance() < 0.5;
-    final iconColor = isDarkBackground ? Colors.white : Colors.black87;
-    final dividerColor = isDarkBackground ? Colors.white24 : Colors.black12;
+    final iconColor = isDarkBackground ? Colors.white : context.colors.text;
+    final dividerColor = isDarkBackground ? Colors.white24 : context.colors.border;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.surface,
       appBar: widget.showAppBar ? AppBar(
         backgroundColor: bgColor,
         foregroundColor: iconColor,
@@ -207,7 +208,7 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
             child: Container(
               height: 32,
               decoration: BoxDecoration(
-                color: isDarkBackground ? Colors.white.withValues(alpha: 0.15) : Colors.white,
+                color: isDarkBackground ? Colors.white.withValues(alpha: 0.15) : context.colors.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: dividerColor, width: 0.5),
               ),
@@ -242,7 +243,7 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
               height: 32,
               width: 44,
               decoration: BoxDecoration(
-                color: isDarkBackground ? Colors.white.withValues(alpha: 0.15) : Colors.white,
+                color: isDarkBackground ? Colors.white.withValues(alpha: 0.15) : context.colors.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: dividerColor, width: 0.5),
               ),
@@ -260,7 +261,7 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
             child: Container(
               height: 32,
               decoration: BoxDecoration(
-                color: isDarkBackground ? Colors.white.withValues(alpha: 0.15) : Colors.white,
+                color: isDarkBackground ? Colors.white.withValues(alpha: 0.15) : context.colors.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: dividerColor, width: 0.5),
               ),
@@ -836,14 +837,14 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
                   child: LinearProgressIndicator(
                     value: _progress > 0 ? _progress : null,
                     backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                    valueColor: AlwaysStoppedAnimation<Color>(context.colors.brand),
                   ),
                 ),
 
               // 3. 全屏加载占位层 (当 _isLoading 为 true 时始终挡住 WebView)
               if (_isLoading)
                 Container(
-                  color: Colors.white,
+                  color: context.colors.surface,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
 
@@ -873,12 +874,9 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
                   child: Container(
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: context.colors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black12, width: 0.5),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
-                      ],
+                      border: Border.all(color: context.colors.border, width: 0.5),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -886,18 +884,18 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: _handleBack,
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 11),
-                            child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.black87),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 11),
+                            child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: context.colors.text),
                           ),
                         ),
-                        Container(width: 0.5, height: 16, color: Colors.black12),
+                        Container(width: 0.5, height: 16, color: context.colors.border),
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: _handleHome,
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 11),
-                            child: Icon(Icons.home_rounded, size: 18, color: Colors.black87),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 11),
+                            child: Icon(Icons.home_rounded, size: 18, color: context.colors.text),
                           ),
                         ),
                       ],
@@ -912,16 +910,13 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
                     height: 32,
                     width: 44,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: context.colors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black12, width: 0.5),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
-                      ],
+                      border: Border.all(color: context.colors.border, width: 0.5),
                     ),
                     child: IconButton(
                       padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Colors.black87),
+                      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: context.colors.text),
                       onPressed: _handleBack,
                     ),
                   ),
@@ -935,12 +930,9 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
                   child: Container(
                     height: 32,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: context.colors.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.black12, width: 0.5),
-                      boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)
-                      ],
+                      border: Border.all(color: context.colors.border, width: 0.5),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -948,18 +940,18 @@ class _WebViewDetailScreenState extends State<WebViewDetailScreen> {
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () => _webViewController?.reload(),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Icon(Icons.refresh_rounded, size: 18, color: Colors.black87),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Icon(Icons.refresh_rounded, size: 18, color: context.colors.text),
                           ),
                         ),
-                        Container(width: 0.5, height: 16, color: Colors.black12),
+                        Container(width: 0.5, height: 16, color: context.colors.border),
                         GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onTap: () => Navigator.pop(context),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: Icon(Icons.close_rounded, size: 18, color: Colors.black87),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Icon(Icons.close_rounded, size: 18, color: context.colors.text),
                           ),
                         ),
                       ],

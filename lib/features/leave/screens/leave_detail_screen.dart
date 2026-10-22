@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/leave_models.dart';
 import '../services/leave_service.dart';
@@ -57,29 +58,23 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) {
-        final base = Theme.of(context);
-        return Theme(
-          data: ThemeData.from(
-            colorScheme: base.colorScheme,
-            useMaterial3: false,
-          ),
-          child: AlertDialog(
-            title: Text(context.l10n.cancelLeavePromptTitle),
-            content: Text(context.l10n.cancelLeavePromptContent),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(context.l10n.cancel),
+        final colors = context.colors;
+        return AlertDialog(
+          title: Text(context.l10n.cancelLeavePromptTitle),
+          content: Text(context.l10n.cancelLeavePromptContent),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(context.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(
+                context.l10n.revoke,
+                style: TextStyle(color: colors.danger),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(
-                  context.l10n.revoke,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -150,8 +145,7 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
     final item = widget.item;
 
     final rows = <MapEntry<String, String>>[
@@ -176,30 +170,25 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen> {
     ].where((e) => e.value.trim().isNotEmpty).toList();
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(item.typeName.isEmpty
             ? context.l10n.leaveDetails
             : context.l10n.leaveTypeDetails(item.typeName)),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : _error != null && _detail == null
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(AppSpacing.xxl),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(_error!),
-                        const SizedBox(height: 12),
-                        FilledButton(
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(
                           onPressed: _load,
                           child: Text(context.l10n.retry),
                         ),
@@ -208,31 +197,25 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen> {
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.page, AppSpacing.md, AppSpacing.page, 32),
                   children: [
                     ...rows.map((row) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
+                          padding:
+                              const EdgeInsets.only(bottom: AppSpacing.lg),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 row.key,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? Colors.white38
-                                      : Colors.grey[600],
-                                ),
+                                style: AppText.caption
+                                    .copyWith(color: colors.textMuted),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 row.value,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: isDark
-                                      ? Colors.white
-                                      : const Color(0xFF222222),
-                                ),
+                                style: AppText.sectionTitle
+                                    .copyWith(color: colors.text),
                               ),
                             ],
                           ),
@@ -240,24 +223,23 @@ class _LeaveDetailScreenState extends ConsumerState<LeaveDetailScreen> {
                     if (item.canDelete)
                       Align(
                         alignment: Alignment.centerRight,
-                        child: FilledButton(
+                        child: ElevatedButton(
                           onPressed: _deleting ? null : _delete,
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFFE63476),
-                            foregroundColor: Colors.white,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.danger,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onError,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 28, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
                           ),
                           child: _deleting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    color:
+                                        Theme.of(context).colorScheme.onError,
                                   ),
                                 )
                               : Text(context.l10n.revokeApplication,

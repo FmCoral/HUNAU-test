@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../core/services/webview_cache_service.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/widgets/brand_switch.dart';
 import '../../cloudisk/services/cloud_backup_manager.dart';
@@ -77,7 +78,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -107,7 +108,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.backupExportFailed(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -132,7 +133,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.dataImportFailed(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -146,7 +147,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.dataImportInvalidFile),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -162,7 +163,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.dataImportInvalidFile),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -173,7 +174,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.dataImportVersionTooNew),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -184,7 +185,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.dataImportFailed(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -230,7 +231,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.dataImportInvalidFile),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -240,7 +241,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.dataImportVersionTooNew),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -250,7 +251,7 @@ class _DataSyncSettingsScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.dataImportFailed(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -262,110 +263,127 @@ class _DataSyncSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
 
+    final switchItems = <Widget>[
+      _buildSwitchItem(
+        context,
+        icon: Icons.cloud_sync_outlined,
+        title: l10n.cloudBackupAutoSync,
+        subtitle: l10n.cloudBackupAutoSyncSubtitle,
+        value: ref.watch(
+          settingsProvider.select((s) => s.cloudBackupAutoSyncEnabled),
+        ),
+        onChanged: (v) async {
+          final result = await ref
+              .read(settingsProvider.notifier)
+              .setCloudBackupAutoSyncEnabled(v);
+          // 开启后若从云端拉了最新，先刷新界面再提示
+          if (v &&
+              result?.outcome == InitialSyncOutcome.pulled &&
+              result?.backup != null &&
+              context.mounted) {
+            await BackupProviderRefresh.refreshAfterRestore(
+                ref, result!.backup!);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(context.l10n.dataImportSuccess),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          }
+        },
+      ),
+      _buildSwitchItem(
+        context,
+        icon: Icons.analytics_outlined,
+        title: l10n.analyticsAnonymousTitle,
+        subtitle: l10n.analyticsAnonymousSubtitle,
+        value: _analyticsEnabled,
+        onChanged: (v) async {
+          setState(() => _analyticsEnabled = v);
+          await AnalyticsService.setEnabled(v);
+        },
+      ),
+    ];
+
+    final actionItems = <Widget>[
+      _buildSettingItem(
+        context,
+        icon: Icons.upload_outlined,
+        title: l10n.dataBackup,
+        trailing: _exporting
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : null,
+        showChevron: !_exporting,
+        onTap: _handleExportBackup,
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.download_outlined,
+        title: l10n.dataImport,
+        trailing: _importing
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : null,
+        showChevron: !_importing,
+        onTap: _handleImportBackup,
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.cleaning_services_outlined,
+        title: l10n.clearWebViewCache,
+        trailing: _clearingCache
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : null,
+        showChevron: !_clearingCache,
+        onTap: _handleClearWebViewCache,
+      ),
+    ];
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.dataSyncSettings),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
       ),
       body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.page),
         children: [
-          _buildSwitchItem(
-            context,
-            icon: Icons.cloud_sync_outlined,
-            title: l10n.cloudBackupAutoSync,
-            subtitle: l10n.cloudBackupAutoSyncSubtitle,
-            value: ref.watch(
-              settingsProvider.select((s) => s.cloudBackupAutoSyncEnabled),
-            ),
-            onChanged: (v) async {
-              final result = await ref
-                  .read(settingsProvider.notifier)
-                  .setCloudBackupAutoSyncEnabled(v);
-              // 开启后若从云端拉了最新，先刷新界面再提示
-              if (v &&
-                  result?.outcome == InitialSyncOutcome.pulled &&
-                  result?.backup != null &&
-                  context.mounted) {
-                await BackupProviderRefresh.refreshAfterRestore(
-                    ref, result!.backup!);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(context.l10n.dataImportSuccess),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-          _buildSwitchItem(
-            context,
-            icon: Icons.analytics_outlined,
-            title: l10n.analyticsAnonymousTitle,
-            subtitle: l10n.analyticsAnonymousSubtitle,
-            value: _analyticsEnabled,
-            onChanged: (v) async {
-              setState(() => _analyticsEnabled = v);
-              await AnalyticsService.setEnabled(v);
-            },
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.upload_outlined,
-            title: l10n.dataBackup,
-            trailing: _exporting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : null,
-            showChevron: !_exporting,
-            onTap: _handleExportBackup,
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.download_outlined,
-            title: l10n.dataImport,
-            trailing: _importing
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : null,
-            showChevron: !_importing,
-            onTap: _handleImportBackup,
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.cleaning_services_outlined,
-            title: l10n.clearWebViewCache,
-            trailing: _clearingCache
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : null,
-            showChevron: !_clearingCache,
-            onTap: _handleClearWebViewCache,
-          ),
+          _buildCard(colors, switchItems),
+          const SizedBox(height: AppSpacing.md),
+          _buildCard(colors, actionItems),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCard(AppSemanticColors colors, List<Widget> items) {
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (var i = 0; i < items.length; i++) ...[
+            if (i > 0) Divider(height: 1, indent: 54, color: colors.border),
+            items[i],
+          ],
         ],
       ),
     );
@@ -379,36 +397,31 @@ class _DataSyncSettingsScreenState
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return InkWell(
       onTap: () => onChanged(!value),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
         child: Row(
           children: [
-            Icon(icon, size: 24, color: const Color(0xFF5F6368)),
-            const SizedBox(width: 16),
+            Icon(icon, size: 22, color: colors.textMuted),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: isDark ? Colors.white : const Color(0xFF202124),
-                    ),
+                    style: AppText.body.copyWith(color: colors.text),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white54 : const Color(0xFF9E9E9E),
-                      ),
+                      style:
+                          AppText.caption.copyWith(color: colors.textMuted),
                     ),
                   ],
                 ],
@@ -430,52 +443,51 @@ class _DataSyncSettingsScreenState
     bool showChevron = true,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Row(
-          children: [
-            Icon(icon, size: 24, color: const Color(0xFF5F6368)),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: isDark ? Colors.white : const Color(0xFF202124),
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: colors.textMuted),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white54 : const Color(0xFF9E9E9E),
-                      ),
+                      title,
+                      style: AppText.body.copyWith(color: colors.text),
                     ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: AppText.caption.copyWith(
+                          color: colors.textMuted,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            if (trailing != null) ...[
-              trailing,
-              const SizedBox(width: 4),
+              if (trailing != null) ...[
+                trailing,
+                const SizedBox(width: AppSpacing.xs),
+              ],
+              if (showChevron)
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: colors.textMuted,
+                ),
             ],
-            if (showChevron)
-              const Icon(
-                Icons.chevron_right_rounded,
-                size: 20,
-                color: Color(0xFF9E9E9E),
-              ),
-          ],
+          ),
         ),
       ),
     );

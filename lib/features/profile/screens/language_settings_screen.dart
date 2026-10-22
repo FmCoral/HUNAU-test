@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/state/locale_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 
 class LanguageSettingsScreen extends ConsumerWidget {
@@ -8,11 +9,10 @@ class LanguageSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
     final currentLocale = ref.watch(localeProvider);
     final currentCode = LocaleNotifier.localeToCode(currentLocale);
-    final primaryColor = Theme.of(context).primaryColor;
 
     final currentOption = LocaleNotifier.supportedLanguages.firstWhere(
       (opt) => opt.code == currentCode,
@@ -24,48 +24,55 @@ class LanguageSettingsScreen extends ConsumerWidget {
     final languages = [currentOption, ...otherOptions];
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.language),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: languages.length,
-        itemBuilder: (context, index) {
-          final option = languages[index];
-          final isSelected = currentCode == option.code;
-          final title = LocaleNotifier.getDisplayTitle(option, context);
-
-          return ListTile(
-            title: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected
-                    ? primaryColor
-                    : (isDark ? Colors.white : const Color(0xFF202124)),
-              ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.page),
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colors.border),
             ),
-            trailing: isSelected
-                ? Icon(Icons.check_rounded, color: primaryColor)
-                : null,
-            onTap: () {
-              ref.read(localeProvider.notifier).setLocale(option.locale);
-            },
-          );
-        },
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < languages.length; i++) ...[
+                  if (i > 0)
+                    Divider(height: 1, indent: 16, color: colors.border),
+                  Builder(builder: (context) {
+                    final option = languages[i];
+                    final isSelected = currentCode == option.code;
+                    final title =
+                        LocaleNotifier.getDisplayTitle(option, context);
+                    return ListTile(
+                      title: Text(
+                        title,
+                        style: AppText.body.copyWith(
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                          color:
+                              isSelected ? colors.brandText : colors.text,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check_rounded, color: colors.brand)
+                          : null,
+                      onTap: () {
+                        ref
+                            .read(localeProvider.notifier)
+                            .setLocale(option.locale);
+                      },
+                    );
+                  }),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

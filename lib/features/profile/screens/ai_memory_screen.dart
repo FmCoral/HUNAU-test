@@ -2,33 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/ai/models/ai_memory_item.dart';
 import '../../../core/ai/providers/ai_memory_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 
 class AiMemoryScreen extends ConsumerWidget {
   const AiMemoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final memories = ref.watch(aiMemoryProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Agent 记忆',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-        ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
+        title: const Text('Agent 记忆'),
         actions: [
           if (memories.isNotEmpty)
             IconButton(
@@ -39,48 +24,44 @@ class AiMemoryScreen extends ConsumerWidget {
         ],
       ),
       body: memories.isEmpty
-          ? _buildEmptyState(context, isDark)
+          ? _buildEmptyState(context)
           : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              padding: const EdgeInsets.all(AppSpacing.page),
               itemCount: memories.length,
               itemBuilder: (context, index) {
                 // 最新的记忆排在前面
                 final memory = memories[memories.length - 1 - index];
-                return _buildMemoryCard(context, ref, memory, isDark);
+                return _buildMemoryCard(context, ref, memory);
               },
             ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, bool isDark) {
+  Widget _buildEmptyState(BuildContext context) {
+    final colors = context.colors;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.psychology_outlined,
               size: 64,
-              color: isDark ? Colors.white24 : Colors.grey[350],
+              color: colors.border,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               '暂无长期记忆',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white70 : Colors.grey[700],
-              ),
+              style: AppText.sectionTitle.copyWith(color: colors.text),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               '在对话中提到您的宿舍、日常偏好、作息习惯或备考目标，Agent 会更主动为您添加并沉淀记忆；您也可以随时在此查看和删除记忆。',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
+              style: AppText.caption.copyWith(
+                color: colors.textMuted,
                 height: 1.5,
-                color: isDark ? Colors.white38 : Colors.grey[500],
               ),
             ),
           ],
@@ -93,20 +74,16 @@ class AiMemoryScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AiMemoryItem item,
-    bool isDark,
   ) {
+    final colors = context.colors;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: 14),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -114,19 +91,18 @@ class AiMemoryScreen extends ConsumerWidget {
           Expanded(
             child: SelectableText(
               item.content,
-              style: TextStyle(
-                fontSize: 14,
+              style: AppText.bodyDense.copyWith(
                 height: 1.45,
-                color: isDark ? const Color(0xFFEEEEEE) : const Color(0xFF202124),
+                color: colors.text,
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           IconButton(
             icon: Icon(
               Icons.delete_outline_rounded,
               size: 20,
-              color: isDark ? Colors.white54 : Colors.grey[500],
+              color: colors.textMuted,
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -142,10 +118,11 @@ class AiMemoryScreen extends ConsumerWidget {
     WidgetRef ref,
     AiMemoryItem item,
   ) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('删除记忆', style: TextStyle(fontSize: 16)),
+        title: const Text('删除记忆'),
         content: Text('确定删除记忆「${item.content}」吗？删除后 Agent 将不再调用该信息。'),
         actions: [
           TextButton(
@@ -166,7 +143,8 @@ class AiMemoryScreen extends ConsumerWidget {
                 );
               }
             },
-            child: const Text('删除', style: TextStyle(color: Colors.redAccent)),
+            style: TextButton.styleFrom(foregroundColor: colors.danger),
+            child: const Text('删除'),
           ),
         ],
       ),
@@ -174,10 +152,11 @@ class AiMemoryScreen extends ConsumerWidget {
   }
 
   void _confirmClearAll(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('清空所有记忆', style: TextStyle(fontSize: 16)),
+        title: const Text('清空所有记忆'),
         content: const Text('确定清空所有沉淀的 Agent 长期记忆吗？此操作不可逆。'),
         actions: [
           TextButton(
@@ -198,7 +177,8 @@ class AiMemoryScreen extends ConsumerWidget {
                 );
               }
             },
-            child: const Text('清空全部', style: TextStyle(color: Colors.redAccent)),
+            style: TextButton.styleFrom(foregroundColor: colors.danger),
+            child: const Text('清空全部'),
           ),
         ],
       ),

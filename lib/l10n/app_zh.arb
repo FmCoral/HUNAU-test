@@ -1,6 +1,6 @@
 {
   "@@locale": "zh",
-  "appTitle": "自在东湖",
+  "appTitle": "牛×5",
   "@appTitle": {
     "description": "应用名称"
   },
@@ -336,7 +336,7 @@
   "paste": "粘贴",
   "saveSettings": "保存配置",
   "resetDefaults": "恢复默认配置",
-  "ossDescription": "自在东湖 是基于开源社区的各种优秀组件构建而成的。我们尊重并感谢每一位开发者的贡献。",
+  "ossDescription": "牛×5 是基于开源社区的各种优秀组件构建而成的。我们尊重并感谢每一位开发者的贡献。",
   "needLocationForBus": "需要定位权限以显示附近的实时公交",
   "libraryReservation": "图书馆预约",
   "signIn": "签到",
@@ -768,7 +768,7 @@
   "remark": "备注",
   "addRemarkHint": "添加备注信息",
   "funcEvaluation": "教评系统",
-  "defaultHitokoto": "自在东湖在湖东！",
+  "defaultHitokoto": "牛×5在湖东！",
   "loggingInPleaseWait": "正在登录，请稍候...",
   "whatsNewHint": "有什么新鲜事？",
   "enableClassReminderHere": "在这里开启上课提醒",
@@ -776,7 +776,7 @@
   "noticeTagNotice": "通",
   "scoreGradeExcellent": "优秀",
   "scoreGradeFail": "不及格",
-  "feedbackEmailSubject": "自在东湖 App 反馈",
+  "feedbackEmailSubject": "牛×5 App 反馈",
   "bill": "账单",
   "pleaseSelectStartDate": "请选择起始日期",
   "pleaseSelectEndDate": "请选择截止日期",
@@ -1571,7 +1571,7 @@
   "@backupSecurityTip": {
     "description": "备份安全提示"
   },
-  "backupShareText": "我的自在东湖数据备份",
+  "backupShareText": "我的牛×5数据备份",
   "@backupShareText": {
     "description": "备份分享文案"
   },
@@ -1834,10 +1834,14 @@
   "useLiveActivityPrompt": "使用实时活动",
   "startGuide": "开始引导",
   "postLoginDoneTitle": "大功告成！",
-  "postLoginDoneMessage": "欢迎使用「自在东湖」，更多选项请访问「设置」。",
+  "postLoginDoneMessage": "欢迎使用「牛×5」，更多选项请访问「设置」。",
   "postLoginDoneButton": "完成",
   "analyticsAnonymousTitle": "允许匿名统计",
   "analyticsAnonymousSubtitle": "仅使用绝对匿名方式，统计您的使用版本。",
   "analyticsPromptTitle": "允许匿名统计",
-  "analyticsPromptSubtitle": "仅使用绝对匿名方式，统计您的使用版本。"
+  "analyticsPromptSubtitle": "仅统计您的使用版本。",
+  "feedbackContent": "反馈内容",
+  "pleaseEnterFeedback": "请描述您遇到的问题或建议…",
+  "pleaseEnterContent": "请输入内容",
+  "submitFailed": "提交失败"
 }

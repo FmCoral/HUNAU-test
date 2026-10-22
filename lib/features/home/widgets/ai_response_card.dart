@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/ai/ai_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../../profile/screens/ai_memory_screen.dart';
@@ -58,7 +59,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final aiState = ref.watch(aiAssistantProvider);
 
     final userMessageCount =
@@ -92,38 +93,34 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius: BorderRadius.circular(8), // 大卡片 8px 圆角
+          color: colors.surface,
+          borderRadius: AppRadius.cardAll,
           boxShadow: [
             BoxShadow(
-              color: isDark
-                  ? Colors.black.withOpacity(0.5)
-                  : Colors.black.withOpacity(0.18),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
             ),
           ],
           border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.12)
-                : Colors.grey.withOpacity(0.1),
+            color: colors.border,
             width: 1.0,
           ),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.cardAll,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 卡片顶栏
-              _buildCardHeader(context, aiState, isDark),
+              _buildCardHeader(context, aiState),
 
               // 卡片主体内容
               Flexible(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(14, 4, 14, 12),
-                  child: _buildCardContent(context, aiState, isDark),
+                  child: _buildCardContent(context, aiState),
                 ),
               ),
             ],
@@ -136,7 +133,8 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
 
   /// 卡片头部（显示记忆入口、新对话与配置）
   Widget _buildCardHeader(
-      BuildContext context, AiAssistantState aiState, bool isDark) {
+      BuildContext context, AiAssistantState aiState) {
+    final colors = context.colors;
     if (aiState.displayMessages.isEmpty) {
       return const SizedBox(height: 6);
     }
@@ -164,14 +162,14 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                   Icon(
                     Icons.psychology_outlined,
                     size: 14,
-                    color: isDark ? Colors.white60 : Colors.grey[600],
+                    color: colors.textMuted,
                   ),
                   const SizedBox(width: 3),
                   Text(
                     '记忆',
                     style: TextStyle(
                       fontSize: 11.5,
-                      color: isDark ? Colors.white60 : Colors.grey[600],
+                      color: colors.textMuted,
                     ),
                   ),
                 ],
@@ -191,14 +189,14 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                   Icon(
                     Icons.refresh_rounded,
                     size: 14,
-                    color: isDark ? Colors.white60 : Colors.grey[500],
+                    color: colors.textMuted,
                   ),
                   const SizedBox(width: 3),
                   Text(
                     context.l10n.newChat,
                     style: TextStyle(
                       fontSize: 11.5,
-                      color: isDark ? Colors.white60 : Colors.grey[500],
+                      color: colors.textMuted,
                     ),
                   ),
                 ],
@@ -219,7 +217,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
               child: Icon(
                 Icons.code_rounded,
                 size: 16,
-                color: isDark ? Colors.white60 : Colors.grey[500],
+                color: colors.textMuted,
               ),
             ),
           ),
@@ -230,13 +228,13 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
 
   /// 卡片主体
   Widget _buildCardContent(
-      BuildContext context, AiAssistantState aiState, bool isDark) {
+      BuildContext context, AiAssistantState aiState) {
     if (aiState.errorMessage != null && aiState.displayMessages.isEmpty) {
-      return _buildErrorState(context, aiState.errorMessage!, isDark);
+      return _buildErrorState(context, aiState.errorMessage!);
     }
 
     if (aiState.displayMessages.isEmpty && !aiState.isLoading) {
-      return _buildInitialQuickActions(context, isDark);
+      return _buildInitialQuickActions(context);
     }
 
     final isLimitReached = aiState.isRoundLimitReached;
@@ -260,21 +258,20 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
           final isLatestUser = index == latestUserMessageIndex;
           return _buildMessageItem(
             msg,
-            isDark,
             key: isLatestUser ? _latestUserMessageKey : null,
           );
         }
         var nextIdx = index - aiState.displayMessages.length;
         if (aiState.isLoading) {
-          if (nextIdx == 0) return _buildLoadingBubble(aiState, isDark);
+          if (nextIdx == 0) return _buildLoadingBubble(aiState);
           nextIdx--;
         }
         if (hasError) {
-          if (nextIdx == 0) return _buildErrorMessageBubble(aiState.errorMessage!, isDark);
+          if (nextIdx == 0) return _buildErrorMessageBubble(aiState.errorMessage!);
           nextIdx--;
         }
         if (isLimitReached && nextIdx == 0) {
-          return _buildRoundLimitBanner(context, isDark);
+          return _buildRoundLimitBanner(context);
         }
         return const SizedBox.shrink();
       },
@@ -282,20 +279,17 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
   }
 
   /// 对话轮次达到上限提示横幅
-  Widget _buildRoundLimitBanner(BuildContext context, bool isDark) {
+  Widget _buildRoundLimitBanner(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.orangeAccent.withOpacity(0.12)
-            : const Color(0xFFFFF8E1),
-        borderRadius: BorderRadius.circular(8),
+        color: colors.statusBg(colors.warning),
+        borderRadius: AppRadius.innerAll,
         border: Border.all(
-          color: isDark
-              ? Colors.orangeAccent.withOpacity(0.3)
-              : Colors.orangeAccent.withOpacity(0.4),
-          width: 0.8,
+          color: colors.warning.withValues(alpha: 0.3),
+          width: 1,
         ),
       ),
       child: Column(
@@ -303,10 +297,10 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.info_outline_rounded,
                 size: 15,
-                color: Colors.orangeAccent,
+                color: colors.warning,
               ),
               const SizedBox(width: 6),
               Text(
@@ -314,7 +308,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.orangeAccent : const Color(0xFFE65100),
+                  color: colors.warning,
                 ),
               ),
             ],
@@ -325,7 +319,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
             style: TextStyle(
               fontSize: 11.5,
               height: 1.4,
-              color: isDark ? Colors.white70 : Colors.black87,
+              color: colors.text,
             ),
           ),
           const SizedBox(height: 8),
@@ -335,12 +329,12 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
               onTap: () {
                 ref.read(aiAssistantProvider.notifier).clearSession();
               },
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: AppRadius.controlAll,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF09C489),
-                  borderRadius: BorderRadius.circular(4),
+                  color: colors.primaryButtonBg,
+                  borderRadius: AppRadius.controlAll,
                 ),
                 child: const Text(
                   '开启新对话',
@@ -359,7 +353,8 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
   }
 
   /// 错误提示气泡
-  Widget _buildErrorMessageBubble(String error, bool isDark) {
+  Widget _buildErrorMessageBubble(String error) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Align(
@@ -367,11 +362,11 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: Colors.redAccent.withOpacity(isDark ? 0.2 : 0.08),
-            borderRadius: BorderRadius.circular(8),
+            color: colors.statusBg(colors.danger),
+            borderRadius: AppRadius.controlAll,
             border: Border.all(
-              color: Colors.redAccent.withOpacity(isDark ? 0.4 : 0.3),
-              width: 0.8,
+              color: colors.danger.withValues(alpha: 0.3),
+              width: 1,
             ),
           ),
           child: Column(
@@ -380,14 +375,14 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline_rounded, size: 14, color: Colors.redAccent),
+                  Icon(Icons.error_outline_rounded, size: 14, color: colors.danger),
                   const SizedBox(width: 4),
                   Text(
                     context.l10n.requestException,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: Colors.redAccent,
+                      color: colors.danger,
                     ),
                   ),
                 ],
@@ -397,7 +392,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                 error,
                 style: TextStyle(
                   fontSize: 12.5,
-                  color: isDark ? Colors.white : const Color(0xFF202124),
+                  color: colors.text,
                 ),
               ),
               const SizedBox(height: 6),
@@ -410,9 +405,9 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                 },
                 child: Text(
                   context.l10n.checkAgentSettingsArrow,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF09C489),
+                    color: colors.brandText,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -425,17 +420,18 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
   }
 
   /// 错误提示
-  Widget _buildErrorState(BuildContext context, String error, bool isDark) {
+  Widget _buildErrorState(BuildContext context, String error) {
+    final colors = context.colors;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline_rounded, size: 32, color: Colors.redAccent),
+          Icon(Icons.error_outline_rounded, size: 32, color: colors.danger),
           const SizedBox(height: 8),
           Text(
             error,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 13, color: Colors.redAccent),
+            style: TextStyle(fontSize: 13, color: colors.danger),
           ),
           const SizedBox(height: 12),
           TextButton.icon(
@@ -453,8 +449,9 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
     );
   }
 
-  /// 初始快捷提问推荐（白底灰边框，按钮统一 4px 圆角，右上角设置按钮）
-  Widget _buildInitialQuickActions(BuildContext context, bool isDark) {
+  /// 初始快捷提问推荐（白底灰边框，胶囊按钮，右上角设置按钮）
+  Widget _buildInitialQuickActions(BuildContext context) {
+    final colors = context.colors;
     final quickPrompts = [
       {'icon': Icons.calendar_today_outlined, 'text': context.l10n.promptTodayCourses},
       {'icon': Icons.assignment_outlined, 'text': context.l10n.promptPendingHomework},
@@ -477,7 +474,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white70 : Colors.grey[600],
+                  color: colors.textMuted,
                 ),
               ),
               const Spacer(),
@@ -493,7 +490,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                   child: Icon(
                     Icons.code_rounded,
                     size: 16,
-                    color: isDark ? Colors.white60 : Colors.grey[500],
+                    color: colors.textMuted,
                   ),
                 ),
               ),
@@ -508,20 +505,20 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                 avatar: Icon(
                   item['icon'] as IconData,
                   size: 15,
-                  color: const Color(0xFF09C489),
+                  color: colors.brand,
                 ),
                 label: Text(
                   item['text'] as String,
                   style: TextStyle(
                     fontSize: 12.5,
-                    color: isDark ? Colors.white : const Color(0xFF202124),
+                    color: colors.text,
                   ),
                 ),
-                backgroundColor: isDark ? const Color(0xFF282828) : Colors.white,
+                backgroundColor: colors.surface,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6), // 按钮 6px 圆角
+                  borderRadius: AppRadius.controlAll,
                   side: BorderSide(
-                    color: isDark ? Colors.white24 : const Color(0xFFE0E0E0), // 灰边框
+                    color: colors.border,
                     width: 1.0,
                   ),
                 ),
@@ -540,7 +537,8 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
   }
 
   /// 消息渲染（Agent 输出直接铺在卡片背景上，用户消息保持右侧对话气泡）
-  Widget _buildMessageItem(AiDisplayMessage msg, bool isDark, {Key? key}) {
+  Widget _buildMessageItem(AiDisplayMessage msg, {Key? key}) {
+    final colors = context.colors;
     final isUser = msg.role == 'user';
 
     if (isUser) {
@@ -553,16 +551,16 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF09C489).withOpacity(isDark ? 0.25 : 0.12),
+                color: colors.statusBg(colors.brand),
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                  bottomLeft: Radius.circular(8),
+                  topLeft: Radius.circular(AppRadius.control),
+                  topRight: Radius.circular(AppRadius.control),
+                  bottomLeft: Radius.circular(AppRadius.control),
                   bottomRight: Radius.circular(2),
                 ),
                 border: Border.all(
-                  color: const Color(0xFF09C489).withOpacity(isDark ? 0.4 : 0.2),
-                  width: 0.8,
+                  color: colors.brand.withValues(alpha: 0.2),
+                  width: 1,
                 ),
               ),
               child: Column(
@@ -616,7 +614,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                       style: TextStyle(
                         fontSize: 13.5,
                         height: 1.45,
-                        color: isDark ? Colors.white : const Color(0xFF202124),
+                        color: colors.text,
                       ),
                     ),
                 ],
@@ -643,69 +641,69 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                 p: TextStyle(
                   fontSize: 13.5,
                   height: 1.45,
-                  color: isDark ? const Color(0xFFEEEEEE) : const Color(0xFF202124),
+                  color: colors.text,
                 ),
                 strong: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
+                  color: colors.text,
                 ),
                 em: TextStyle(
                   fontStyle: FontStyle.italic,
-                  color: isDark ? Colors.white70 : Colors.black87,
+                  color: colors.text,
                 ),
                 h1: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF202124),
+                  color: colors.text,
                 ),
                 h2: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF202124),
+                  color: colors.text,
                 ),
                 h3: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF202124),
+                  color: colors.text,
                 ),
                 listBullet: TextStyle(
                   fontSize: 13.5,
-                  color: isDark ? Colors.white70 : Colors.black87,
+                  color: colors.text,
                 ),
                 code: TextStyle(
                   fontSize: 12,
-                  backgroundColor: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
-                  color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF09C489),
+                  backgroundColor: colors.surfaceSubtle,
+                  color: colors.brandText,
                   fontFamily: 'monospace',
                 ),
                 codeblockDecoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFEAEAEA),
-                  borderRadius: BorderRadius.circular(4),
+                  color: colors.surfaceSubtle,
+                  borderRadius: AppRadius.controlAll,
                   border: Border.all(
-                    color: isDark ? Colors.white12 : Colors.black12,
+                    color: colors.border,
                     width: 0.5,
                   ),
                 ),
                 blockquoteDecoration: BoxDecoration(
-                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                  color: colors.surfaceSubtle,
                   borderRadius: BorderRadius.circular(2),
-                  border: const Border(
+                  border: Border(
                     left: BorderSide(
-                      color: Color(0xFF09C489),
+                      color: colors.brand,
                       width: 3,
                     ),
                   ),
                 ),
                 tableBorder: TableBorder.all(
-                  color: isDark ? Colors.white24 : Colors.grey[300]!,
+                  color: colors.border,
                   width: 0.5,
                 ),
                 tableHead: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF202124),
+                  color: colors.text,
                 ),
                 tableBody: TextStyle(
-                  color: isDark ? Colors.white70 : const Color(0xFF3C4043),
+                  color: colors.text,
                 ),
                 pPadding: const EdgeInsets.only(bottom: 4),
                 listIndent: 16,
@@ -733,14 +731,14 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
                         Icon(
                           Icons.copy_rounded,
                           size: 13,
-                          color: isDark ? Colors.white54 : Colors.grey[500],
+                          color: colors.textMuted,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           context.l10n.copy,
                           style: TextStyle(
                             fontSize: 11,
-                            color: isDark ? Colors.white54 : Colors.grey[500],
+                            color: colors.textMuted,
                           ),
                         ),
                       ],
@@ -756,7 +754,8 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
   }
 
   /// 加载等待指示（直接在背景之上展示）
-  Widget _buildLoadingBubble(AiAssistantState aiState, bool isDark) {
+  Widget _buildLoadingBubble(AiAssistantState aiState) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Align(
@@ -764,12 +763,12 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 14,
               height: 14,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Color(0xFF09C489)),
+                valueColor: AlwaysStoppedAnimation(colors.brand),
               ),
             ),
             const SizedBox(width: 8),
@@ -777,7 +776,7 @@ class _AiResponseCardState extends ConsumerState<AiResponseCard> {
               context.l10n.aiThinking,
               style: TextStyle(
                 fontSize: 12,
-                color: isDark ? Colors.white70 : Colors.grey[600],
+                color: colors.textMuted,
               ),
             ),
           ],
@@ -800,7 +799,7 @@ class AiQuickPromptsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final quickPrompts = [
       {'icon': Icons.calendar_today_outlined, 'text': context.l10n.promptTodayCourses},
       {'icon': Icons.assignment_outlined, 'text': context.l10n.promptPendingHomework},
@@ -831,26 +830,25 @@ class AiQuickPromptsList extends ConsumerWidget {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 2),
                   child: ActionChip(
-                    elevation: 2,
-                    pressElevation: 4,
-                    shadowColor: Colors.black26,
+                    elevation: 0,
+                    pressElevation: 0,
                     avatar: Icon(
                       item['icon'] as IconData,
                       size: 15,
-                      color: const Color(0xFF09C489),
+                      color: colors.brand,
                     ),
                     label: Text(
                       item['text'] as String,
                       style: TextStyle(
                         fontSize: 12.5,
-                        color: isDark ? Colors.white : const Color(0xFF202124),
+                        color: colors.text,
                       ),
                     ),
-                    backgroundColor: isDark ? const Color(0xFF282828) : Colors.white,
+                    backgroundColor: colors.surface,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6), // 按钮 6px 圆角
+                      borderRadius: AppRadius.controlAll,
                       side: BorderSide(
-                        color: isDark ? Colors.white24 : const Color(0xFFE0E0E0), // 灰边框
+                        color: colors.border,
                         width: 1.0,
                       ),
                     ),

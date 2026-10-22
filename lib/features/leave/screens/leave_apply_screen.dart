@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/leave_models.dart';
 import '../services/leave_service.dart';
@@ -369,32 +370,26 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.leaveApplication),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : _error != null && _types.isEmpty
               ? Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(AppSpacing.xxl),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(_error!),
-                        const SizedBox(height: 12),
-                        FilledButton(
+                        const SizedBox(height: AppSpacing.md),
+                        ElevatedButton(
                           onPressed: _load,
                           child: Text(context.l10n.retry),
                         ),
@@ -403,42 +398,34 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                   ),
                 )
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.page, AppSpacing.md, AppSpacing.page, 32),
                   children: [
                     _label(context.l10n.leaveType, required: true),
                     DropdownButtonFormField<String>(
                       initialValue: _typeId,
                       isExpanded: true,
-                      decoration: const InputDecoration(
-                        filled: false,
-                        border: OutlineInputBorder(),
-                      ),
                       items: _types
                           .map((t) => DropdownMenuItem(
                               value: t.id, child: Text(t.name)))
                           .toList(),
                       onChanged: (v) => setState(() => _typeId = v),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _label(context.l10n.startTime, required: true),
                     _dateField(_startTime, () => _pickDateTime(true)),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _label(context.l10n.endTime, required: true),
                     _dateField(_endTime, () => _pickDateTime(false)),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _label(context.l10n.leaveDuration,
                         required: true,
                         suffix: _calculating ? context.l10n.calculatingDuration : ''),
                     Text(
                       _durationText(),
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : const Color(0xFF222222),
-                      ),
+                      style: AppText.body.copyWith(color: colors.text),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _label(context.l10n.leaveReason, required: true),
                     TextField(
                       controller: _reasonController,
@@ -446,21 +433,17 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                       minLines: 3,
                       decoration: InputDecoration(
                         hintText: context.l10n.pleaseEnter,
-                        filled: false,
-                        border: const OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _label(context.l10n.emergencyContact, required: true),
                     TextField(
                       controller: _contactController,
                       decoration: InputDecoration(
                         hintText: context.l10n.pleaseEnter,
-                        filled: false,
-                        border: const OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _label(context.l10n.emergencyContactPhone, required: true),
                     TextField(
                       controller: _phoneController,
@@ -470,28 +453,24 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                       ],
                       decoration: InputDecoration(
                         hintText: context.l10n.pleaseEnter11DigitPhone,
-                        filled: false,
-                        border: const OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.xl),
                     _label(context.l10n.accompanyingPersons),
                     TextField(
                       controller: _companionsController,
                       decoration: InputDecoration(
                         hintText: context.l10n.optional,
-                        filled: false,
-                        border: const OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     SwitchListTile(
                       value: _leaveSchool,
                       onChanged: (v) =>
                           setState(() => _leaveSchool = v),
-                      title: Text(context.l10n.leaveCampus, style: const TextStyle(fontSize: 15)),
+                      title: Text(context.l10n.leaveCampus,
+                          style: AppText.body.copyWith(color: colors.text)),
                       contentPadding: EdgeInsets.zero,
-                      activeThumbColor: const Color(0xFF09C489),
                     ),
                     if (_leaveSchool) ...[
                       _label(context.l10n.leaveDestination, required: true),
@@ -500,8 +479,6 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                         isExpanded: true,
                         decoration: InputDecoration(
                           hintText: context.l10n.province,
-                          filled: false,
-                          border: const OutlineInputBorder(),
                         ),
                         items: _regions
                             .map((r) => DropdownMenuItem(
@@ -513,7 +490,7 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                           _countyId = null;
                         }),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                       Row(
                         children: [
                           Expanded(
@@ -522,8 +499,6 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                               isExpanded: true,
                               decoration: InputDecoration(
                                 hintText: context.l10n.city,
-                                filled: false,
-                                border: const OutlineInputBorder(),
                               ),
                               items: _cities
                                   .map((r) => DropdownMenuItem(
@@ -535,15 +510,13 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                               }),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               initialValue: _countyId,
                               isExpanded: true,
                               decoration: InputDecoration(
                                 hintText: context.l10n.districtCounty,
-                                filled: false,
-                                border: const OutlineInputBorder(),
                               ),
                               items: _counties
                                   .map((r) => DropdownMenuItem(
@@ -555,7 +528,7 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: AppSpacing.xl),
                       _label(context.l10n.detailedAddress, required: true),
                       TextField(
                         controller: _addressController,
@@ -563,18 +536,16 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                         minLines: 2,
                         decoration: InputDecoration(
                           hintText: context.l10n.pleaseEnter,
-                          filled: false,
-                          border: const OutlineInputBorder(),
                         ),
                       ),
                       SwitchListTile(
                         value: _backDorm,
                         onChanged: (v) =>
                             setState(() => _backDorm = v),
-                        title:
-                            Text(context.l10n.returnToDormitory, style: const TextStyle(fontSize: 15)),
+                        title: Text(context.l10n.returnToDormitory,
+                            style:
+                                AppText.body.copyWith(color: colors.text)),
                         contentPadding: EdgeInsets.zero,
-                        activeThumbColor: const Color(0xFF09C489),
                       ),
                       _label(context.l10n.remark, required: true),
                       TextField(
@@ -583,25 +554,23 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                         minLines: 2,
                         decoration: InputDecoration(
                           hintText: context.l10n.pleaseEnter,
-                          filled: false,
-                          border: const OutlineInputBorder(),
                         ),
                       ),
                     ],
                     SwitchListTile(
                       value: _outCity,
                       onChanged: (v) => setState(() => _outCity = v),
-                      title: Text(context.l10n.leaveCity, style: const TextStyle(fontSize: 15)),
+                      title: Text(context.l10n.leaveCity,
+                          style: AppText.body.copyWith(color: colors.text)),
                       contentPadding: EdgeInsets.zero,
-                      activeThumbColor: const Color(0xFF09C489),
                     ),
                     SwitchListTile(
                       value: _outProvince,
                       onChanged: (v) =>
                           setState(() => _outProvince = v),
-                      title: Text(context.l10n.leaveProvince, style: const TextStyle(fontSize: 15)),
+                      title: Text(context.l10n.leaveProvince,
+                          style: AppText.body.copyWith(color: colors.text)),
                       contentPadding: EdgeInsets.zero,
-                      activeThumbColor: const Color(0xFF09C489),
                     ),
                     _label(context.l10n.leaveMaterials),
                     InkWell(
@@ -611,15 +580,13 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                         isEmpty: _attachmentPath == null,
                         decoration: InputDecoration(
                           hintText: context.l10n.leaveMaterialsHint,
-                          filled: false,
-                          border: const OutlineInputBorder(),
                           suffixIcon: const Icon(Icons.image_outlined),
                         ),
                         child: Text(
                           _attachmentName ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 14),
+                          style: AppText.bodyDense.copyWith(color: colors.text),
                         ),
                       ),
                     ),
@@ -634,27 +601,22 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
                           child: Text(context.l10n.removeAttachment),
                         ),
                       ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: FilledButton(
+                      child: ElevatedButton(
                         onPressed: _submitting ? null : _submit,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF09C489),
-                          foregroundColor: Colors.white,
+                        style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 28, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
                         ),
                         child: _submitting
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onPrimary,
                                 ),
                               )
                             : Text(context.l10n.submit,
@@ -667,31 +629,28 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
   }
 
   Widget _label(String text, {bool required = false, String suffix = ''}) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: RichText(
         text: TextSpan(
-          style: TextStyle(
-            fontSize: 15,
+          style: AppText.body.copyWith(
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : const Color(0xFF222222),
+            color: colors.text,
           ),
           children: [
             if (required)
-              const TextSpan(
+              TextSpan(
                 text: '* ',
-                style: TextStyle(color: Color(0xFFE63476)),
+                style: TextStyle(color: colors.danger),
               ),
             TextSpan(text: text),
             if (suffix.isNotEmpty)
               TextSpan(
                 text: ' $suffix',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.grey,
+                style: AppText.caption.copyWith(
+                  fontWeight: FontWeight.w400,
+                  color: colors.textMuted,
                 ),
               ),
           ],
@@ -701,6 +660,7 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
   }
 
   Widget _dateField(String? value, VoidCallback onTap) {
+    final colors = context.colors;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(4),
@@ -708,13 +668,11 @@ class _LeaveApplyScreenState extends ConsumerState<LeaveApplyScreen> {
         isEmpty: value == null,
         decoration: InputDecoration(
           hintText: context.l10n.pleaseSelect,
-          filled: false,
-          border: const OutlineInputBorder(),
           suffixIcon: const Icon(Icons.calendar_month_outlined),
         ),
         child: Text(
           value ?? '',
-          style: const TextStyle(fontSize: 14),
+          style: AppText.bodyDense.copyWith(color: colors.text),
         ),
       ),
     );

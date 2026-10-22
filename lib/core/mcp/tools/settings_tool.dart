@@ -67,7 +67,7 @@ class SettingsTool {
           'language': {
             'type': 'string',
             'description':
-                '应用语言代码或名称（如 "system", "zh", "en", "zh_HK", "zh_TW", "ja", "es", "fr", "pt", "ru", "yue", "wuu", "hsn", "gan", "zh_hefei"，也支持中文描述如 "简体中文"、"英文" 等）。',
+                '应用语言代码或名称（如 "system", "zh", "en", "zh_HK", "zh_TW", "ja", "es", "fr", "pt", "ru"，也支持中文描述如 "简体中文"、"英文" 等）。',
           },
           'ai_api_url': {
             'type': 'string',

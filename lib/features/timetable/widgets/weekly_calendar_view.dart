@@ -3,6 +3,7 @@ import '../models/course_model.dart';
 import '../utils/date_calculator.dart';
 import '../utils/week_parser.dart';
 import '../utils/course_color_utils.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 
 /// 周视图日历组件
@@ -73,7 +74,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
           context.l10n.noTimetableFound,
           style: TextStyle(
             fontSize: 14,
-            color: Theme.of(context).hintColor.withOpacity(0.5),
+            color: context.colors.textMuted,
           ),
         ),
       );
@@ -119,7 +120,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).appBarTheme.backgroundColor,
+        color: context.colors.surface,
       ),
       child: Row(
         children: [
@@ -129,7 +130,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF2D3436),
+              color: context.colors.text,
             ),
           ),
           const Spacer(),
@@ -160,26 +161,29 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
               minWidth: screenWidth,
               minHeight: totalHeight,
             ),
-            child: Column(
-              children: [
-                // 星期标题行
-                _buildWeekdayHeader(screenWidth, weekMonday),
-                
-                // 时间轴和课程
-                SizedBox(
-                  height: totalHeight - 40,
-                  width: screenWidth,
-                  child: Stack(
-                    children: [
-                      // 左侧时间轴 (起止时间显示)
-                      _buildFixedTimeAxis(totalBigSections, sectionHeight, targetGap),
-                      
-                      // 课程块
-                      ..._buildFixedCourseBlocks(weekCourses, screenWidth, sectionHeight, targetGap),
-                    ],
+            child: Container(
+              color: context.colors.surface,
+              child: Column(
+                children: [
+                  // 星期标题行
+                  _buildWeekdayHeader(screenWidth, weekMonday),
+
+                  // 时间轴和课程
+                  SizedBox(
+                    height: totalHeight - 40,
+                    width: screenWidth,
+                    child: Stack(
+                      children: [
+                        // 左侧时间轴 (起止时间显示)
+                        _buildFixedTimeAxis(totalBigSections, sectionHeight, targetGap),
+
+                        // 课程块
+                        ..._buildFixedCourseBlocks(weekCourses, screenWidth, sectionHeight, targetGap),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -214,9 +218,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
                 times[index][0],
                 style: TextStyle(
                   fontSize: 11,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white54
-                      : const Color(0xFF636E72),
+                  color: context.colors.textMuted,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -225,9 +227,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
                   times[index][1],
                   style: TextStyle(
                     fontSize: 11,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white38
-                        : const Color(0xFF9E9E9E),
+                    color: context.colors.textMuted,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -320,7 +320,10 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
     bool hasConflict = false,
     List<CourseModel>? conflictingCourses,
   }) {
-    final color = _getCourseColor(course.name);
+    final accent = _getCourseColor(course.name);
+    final brightness = Theme.of(context).brightness;
+    final bgColor = CourseColorUtils.blockBackground(accent, brightness);
+    final fgColor = CourseColorUtils.blockForeground(accent, brightness);
     return GestureDetector(
       onTap: () => _showCourseDetail(
         course,
@@ -329,22 +332,13 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(6), // 圆角 6px
+          color: bgColor,
+          borderRadius: AppRadius.controlAll,
           border: hasConflict
               ? Border.all(
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: fgColor.withValues(alpha: 0.35),
                   width: 1.0,
                 )
-              : null,
-          boxShadow: hasConflict
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
               : null,
         ),
         child: Stack(
@@ -354,8 +348,8 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
               children: [
                 Text(
                   course.name,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: fgColor,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     height: 1.1,
@@ -367,8 +361,8 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
                 if (course.classroom.isNotEmpty)
                   Text(
                     course.classroom,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: fgColor.withValues(alpha: 0.75),
                       fontSize: 9,
                       height: 1.1,
                     ),
@@ -378,13 +372,13 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
               ],
             ),
             if (hasConflict)
-              const Positioned(
+              Positioned(
                 bottom: 0,
                 right: 0,
                 child: Icon(
                   Icons.layers_rounded,
                   size: 10,
-                  color: Colors.white70,
+                  color: fgColor.withValues(alpha: 0.7),
                 ),
               ),
           ],
@@ -440,6 +434,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
 
   /// 构建星期标题
   Widget _buildWeekdayHeader(double screenWidth, DateTime weekMonday) {
+    final colors = context.colors;
     final weekdays = [
       context.l10n.weekdayMon,
       context.l10n.weekdayTue,
@@ -455,7 +450,10 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
     return Container(
       height: 60,
       decoration: BoxDecoration(
-        color: Theme.of(context).appBarTheme.backgroundColor,
+        color: colors.surface,
+        border: Border(
+          bottom: BorderSide(color: colors.border, width: 1),
+        ),
       ),
       child: Row(
         children: [
@@ -464,7 +462,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
           ...List.generate(7, (index) {
             final date = weekMonday.add(Duration(days: index));
             final isToday = '${date.year}-${date.month}-${date.day}' == todayStr;
-            
+
             return Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -473,9 +471,7 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
                     weekdays[index],
                     style: TextStyle(
                       fontSize: 12,
-                      color: isToday 
-                          ? Theme.of(context).primaryColor 
-                          : (Theme.of(context).brightness == Brightness.dark ? Colors.white60 : const Color(0xFF636E72)),
+                      color: isToday ? colors.brandText : colors.textMuted,
                       fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
@@ -485,14 +481,16 @@ class WeeklyCalendarViewState extends State<WeeklyCalendarView> {
                     height: 28,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isToday ? Theme.of(context).primaryColor : Colors.transparent,
+                      color: isToday
+                          ? colors.statusBg(colors.brand)
+                          : Colors.transparent,
                       shape: BoxShape.circle,
                     ),
                     child: Text(
                       '${date.day}',
                       style: TextStyle(
                         fontSize: 14,
-                        color: isToday ? Colors.white : (Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF2D3436)),
+                        color: isToday ? colors.brandText : colors.text,
                         fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
                       ),
                     ),
@@ -656,11 +654,13 @@ class _ConflictingCoursesDialogState extends State<_ConflictingCoursesDialog> {
                         c.name,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isSel ? Colors.white : null,
+                          color: isSel
+                              ? context.colors.brandText
+                              : context.colors.textMuted,
                         ),
                       ),
                       selected: isSel,
-                      selectedColor: Theme.of(context).primaryColor,
+                      selectedColor: context.colors.statusBg(context.colors.brand),
                       onSelected: (_) => setState(() => _selectedIndex = i),
                     ),
                   );

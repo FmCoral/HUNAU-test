@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/library_book_models.dart';
 import '../providers/library_provider.dart';
@@ -39,55 +40,41 @@ class _LibraryBookDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.bookDetailTitle),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
       ),
       body: FutureBuilder<LibraryBookDetail>(
         future: _detailFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             );
           }
 
           if (snapshot.hasError) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppSpacing.xxl),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline_rounded,
-                        size: 48, color: Colors.redAccent),
-                    const SizedBox(height: 12),
+                    Icon(Icons.error_outline_rounded,
+                        size: 48, color: colors.danger),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       snapshot.error
                           .toString()
                           .replaceAll('Exception:', '')
                           .trim(),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: isDark ? Colors.white70 : Colors.black87,
-                      ),
+                      style: AppText.bodyDense.copyWith(color: colors.text),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09C489),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6)),
-                      ),
                       onPressed: _retry,
                       child: Text(context.l10n.retry),
                     ),
@@ -98,15 +85,17 @@ class _LibraryBookDetailScreenState
           }
 
           final detail = snapshot.data!;
-          return _buildDetailContent(detail, isDark);
+          return _buildDetailContent(detail, colors);
         },
       ),
     );
   }
 
-  Widget _buildDetailContent(LibraryBookDetail detail, bool isDark) {
+  Widget _buildDetailContent(
+      LibraryBookDetail detail, AppSemanticColors colors) {
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page, vertical: AppSpacing.md),
       children: [
         // 1. 图书主要信息（不包在框内）
         Padding(
@@ -116,11 +105,7 @@ class _LibraryBookDetailScreenState
             children: [
               Text(
                 detail.title,
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
+                style: AppText.pageTitle.copyWith(color: colors.text),
               ),
               const SizedBox(height: 14),
               for (final item in detail.effectiveCatalogItems)
@@ -128,52 +113,41 @@ class _LibraryBookDetailScreenState
                   _iconForLabel(item.key),
                   item.key,
                   item.value,
-                  isDark,
+                  colors,
                 ),
             ],
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
 
         // 2. 馆藏副本标题（不显示“在馆”）
         Text(
           context.l10n.holdingsTitle,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
+          style: AppText.sectionTitle.copyWith(color: colors.text),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
 
         // 3. 馆藏副本列表
         if (detail.holdings.isEmpty)
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.12)
-                    : const Color(0xFFE8E8E8),
-              ),
+              color: colors.surface,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colors.border),
             ),
             child: Text(
               '暂无馆藏详细副本信息',
-              style: TextStyle(
-                color: isDark ? Colors.white54 : Colors.grey,
-                fontSize: 14,
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.textMuted),
             ),
           )
         else
-          ...detail.holdings.map((h) => _buildHoldingItem(h, isDark)),
+          ...detail.holdings.map((h) => _buildHoldingItem(h, colors)),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xxxl),
       ],
     );
   }
@@ -182,14 +156,14 @@ class _LibraryBookDetailScreenState
     IconData icon,
     String label,
     String value,
-    bool isDark,
+    AppSemanticColors colors,
   ) {
     final cleanValue = value.replaceFirst(RegExp(r'^[:：\s]+'), '').trim();
     final cleanLabel = label.replaceAll(RegExp(r'[:：\s]+$'), '').trim();
     final isCallNumber = cleanLabel.contains('索书号');
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -198,19 +172,16 @@ class _LibraryBookDetailScreenState
             child: Icon(
               icon,
               size: 16,
-              color: isDark ? Colors.white38 : Colors.grey[500],
+              color: colors.textMuted,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           if (cleanLabel.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: isCallNumber ? 1 : 0),
               child: Text(
                 '$cleanLabel：',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white54 : Colors.grey[600],
-                ),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
             ),
           Expanded(
@@ -223,25 +194,21 @@ class _LibraryBookDetailScreenState
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF09C489).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
+                        color: colors.statusBg(colors.brand),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                       child: Text(
                         cleanValue,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF09C489),
+                        style: AppText.caption.copyWith(
+                          color: colors.brandText,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   )
                 : Text(
                     cleanValue,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
+                    style: AppText.bodyDense.copyWith(color: colors.text),
                   ),
           ),
         ],
@@ -277,21 +244,18 @@ class _LibraryBookDetailScreenState
     return Icons.info_outline_rounded;
   }
 
-  Widget _buildHoldingItem(LibraryBookHolding holding, bool isDark) {
+  Widget _buildHoldingItem(
+      LibraryBookHolding holding, AppSemanticColors colors) {
     final isAvailable = holding.isAvailable;
+    final statusColor = isAvailable ? colors.brand : colors.warning;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppSpacing.card),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE8E8E8),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,89 +267,68 @@ class _LibraryBookDetailScreenState
                   holding.holdingUnit.isNotEmpty
                       ? holding.holdingUnit
                       : '湖南农业大学图书馆',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
+                  style: AppText.sectionTitle
+                      .copyWith(color: colors.text, fontSize: 14),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isAvailable
-                      ? const Color(0xFF09C489).withValues(alpha: 0.15)
-                      : Colors.orange.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(4),
+                  color: colors.statusBg(statusColor),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: Text(
                   holding.status.isNotEmpty ? holding.status : '在库',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isAvailable ? const Color(0xFF09C489) : Colors.orange,
+                  style: AppText.caption.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           if (holding.location.isNotEmpty)
             Row(
               children: [
                 Icon(
                   Icons.place_outlined,
                   size: 15,
-                  color: isDark ? Colors.white54 : Colors.grey[600],
+                  color: colors.textMuted,
                 ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
                     '${context.l10n.holdingLocation}: ${holding.location}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
+                    style: AppText.bodyDense.copyWith(color: colors.text),
                   ),
                 ),
               ],
             ),
           const SizedBox(height: 6),
           Wrap(
-            spacing: 12,
+            spacing: AppSpacing.md,
             runSpacing: 4,
             children: [
               if (holding.barcode.isNotEmpty)
                 Text(
                   '${context.l10n.barcode}: ${holding.barcode}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white38 : Colors.grey[600],
-                  ),
+                  style: AppText.caption.copyWith(color: colors.textMuted),
                 ),
               if (holding.accessionNo.isNotEmpty)
                 Text(
                   '${context.l10n.accessionNo}: ${holding.accessionNo}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white38 : Colors.grey[600],
-                  ),
+                  style: AppText.caption.copyWith(color: colors.textMuted),
                 ),
               if (holding.copyType.isNotEmpty)
                 Text(
                   '${context.l10n.copyType}: ${holding.copyType}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white38 : Colors.grey[600],
-                  ),
+                  style: AppText.caption.copyWith(color: colors.textMuted),
                 ),
               if (holding.notes.isNotEmpty)
                 Text(
                   '备注: ${holding.notes}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.redAccent,
-                  ),
+                  style: AppText.caption.copyWith(color: colors.danger),
                 ),
             ],
           ),

@@ -307,7 +307,7 @@ class AppNavigator {
     ),
     'about': AppNavPageInfo(
       id: 'about',
-      title: '关于自在东湖',
+      title: '关于牛×5',
       description: '应用版本信息、作者与项目简介',
     ),
     'oss_licenses': AppNavPageInfo(
@@ -587,7 +587,7 @@ class AppNavigator {
 
     '关于': 'about',
     '关于我们': 'about',
-    '关于自在东湖': 'about',
+    '关于牛×5': 'about',
 
     'licenses': 'oss_licenses',
     '开源': 'oss_licenses',

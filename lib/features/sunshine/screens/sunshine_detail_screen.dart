@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/sunshine_models.dart';
 import '../services/sunshine_service.dart';
@@ -69,8 +70,7 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
 
     final title = _detail?.title ?? widget.initialLetter?.title ?? context.l10n.appealDetails;
     final status = _detail?.status ?? widget.initialLetter?.status ?? '';
@@ -80,13 +80,8 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
     final isCompleted = status == '2';
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.appealDetails),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             tooltip: context.l10n.refresh,
@@ -95,36 +90,31 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
           ),
         ],
       ),
-      body: _buildBody(isDark, title, statusLabel, isCompleted),
+      body: _buildBody(colors, title, statusLabel, isCompleted),
     );
   }
 
   Widget _buildBody(
-    bool isDark,
+    AppSemanticColors colors,
     String title,
     String statusLabel,
     bool isCompleted,
   ) {
     if (_loading && _detail == null) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF09C489)),
+        child: CircularProgressIndicator(),
       );
     }
 
     if (_error != null && _detail == null) {
       return Center(
         child: Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.all(AppSpacing.xxl),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFE0E0E0),
-              width: 1,
-            ),
+            color: colors.surface,
+            borderRadius: AppRadius.cardAll,
+            border: Border.all(color: colors.border),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -132,28 +122,17 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
               Icon(
                 Icons.error_outline_rounded,
                 size: 40,
-                color: Colors.orange.shade400,
+                color: colors.warning,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
+                style: AppText.bodyDense.copyWith(color: colors.text),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton.icon(
                 onPressed: _load,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
                 icon: const Icon(Icons.refresh, size: 18),
                 label: Text(context.l10n.reload),
               ),
@@ -167,31 +146,31 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
     final hasRemark = detail.remark.trim().isNotEmpty;
 
     return RefreshIndicator(
-      color: const Color(0xFF09C489),
       onRefresh: _load,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.page, AppSpacing.sm, AppSpacing.page, 40),
         children: [
           if (_loading) const LinearProgressIndicator(),
 
           // 1. 标题与状态（文字直接呈现，去除卡片）
-          _buildHeaderSection(isDark, title, statusLabel, isCompleted, detail),
+          _buildHeaderSection(colors, title, statusLabel, isCompleted, detail),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
           // 2. 流转信息（无卡片边框、无分割线）
-          _buildMetaSection(isDark, detail),
+          _buildMetaSection(colors, detail),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
           // 3. 诉求内容（无卡片边框）
-          _buildContentSection(isDark, detail),
+          _buildContentSection(colors, detail),
 
           // 4. 处理结果（如果没有处理结果就不显示）
           if (hasRemark) ...[
-            const SizedBox(height: 24),
-            _buildRemarkSection(isDark, detail),
+            const SizedBox(height: AppSpacing.xxl),
+            _buildRemarkSection(colors, detail),
           ],
         ],
       ),
@@ -199,14 +178,13 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
   }
 
   Widget _buildHeaderSection(
-    bool isDark,
+    AppSemanticColors colors,
     String title,
     String statusLabel,
     bool isCompleted,
     SunshineTicketDetail detail,
   ) {
-    final statusColor =
-        isCompleted ? const Color(0xFF09C489) : const Color(0xFFF2994A);
+    final statusColor = isCompleted ? colors.brand : colors.warning;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,16 +194,12 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: statusColor.withValues(alpha: 0.4),
-                  width: 0.8,
-                ),
+                color: colors.statusBg(statusColor),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
               child: Text(
                 statusLabel,
-                style: TextStyle(
+                style: AppText.caption.copyWith(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: statusColor,
@@ -233,24 +207,18 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
               ),
             ),
             if (detail.type.isNotEmpty) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: (isDark ? Colors.white : Colors.black)
-                      .withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: isDark ? Colors.white24 : const Color(0xFFDADCE0),
-                    width: 0.8,
-                  ),
+                  color: colors.surfaceSubtle,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Text(
                   detail.type,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
+                  style:
+                      AppText.caption.copyWith(color: colors.textMuted),
                 ),
               ),
             ],
@@ -259,43 +227,32 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
             if (detail.id.isNotEmpty)
               Text(
                 '#${detail.id}',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white38 : Colors.grey,
-                ),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         SelectableText(
           title,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            height: 1.35,
-            color: isDark ? Colors.white : const Color(0xFF222222),
-          ),
+          style: AppText.pageTitle.copyWith(color: colors.text),
         ),
       ],
     );
   }
 
-  Widget _buildMetaSection(bool isDark, SunshineTicketDetail detail) {
+  Widget _buildMetaSection(
+      AppSemanticColors colors, SunshineTicketDetail detail) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           context.l10n.transferInfo,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black87,
-          ),
+          style: AppText.sectionTitle.copyWith(color: colors.text),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         // 提交人只保留到姓，保持正常黑灰色，不带分割线
         _buildMetaRow(
-          isDark,
+          colors,
           icon: Icons.person_outline_rounded,
           label: context.l10n.submitter,
           value: detail.submitter.isNotEmpty ? detail.submitter : context.l10n.anonymous,
@@ -303,7 +260,7 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
         if (detail.expectedDepartment.isNotEmpty) ...[
           const SizedBox(height: 10),
           _buildMetaRow(
-            isDark,
+            colors,
             icon: Icons.account_balance_outlined,
             label: context.l10n.expectedDepartment,
             value: detail.expectedDepartment,
@@ -312,7 +269,7 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
         if (detail.handlingDepartment.isNotEmpty) ...[
           const SizedBox(height: 10),
           _buildMetaRow(
-            isDark,
+            colors,
             icon: Icons.business_rounded,
             label: context.l10n.handlingDepartment,
             value: detail.handlingDepartment,
@@ -321,7 +278,7 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
         if (detail.finishTime.isNotEmpty) ...[
           const SizedBox(height: 10),
           _buildMetaRow(
-            isDark,
+            colors,
             icon: Icons.event_available_rounded,
             label: context.l10n.expectedResolveTime,
             value: detail.finishTime,
@@ -330,7 +287,7 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
         if (detail.jieTime.isNotEmpty) ...[
           const SizedBox(height: 10),
           _buildMetaRow(
-            isDark,
+            colors,
             icon: Icons.access_time_rounded,
             label: context.l10n.acceptedTime,
             value: detail.jieTime,
@@ -339,7 +296,7 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
         if (detail.wanTime.isNotEmpty) ...[
           const SizedBox(height: 10),
           _buildMetaRow(
-            isDark,
+            colors,
             icon: Icons.check_circle_outline_rounded,
             label: context.l10n.finishedTime,
             value: detail.wanTime,
@@ -350,7 +307,7 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
   }
 
   Widget _buildMetaRow(
-    bool isDark, {
+    AppSemanticColors colors, {
     required IconData icon,
     required String label,
     required String value,
@@ -360,93 +317,75 @@ class _SunshineDetailScreenState extends ConsumerState<SunshineDetailScreen> {
         Icon(
           icon,
           size: 16,
-          color: isDark ? Colors.white38 : Colors.grey,
+          color: colors.textMuted,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 13,
-            color: isDark ? Colors.white54 : Colors.grey[700],
-          ),
+          style: AppText.caption.copyWith(color: colors.textMuted),
         ),
         const Spacer(),
         Text(
           value,
-          style: TextStyle(
-            fontSize: 13,
-            color: isDark ? Colors.white : const Color(0xFF333333),
-          ),
+          style: AppText.caption.copyWith(color: colors.text),
         ),
       ],
     );
   }
 
-  Widget _buildContentSection(bool isDark, SunshineTicketDetail detail) {
+  Widget _buildContentSection(
+      AppSemanticColors colors, SunshineTicketDetail detail) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.article_outlined,
               size: 18,
-              color: Color(0xFF09C489),
+              color: colors.brand,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               context.l10n.appealContent,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
+              style: AppText.sectionTitle.copyWith(color: colors.text),
             ),
           ],
         ),
         const SizedBox(height: 10),
         SelectableText(
           detail.content.isNotEmpty ? detail.content : context.l10n.noDescriptionAvailable,
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.6,
-            color: isDark ? Colors.white70 : const Color(0xFF333333),
-          ),
+          style: AppText.bodyDense.copyWith(
+              color: colors.text, height: 1.6),
         ),
       ],
     );
   }
 
-  Widget _buildRemarkSection(bool isDark, SunshineTicketDetail detail) {
+  Widget _buildRemarkSection(
+      AppSemanticColors colors, SunshineTicketDetail detail) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.task_alt_rounded,
               size: 18,
-              color: Color(0xFF09C489),
+              color: colors.brand,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               context.l10n.processingResult,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
+              style: AppText.sectionTitle.copyWith(color: colors.text),
             ),
           ],
         ),
         const SizedBox(height: 10),
         SelectableText(
           detail.remark,
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.6,
-            color: isDark ? Colors.white : const Color(0xFF222222),
-          ),
+          style: AppText.bodyDense.copyWith(
+              color: colors.text, height: 1.6),
         ),
       ],
     );

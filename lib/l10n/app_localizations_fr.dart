@@ -3299,4 +3299,16 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get analyticsPromptSubtitle =>
       'Comptabilise la version de votre application de manière strictement anonyme.';
+
+  @override
+  String get feedbackContent => '反馈内容';
+
+  @override
+  String get pleaseEnterFeedback => '请描述您遇到的问题或建议…';
+
+  @override
+  String get pleaseEnterContent => '请输入内容';
+
+  @override
+  String get submitFailed => '提交失败';
 }

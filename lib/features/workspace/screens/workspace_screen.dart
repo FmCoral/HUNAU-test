@@ -3,6 +3,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/l10n_extension.dart';
 import 'package:logger/logger.dart';
+import '../../../core/theme/app_tokens.dart';
 
 class WorkspaceScreen extends StatefulWidget {
   const WorkspaceScreen({super.key});
@@ -95,16 +96,21 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.white,
+              color: context.colors.surface,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(context.l10n.loadingProgress((_progress * 100).toInt())),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    context.l10n.loadingProgress((_progress * 100).toInt()),
+                    style: AppText.bodyDense
+                        .copyWith(color: context.colors.textMuted),
+                  ),
                   if (_progress > 0)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xxxl),
                       child: LinearProgressIndicator(value: _progress),
                     ),
                 ],

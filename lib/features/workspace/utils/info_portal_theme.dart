@@ -2,34 +2,34 @@ import 'dart:convert';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 /// 湖南农业大学信息门户 (toApps2) Material Design 2 (MD2) 动态排版主题与自适应脚本
-/// 匹配 ChillEast 原生功能页横向双列卡片风格
+/// 匹配原生功能页横向双列卡片风格
 class InfoPortalTheme {
   /// MD2 核心样式表 (CSS)
   static const String md2Css = r'''/* ==========================================================================
    Material Design 2 (MD2) Theme for HUNAU Info Portal (toApps2)
-   Matching ChillEast Native Functions Screen UI (2-column Horizontal Cards)
+   Matching Native Functions Screen UI (2-column Horizontal Cards)
    ========================================================================== */
 
 :root {
-  --portal-bg: #FFFFFF;
+  --portal-bg: #F3F4F6;
   --portal-card-bg: #FFFFFF;
-  --portal-card-border: #E0E0E0;
-  --portal-card-active: #F5F5F5;
-  --portal-title-color: #616161;
-  --portal-text-color: rgba(0, 0, 0, 0.87);
-  --portal-primary: #09C489;
-  --md-primary: #09C489;
+  --portal-card-border: #E5E7EB;
+  --portal-card-active: #F3F4F6;
+  --portal-title-color: #6B7280;
+  --portal-text-color: #111827;
+  --portal-primary: #16A34A;
+  --md-primary: #16A34A;
   --portal-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --portal-bg: #121212;
-    --portal-card-bg: #1E1E1E;
-    --portal-card-border: rgba(255, 255, 255, 0.12);
-    --portal-card-active: #2A2A2A;
-    --portal-title-color: rgba(255, 255, 255, 0.7);
-    --portal-text-color: #FFFFFF;
+    --portal-bg: #0F1115;
+    --portal-card-bg: #171A21;
+    --portal-card-border: #262B35;
+    --portal-card-active: #1C2029;
+    --portal-title-color: #8B93A1;
+    --portal-text-color: #E5E7EB;
   }
 }
 
@@ -72,7 +72,7 @@ div[class*="searchBox"],
 }
 
 /* ==========================================================================
-   Hidden Duplicate Apps (Native ChillEast features already exist)
+   Hidden Duplicate Apps (Native features already exist)
    ========================================================================== */
 .item[valid="6336614"], .item[valId="6336614"],      /* 学工系统 */
 .item[valid="7710759"], .item[valId="7710759"],      /* 本科生公寓 */
@@ -174,7 +174,7 @@ div[class*="ServiceBox"] .list {
 
 /* ==========================================================================
    Horizontal App Card (.item)
-   Matching ChillEast Native _buildFunctionGridCard
+   Matching Native _buildFunctionGridCard
    ========================================================================== */
 .applicationBox .list .item,
 div[class*="applicationBox"] .list .item,
@@ -190,7 +190,7 @@ div[class*="ServiceBox"] .list .item {
   align-items: center !important;
   justify-content: flex-start !important;
   padding: 0 14px !important;
-  border-radius: 8px !important;
+  border-radius: 12px !important;
   background-color: var(--portal-card-bg) !important;
   border: 1px solid var(--portal-card-border) !important;
   box-shadow: none !important;
@@ -362,7 +362,7 @@ div[class*="applicationBox"] .list > div[style*="display: none"] {
   /// MD2 核心自适应与排版逻辑 (JS)
   static const String md2Js = r'''/**
  * Material Design 2 (MD2) Dynamic Adapter for HUNAU Info Portal (toApps2)
- * Matching ChillEast Native Functions Screen UI (2-column Horizontal Cards)
+ * Matching Native Functions Screen UI (2-column Horizontal Cards)
  * 
  * Features:
  * 1. Automatic real-time adaptation for existing & future service elements.
@@ -377,19 +377,19 @@ div[class*="applicationBox"] .list > div[style*="display: none"] {
   if (window.__MD2_PORTAL_ENHANCED__) return;
   window.__MD2_PORTAL_ENHANCED__ = true;
 
-  console.log("🎨 [MD2] Initializing ChillEast card theme for HUNAU Info Portal...");
+  console.log("🎨 [MD2] Initializing card theme for HUNAU Info Portal...");
 
   const MD2_PALETTE = [
-    '#3476E6', // Blue (xgxt)
-    '#E91E63', // Pink (gym)
-    '#00BCD4', // Cyan (teaching_eval)
-    '#008268', // Teal (campus_card)
-    '#1E88E5', // Blue (ehall)
-    '#1976D2', // Blue (info_portal)
-    '#607D8B', // BlueGrey (vpn)
-    '#09C489', // Green (sunshine)
-    '#9C27B0', // Purple
-    '#FF9800', // Orange
+    '#16A34A', // Green
+    '#0EA5E9', // Sky
+    '#D97706', // Amber
+    '#DC2626', // Red
+    '#8B5CF6', // Violet
+    '#EC4899', // Pink
+    '#14B8A6', // Teal
+    '#F97316', // Orange
+    '#6366F1', // Indigo
+    '#64748B', // Slate
   ];
 
   function getConsistentColor(text) {
@@ -614,7 +614,7 @@ div[class*="applicationBox"] .list > div[style*="display: none"] {
     enhanceItems();
     setupSearchEnhancement();
     observeDynamicElements();
-    console.log("🚀 [MD2] ChillEast card theme initialization complete.");
+    console.log("🚀 [MD2] Card theme initialization complete.");
   }
 
   if (document.readyState === 'loading') {
@@ -634,7 +634,7 @@ div[class*="applicationBox"] .list > div[style*="display: none"] {
           const url = window.location.href;
           if (!url.includes('toApps2') && !url.includes('microService2')) return;
           const style = document.createElement('style');
-          style.id = 'chilleast-info-portal-md2-theme';
+          style.id = 'app-info-portal-theme';
           style.textContent = ${jsonEncode(md2Css)};
           if (document.head) {
             document.head.appendChild(style);

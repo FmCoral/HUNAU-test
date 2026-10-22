@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../models/library_models.dart';
@@ -41,16 +42,11 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
   @override
   Widget build(BuildContext context) {
     final roomsAsync = ref.watch(libraryRoomsProvider(_selectedDay));
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.selectReadingRoom),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.bolt_rounded),
@@ -84,7 +80,8 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
         children: [
           // 1. 日期选择栏
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.page, vertical: AppSpacing.sm),
             child: Align(
               alignment: Alignment.centerLeft,
               child: SingleChildScrollView(
@@ -93,26 +90,23 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
                   children: _availableDays.map((day) {
                     final isSelected = day == _selectedDay;
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
                       child: ChoiceChip(
                         label: Text(_formatDayTab(day)),
                         selected: isSelected,
-                        selectedColor:
-                            const Color(0xFF09C489).withValues(alpha: 0.15),
-                        labelStyle: TextStyle(
-                          fontSize: 13,
-                          color: isSelected
-                              ? const Color(0xFF09C489)
-                              : (isDark ? Colors.white70 : Colors.black87),
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
+                        selectedColor: colors.statusBg(colors.brand),
+                        labelStyle: AppText.caption.copyWith(
+                          color:
+                              isSelected ? colors.brandText : colors.text,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: AppRadius.controlAll,
                           side: BorderSide(
-                            color: isSelected
-                                ? const Color(0xFF09C489)
-                                : (isDark ? Colors.white12 : Colors.grey[300]!),
+                            color:
+                                isSelected ? colors.brand : colors.border,
                           ),
                         ),
                         onSelected: (selected) {
@@ -137,25 +131,18 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
             child: roomsAsync.when(
               data: (rooms) => _buildRoomList(rooms),
               loading: () => const Center(
-                child: CircularProgressIndicator(color: Color(0xFF09C489)),
+                child: CircularProgressIndicator(),
               ),
               error: (err, stack) => Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 48, color: Colors.redAccent),
-                    const SizedBox(height: 12),
+                    Icon(Icons.error_outline,
+                        size: 48, color: colors.danger),
+                    const SizedBox(height: AppSpacing.md),
                     Text(err.toString().replaceAll('Exception:', '').trim()),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09C489),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6)),
-                      ),
                       onPressed: () =>
                           ref.invalidate(libraryRoomsProvider(_selectedDay)),
                       child: Text(context.l10n.retry),
@@ -171,7 +158,7 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
   }
 
   Widget _buildRoomList(List<LibraryRoomModel> rooms) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     // 提取全部楼层
     final rawFloors = <String>{};
@@ -197,7 +184,8 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
         // 楼层快捷过滤
         if (rawFloors.length > 1)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.page, vertical: 4),
             child: Align(
               alignment: Alignment.centerLeft,
               child: SingleChildScrollView(
@@ -207,26 +195,23 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
                     final isSelected = floor == _selectedFloor;
                     final label = floor ?? context.l10n.all;
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
                       child: FilterChip(
                         label: Text(label),
                         selected: isSelected,
-                        selectedColor:
-                            const Color(0xFF09C489).withValues(alpha: 0.15),
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          color: isSelected
-                              ? const Color(0xFF09C489)
-                              : (isDark ? Colors.white70 : Colors.black87),
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
+                        selectedColor: colors.statusBg(colors.brand),
+                        labelStyle: AppText.caption.copyWith(
+                          color:
+                              isSelected ? colors.brandText : colors.text,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: AppRadius.controlAll,
                           side: BorderSide(
-                            color: isSelected
-                                ? const Color(0xFF09C489)
-                                : (isDark ? Colors.white12 : Colors.grey[300]!),
+                            color:
+                                isSelected ? colors.brand : colors.border,
                           ),
                         ),
                         onSelected: (selected) {
@@ -247,12 +232,11 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
               ? Center(
                   child: Text(
                     context.l10n.noRoomsFound,
-                    style:
-                        TextStyle(color: isDark ? Colors.white38 : Colors.grey),
+                    style: AppText.bodyDense.copyWith(color: colors.textMuted),
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.page),
                   itemCount: filtered.length,
                   itemBuilder: (context, index) {
                     final room = filtered[index];
@@ -265,24 +249,19 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
   }
 
   Widget _buildRoomCard(LibraryRoomModel room) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () async {
             final result = await showLibraryTimeRangePicker(
               context: context,
@@ -308,7 +287,7 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Row(
               children: [
                 // 楼层图标装饰
@@ -316,16 +295,16 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF09C489).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(6),
+                    color: colors.statusBg(colors.brand),
+                    borderRadius: AppRadius.controlAll,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.meeting_room_rounded,
-                    color: Color(0xFF09C489),
+                    color: colors.brand,
                     size: 22,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
 
                 // 阅览室详细信息
                 Expanded(
@@ -337,12 +316,9 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
                           Expanded(
                             child: Text(
                               room.displayName,
-                              style: TextStyle(
+                              style: AppText.sectionTitle.copyWith(
+                                color: colors.text,
                                 fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF222222),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -352,17 +328,15 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.blue
-                                  .withValues(alpha: isDark ? 0.2 : 0.1),
-                              borderRadius: BorderRadius.circular(4),
+                              color: colors.statusBg(colors.info),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.pill),
                             ),
                             child: Text(
                               room.floorName,
-                              style: TextStyle(
+                              style: AppText.caption.copyWith(
                                 fontSize: 11,
-                                color: isDark
-                                    ? Colors.blue[300]
-                                    : Colors.blue[700],
+                                color: colors.info,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -375,29 +349,25 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
                           Icon(
                             Icons.event_seat_outlined,
                             size: 13,
-                            color: isDark ? Colors.white38 : Colors.grey[600],
+                            color: colors.textMuted,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             context.l10n.totalSeats(room.capacity.toString()),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.white54 : Colors.grey[600],
-                            ),
+                            style: AppText.caption
+                                .copyWith(color: colors.textMuted),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: AppSpacing.md),
                           Icon(
                             Icons.schedule_rounded,
                             size: 13,
-                            color: isDark ? Colors.white38 : Colors.grey[600],
+                            color: colors.textMuted,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '07:00 - 22:00',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.white54 : Colors.grey[600],
-                            ),
+                            style: AppText.caption
+                                .copyWith(color: colors.textMuted),
                           ),
                         ],
                       ),
@@ -405,11 +375,11 @@ class _LibraryRoomScreenState extends ConsumerState<LibraryRoomScreen> {
                   ),
                 ),
 
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 13,
-                  color: isDark ? Colors.white24 : Colors.grey,
+                  color: colors.textMuted,
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 
 /// 课表空状态组件
@@ -18,19 +19,19 @@ class EmptyTimetableState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     final showLoading = autoSyncEnabled && isSyncing;
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(AppSpacing.xxxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSpacing.xxl),
               decoration: BoxDecoration(
-                color: theme.primaryColor.withOpacity(0.1),
+                color: colors.statusBg(colors.brand),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -40,35 +41,27 @@ class EmptyTimetableState extends StatelessWidget {
                         ? Icons.calendar_today_outlined
                         : Icons.cloud_off_outlined),
                 size: 64,
-                color: theme.primaryColor,
+                color: colors.brand,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxxl),
             Text(
               showLoading
                   ? context.l10n.timetableSyncing
                   : context.l10n.noLocalTimetable,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF202124),
-              ),
+              style: AppText.pageTitle.copyWith(color: colors.text),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               showLoading
                   ? context.l10n.timetableSyncingDesc
                   : context.l10n.tapRefreshButtonToSync,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(0xFF5F6368),
-                height: 1.5,
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.textMuted, height: 1.5),
             ),
             if (showLoading) ...[
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxxl),
               const SizedBox(
                 width: 24,
                 height: 24,

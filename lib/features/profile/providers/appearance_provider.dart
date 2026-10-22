@@ -24,7 +24,7 @@ class AppearanceNotifier extends StateNotifier<AppearanceState> {
   static const String _feedAutoSortKey = 'feed_auto_sort';
 
   static final List<FunctionItem> _masterPool = [
-    const FunctionItem(id: 'sunshine', label: '阳光服务', icon: Icons.wb_sunny_outlined, color: Color(0xFF09C489)),
+    const FunctionItem(id: 'sunshine', label: '阳光服务', icon: Icons.wb_sunny_outlined, color: Color(0xFF16A34A)),
     const FunctionItem(id: 'questionnaire', label: '学工问卷', icon: Icons.assignment_outlined, color: Color(0xFF3476E6)),
     const FunctionItem(id: 'leave', label: '请假申请', icon: Icons.event_note_outlined, color: Color(0xFF009688)),
     const FunctionItem(id: 'payment_code', label: '付款码', icon: Icons.qr_code_scanner_outlined, color: Color(0xFF00C853)),
@@ -100,9 +100,9 @@ class AppearanceNotifier extends StateNotifier<AppearanceState> {
   }
 
   static final List<FunctionItem> _feedPool = [
-    const FunctionItem(id: 'feed_quick', label: '快捷功能', icon: Icons.apps_rounded, color: Color(0xFF09C489)),
+    const FunctionItem(id: 'feed_quick', label: '快捷功能', icon: Icons.apps_rounded, color: Color(0xFF16A34A)),
     const FunctionItem(id: 'feed_library', label: '图书馆预约', icon: Icons.local_library_outlined, color: Color(0xFF795548)),
-    const FunctionItem(id: 'feed_agenda', label: '今日日程', icon: Icons.calendar_today_outlined, color: Color(0xFF09C489)),
+    const FunctionItem(id: 'feed_agenda', label: '今日日程', icon: Icons.calendar_today_outlined, color: Color(0xFF16A34A)),
     const FunctionItem(id: 'feed_homework', label: '作业', icon: Icons.assignment_outlined, color: Color(0xFFF39C12)),
     const FunctionItem(id: 'feed_leave', label: '请假申请', icon: Icons.event_note_outlined, color: Color(0xFF009688)),
     const FunctionItem(id: 'feed_repair', label: '报修工单', icon: Icons.handyman_outlined, color: Colors.blueGrey),

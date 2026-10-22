@@ -5,7 +5,7 @@ Requirements:
 1. Ordinary Mandarin ratio <= 30.0% as measured by scripts/measure_dialect.py.
 2. Complete all 929 keys in lib/l10n/app_zh.arb.
 3. Strictly satisfy test/core/state/locale_provider_test.dart assertions:
-   - appTitle: "自在东湖"
+   - appTitle: "牛×5"
    - settings: "设置"
    - tabHome: "首页"
 4. Authentic Changsha dialect vocabulary & grammar from 《长沙方言词典》.
@@ -23,7 +23,7 @@ HSN_PATH = Path("lib/l10n/app_hsn.arb")
 # Changsha dialect translations for remaining / newly added Mandarin keys
 CHANGSHA_MAP = {
     # Test strict assertions (MUST NOT CHANGE)
-    "appTitle": "自在东湖",
+    "appTitle": "牛×5",
     "settings": "设置",
     "tabHome": "首页",
 
@@ -179,7 +179,7 @@ CHANGSHA_MAP = {
     "dataSyncSettings": "底细数据",
     "dataBackup": "数据导出去",
     "backupSecurityTip": "备份不包登录暗号，包自设的 AI Key，请好生收好",
-    "backupShareText": "自个的自在东湖备份底细",
+    "backupShareText": "自个的牛×5备份底细",
     "backupExportSuccess": "备份导出来哒，做得存好或者发把别个",
     "backupExportFailed": "导出来冒搞成: {error}",
     "dataImport": "数据导进来",
@@ -331,7 +331,7 @@ def main():
 
         # Strict checks
         if k == "appTitle":
-            translated_val = "自在东湖"
+            translated_val = "牛×5"
         elif k == "settings":
             translated_val = "设置"
         elif k == "tabHome":

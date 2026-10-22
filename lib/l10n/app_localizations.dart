@@ -8,13 +8,9 @@ import 'package:intl/intl.dart' as intl;
 import 'app_localizations_en.dart';
 import 'app_localizations_es.dart';
 import 'app_localizations_fr.dart';
-import 'app_localizations_gan.dart';
-import 'app_localizations_hsn.dart';
 import 'app_localizations_ja.dart';
 import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
-import 'app_localizations_wuu.dart';
-import 'app_localizations_yue.dart';
 import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
@@ -106,23 +102,18 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('es'),
     Locale('fr'),
-    Locale('gan'),
-    Locale('hsn'),
     Locale('ja'),
     Locale('pt'),
     Locale('ru'),
-    Locale('wuu'),
-    Locale('yue'),
     Locale('zh'),
     Locale('zh', 'HK'),
-    Locale('zh', 'TW'),
-    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'hefei')
+    Locale('zh', 'TW')
   ];
 
   /// 应用名称
   ///
   /// In zh, this message translates to:
-  /// **'自在东湖'**
+  /// **'牛×5'**
   String get appTitle;
 
   /// 设置页面标题
@@ -1364,7 +1355,7 @@ abstract class AppLocalizations {
   /// No description provided for @ossDescription.
   ///
   /// In zh, this message translates to:
-  /// **'自在东湖 是基于开源社区的各种优秀组件构建而成的。我们尊重并感谢每一位开发者的贡献。'**
+  /// **'牛×5 是基于开源社区的各种优秀组件构建而成的。我们尊重并感谢每一位开发者的贡献。'**
   String get ossDescription;
 
   /// No description provided for @needLocationForBus.
@@ -2663,7 +2654,7 @@ abstract class AppLocalizations {
   /// No description provided for @defaultHitokoto.
   ///
   /// In zh, this message translates to:
-  /// **'自在东湖在湖东！'**
+  /// **'牛×5在湖东！'**
   String get defaultHitokoto;
 
   /// No description provided for @loggingInPleaseWait.
@@ -2711,7 +2702,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedbackEmailSubject.
   ///
   /// In zh, this message translates to:
-  /// **'自在东湖 App 反馈'**
+  /// **'牛×5 App 反馈'**
   String get feedbackEmailSubject;
 
   /// No description provided for @bill.
@@ -5130,7 +5121,7 @@ abstract class AppLocalizations {
   /// 备份分享文案
   ///
   /// In zh, this message translates to:
-  /// **'我的自在东湖数据备份'**
+  /// **'我的牛×5数据备份'**
   String get backupShareText;
 
   /// 备份导出成功提示
@@ -5964,7 +5955,7 @@ abstract class AppLocalizations {
   /// No description provided for @postLoginDoneMessage.
   ///
   /// In zh, this message translates to:
-  /// **'欢迎使用「自在东湖」，更多选项请访问「设置」。'**
+  /// **'欢迎使用「牛×5」，更多选项请访问「设置」。'**
   String get postLoginDoneMessage;
 
   /// No description provided for @postLoginDoneButton.
@@ -5994,8 +5985,32 @@ abstract class AppLocalizations {
   /// No description provided for @analyticsPromptSubtitle.
   ///
   /// In zh, this message translates to:
-  /// **'仅使用绝对匿名方式，统计您的使用版本。'**
+  /// **'仅统计您的使用版本。'**
   String get analyticsPromptSubtitle;
+
+  /// No description provided for @feedbackContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'反馈内容'**
+  String get feedbackContent;
+
+  /// No description provided for @pleaseEnterFeedback.
+  ///
+  /// In zh, this message translates to:
+  /// **'请描述您遇到的问题或建议…'**
+  String get pleaseEnterFeedback;
+
+  /// No description provided for @pleaseEnterContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入内容'**
+  String get pleaseEnterContent;
+
+  /// No description provided for @submitFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'提交失败'**
+  String get submitFailed;
 }
 
 class _AppLocalizationsDelegate
@@ -6012,13 +6027,9 @@ class _AppLocalizationsDelegate
         'en',
         'es',
         'fr',
-        'gan',
-        'hsn',
         'ja',
         'pt',
         'ru',
-        'wuu',
-        'yue',
         'zh'
       ].contains(locale.languageCode);
 
@@ -6027,18 +6038,6 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-  // Lookup logic when language+script codes are specified.
-  switch (locale.languageCode) {
-    case 'zh':
-      {
-        switch (locale.scriptCode) {
-          case 'hefei':
-            return AppLocalizationsZhHefei();
-        }
-        break;
-      }
-  }
-
   // Lookup logic when language+country codes are specified.
   switch (locale.languageCode) {
     case 'zh':
@@ -6061,20 +6060,12 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEs();
     case 'fr':
       return AppLocalizationsFr();
-    case 'gan':
-      return AppLocalizationsGan();
-    case 'hsn':
-      return AppLocalizationsHsn();
     case 'ja':
       return AppLocalizationsJa();
     case 'pt':
       return AppLocalizationsPt();
     case 'ru':
       return AppLocalizationsRu();
-    case 'wuu':
-      return AppLocalizationsWuu();
-    case 'yue':
-      return AppLocalizationsYue();
     case 'zh':
       return AppLocalizationsZh();
   }

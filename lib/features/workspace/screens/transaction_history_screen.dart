@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/transaction_model.dart';
 import '../services/transaction_service.dart';
+import '../../../core/theme/app_tokens.dart';
 
 extension TransactionTypeL10n on TransactionType {
   String getLocalizedLabel(BuildContext context) {
@@ -29,7 +29,7 @@ extension TransactionTypeL10n on TransactionType {
 /// 接口与加解密见 [TransactionService]，页面校验对齐
 /// `querytrace.js` 的 `queryTrade()`：间隔 ≤ 31 天，截止 ≥ 起始且 ≤ 当天。
 ///
-/// 布局：未查询时条件居中；点击查询后条件上移，下方出现灰框账单。
+/// 布局：未查询时条件居中；点击查询后条件上移，下方出现卡片账单。
 class TransactionHistoryScreen extends ConsumerStatefulWidget {
   const TransactionHistoryScreen({super.key});
 
@@ -148,33 +148,29 @@ class _TransactionHistoryScreenState
     return '';
   }
 
-  ({IconData icon, Color color}) _typeStyle(String value) {
+  ({IconData icon, Color color}) _typeStyle(AppSemanticColors colors, String value) {
     switch (value) {
       case '1':
-        return (icon: Icons.shopping_cart_outlined, color: Colors.orange);
+        return (icon: Icons.shopping_cart_outlined, color: colors.warning);
       case '2':
         return (
           icon: Icons.account_balance_wallet_outlined,
-          color: const Color(0xFF09C489)
+          color: colors.brand,
         );
       case '3':
-        return (icon: Icons.redeem_outlined, color: Colors.purple);
+        return (icon: Icons.redeem_outlined, color: colors.info);
       case '4':
-        return (icon: Icons.swap_horiz, color: Colors.blue);
+        return (icon: Icons.swap_horiz, color: colors.info);
       default:
-        return (icon: Icons.receipt_long_outlined, color: Colors.grey);
+        return (icon: Icons.receipt_long_outlined, color: colors.textMuted);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    const themeColor = Color(AppConstants.primaryColorValue);
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.l10n.bill,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+        title: Text(context.l10n.bill),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.maybePop(context),
@@ -195,26 +191,26 @@ class _TransactionHistoryScreenState
           ),
         ),
         child: _hasQueried
-            ? _buildResultLayout(themeColor, isDark)
-            : _buildInitialLayout(themeColor, isDark),
+            ? _buildResultLayout()
+            : _buildInitialLayout(),
       ),
     );
   }
 
   /// 未查询：条件居中
-  Widget _buildInitialLayout(Color themeColor, bool isDark) {
+  Widget _buildInitialLayout() {
     return Center(
       key: const ValueKey('bill-initial'),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildConditionRow(themeColor, isDark),
-            const SizedBox(height: 16),
+            _buildConditionRow(),
+            const SizedBox(height: AppSpacing.lg),
             Align(
               alignment: Alignment.centerRight,
-              child: _buildQueryButton(themeColor),
+              child: _buildQueryButton(),
             ),
           ],
         ),
@@ -222,31 +218,32 @@ class _TransactionHistoryScreenState
     );
   }
 
-  /// 查询后：条件上移，下方灰框账单
-  Widget _buildResultLayout(Color themeColor, bool isDark) {
+  /// 查询后：条件上移，下方卡片账单
+  Widget _buildResultLayout() {
     return Column(
       key: const ValueKey('bill-result'),
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.page, AppSpacing.page, AppSpacing.page, AppSpacing.md),
           child: Column(
             children: [
-              _buildConditionRow(themeColor, isDark),
-              const SizedBox(height: 12),
+              _buildConditionRow(),
+              const SizedBox(height: AppSpacing.md),
               Align(
                 alignment: Alignment.centerRight,
-                child: _buildQueryButton(themeColor),
+                child: _buildQueryButton(),
               ),
             ],
           ),
         ),
-        Expanded(child: _buildBillBox(themeColor, isDark)),
+        Expanded(child: _buildBillBox()),
       ],
     );
   }
 
   /// 起始日期 - 截止日期 - 类型（一行，三框固定等高）
-  Widget _buildConditionRow(Color themeColor, bool isDark) {
+  Widget _buildConditionRow() {
     return Row(
       children: [
         Expanded(
@@ -254,26 +251,22 @@ class _TransactionHistoryScreenState
           child: _buildDateBox(
             label: context.l10n.startDate,
             date: _beginDate,
-            isDark: isDark,
-            themeColor: themeColor,
             onTap: () => _pickDate(true),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           flex: 4,
           child: _buildDateBox(
             label: context.l10n.endDate,
             date: _endDate,
-            isDark: isDark,
-            themeColor: themeColor,
             onTap: () => _pickDate(false),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
           flex: 3,
-          child: _buildTypeBox(isDark),
+          child: _buildTypeBox(),
         ),
       ],
     );
@@ -282,67 +275,48 @@ class _TransactionHistoryScreenState
   Widget _buildDateBox({
     required String label,
     required DateTime? date,
-    required bool isDark,
-    required Color themeColor,
     required VoidCallback onTap,
   }) {
-    final valueColor = date == null
-        ? (isDark ? Colors.white38 : Colors.black38)
-        : (isDark ? Colors.white : Colors.black87);
+    final colors = context.colors;
     return _md2Box(
       label: label,
       onTap: onTap,
-      isDark: isDark,
       child: Row(
         children: [
           Expanded(
             child: Text(
               date == null ? context.l10n.pleaseSelect : _fmt(date),
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: valueColor),
+              style: AppText.caption.copyWith(
+                fontWeight: FontWeight.w500,
+                color: date == null ? colors.textMuted : colors.text,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Icon(Icons.calendar_today_outlined,
-              size: 16, color: themeColor),
+              size: 16, color: colors.textMuted),
         ],
       ),
     );
   }
 
-  /// MD2 风格描边框：4dp 圆角 + label 嵌在描边上 + 56dp 高
+  /// 描边选择框：label 嵌在描边上 + 56dp 高，边框/填充走全局主题
   Widget _md2Box({
     required String label,
     required Widget child,
     required VoidCallback onTap,
-    required bool isDark,
   }) {
-    final borderColor = isDark
-        ? Colors.white.withOpacity(0.38)
-        : Colors.black.withOpacity(0.38);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: AppRadius.controlAll,
       child: SizedBox(
         height: 56,
         child: InputDecorator(
           decoration: InputDecoration(
             labelText: label,
-            labelStyle: const TextStyle(fontSize: 12),
             floatingLabelBehavior: FloatingLabelBehavior.always,
-            filled: true,
-            fillColor:
-                isDark ? Colors.white.withOpacity(0.05) : Colors.white,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6)),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(6),
-              borderSide: BorderSide(color: borderColor),
-            ),
           ),
           child: child,
         ),
@@ -350,74 +324,61 @@ class _TransactionHistoryScreenState
     );
   }
 
-  /// 类型选择框：MD2 框 + 底部弹窗选值
+  /// 类型选择框：描边框 + 底部弹窗选值
   /// （不用 DropdownButton：它的弹出菜单路由在动画首帧会以零尺寸参与
   /// hit test，debug 下刷 `Cannot hit test a render box with no size`）
-  Widget _buildTypeBox(bool isDark) {
+  Widget _buildTypeBox() {
+    final colors = context.colors;
     return _md2Box(
       label: context.l10n.type,
-      onTap: () => _pickType(isDark),
-      isDark: isDark,
+      onTap: _pickType,
       child: Row(
         children: [
           Expanded(
             child: Text(
               _type.getLocalizedLabel(context),
-              style: TextStyle(
-                fontSize: 14,
+              style: AppText.bodyDense.copyWith(
                 fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white : Colors.black87,
+                color: colors.text,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           Icon(Icons.keyboard_arrow_down,
-              size: 18,
-              color: isDark ? Colors.white70 : Colors.black54),
+              size: 18, color: colors.textMuted),
         ],
       ),
     );
   }
 
-  Future<void> _pickType(bool isDark) async {
+  Future<void> _pickType() async {
+    final colors = context.colors;
     final selected = await showModalBottomSheet<TransactionType>(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(6)),
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 8),
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white24 : Colors.black12,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.border,
+                borderRadius: BorderRadius.circular(2),
               ),
-              ...TransactionType.values.map(
-                (t) => ListTile(
-                  title: Text(t.getLocalizedLabel(sheetContext),
-                      style: TextStyle(
-                          color:
-                              isDark ? Colors.white : Colors.black87)),
-                  trailing: _type == t
-                      ? const Icon(Icons.check,
-                          color: Color(0xFF09C489))
-                      : null,
-                  onTap: () => Navigator.pop(sheetContext, t),
-                ),
+            ),
+            ...TransactionType.values.map(
+              (t) => ListTile(
+                title: Text(t.getLocalizedLabel(sheetContext)),
+                trailing: _type == t
+                    ? Icon(Icons.check, color: colors.brand)
+                    : null,
+                onTap: () => Navigator.pop(sheetContext, t),
               ),
-              const SizedBox(height: 8),
-            ],
-          ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
         ),
       ),
     );
@@ -426,20 +387,12 @@ class _TransactionHistoryScreenState
     }
   }
 
-  /// 查询按钮：样式对齐充值页（高 42 / 无阴影 / 圆角 6 / 图文 Row），颜色保持绿色
-  Widget _buildQueryButton(Color themeColor) {
+  /// 查询按钮：样式交给全局主题
+  Widget _buildQueryButton() {
     return SizedBox(
-      height: 42,
+      height: 48,
       child: ElevatedButton.icon(
         onPressed: _isLoading ? null : _query,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: themeColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
         icon: _isLoading
             ? const SizedBox(
                 width: 18,
@@ -454,43 +407,33 @@ class _TransactionHistoryScreenState
     );
   }
 
-  /// 灰框账单：透明背景 + 灰色边框（左/上/右），底部直通屏幕底边
-  Widget _buildBillBox(Color themeColor, bool isDark) {
-    final borderColor =
-        isDark ? Colors.white.withOpacity(0.15) : Colors.grey.withOpacity(0.4);
+  /// 卡片账单容器
+  Widget _buildBillBox() {
+    final colors = context.colors;
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
       decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border(
-          left: BorderSide(color: borderColor),
-          right: BorderSide(color: borderColor),
-          top: BorderSide(color: borderColor),
-        ),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
+        color: colors.surface,
+        border: Border.all(color: colors.border),
+        borderRadius: AppRadius.cardAll,
       ),
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
+        borderRadius: AppRadius.cardAll,
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
-          child: _buildBillContent(themeColor, isDark),
+          child: _buildBillContent(),
         ),
       ),
     );
   }
 
-  Widget _buildBillContent(Color themeColor, bool isDark) {
+  Widget _buildBillContent() {
+    final colors = context.colors;
     if (_isLoading) {
-      return Center(
-        key: const ValueKey('bill-loading'),
-        child: CircularProgressIndicator(color: themeColor),
+      return const Center(
+        key: ValueKey('bill-loading'),
+        child: CircularProgressIndicator(),
       );
     }
     if (_error != null) {
@@ -499,26 +442,21 @@ class _TransactionHistoryScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Icon(Icons.error_outline, size: 48, color: colors.danger),
+            const SizedBox(height: AppSpacing.md),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
               child: Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: isDark ? Colors.white70 : Colors.black87),
+                style: AppText.bodyDense.copyWith(color: colors.text),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             ElevatedButton(
               onPressed: _query,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: themeColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6)),
-              ),
-              child: Text(context.l10n.retry,
-                  style: const TextStyle(color: Colors.white)),
+              child: Text(context.l10n.retry),
             ),
           ],
         ),
@@ -527,66 +465,65 @@ class _TransactionHistoryScreenState
     if (_records.isEmpty) {
       return Center(
         key: const ValueKey('bill-empty'),
-        child: Text(context.l10n.noTransactions,
-            style: TextStyle(
-                color: isDark ? Colors.white54 : Colors.black54)),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.receipt_long_outlined,
+                size: 48, color: colors.textMuted),
+            const SizedBox(height: AppSpacing.md),
+            Text(context.l10n.noTransactions,
+                style: AppText.bodyDense.copyWith(color: colors.textMuted)),
+          ],
+        ),
       );
     }
     return RefreshIndicator(
       key: const ValueKey('bill-list'),
-      color: themeColor,
       onRefresh: _query,
       child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.sm, horizontal: AppSpacing.sm),
         itemCount: _records.length,
         itemBuilder: (context, index) {
           final r = _records[index];
-          final style = _typeStyle(_recordTypeValue(r));
+          final style = _typeStyle(colors, _recordTypeValue(r));
           final isNegative = r.amount.trim().startsWith('-');
           return Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm, vertical: 10),
             child: Row(
               children: [
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: style.color.withOpacity(0.12),
+                    color: colors.statusBg(style.color),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(style.icon, size: 20, color: style.color),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(r.merchantName,
-                          style: TextStyle(
+                          style: AppText.bodyDense.copyWith(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
-                              color: isDark
-                                  ? Colors.white
-                                  : Colors.black87)),
+                              color: colors.text)),
                       const SizedBox(height: 2),
                       Text(r.time,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: isDark
-                                  ? Colors.white54
-                                  : Colors.black54)),
+                          style: AppText.caption.copyWith(
+                              fontSize: 12, color: colors.textMuted)),
                     ],
                   ),
                 ),
                 Text(
                   r.amount,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isNegative
-                        ? (isDark ? Colors.white70 : Colors.black87)
-                        : themeColor,
+                  style: AppText.body.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: isNegative ? colors.text : colors.brandText,
                   ),
                 ),
               ],

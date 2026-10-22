@@ -93,7 +93,7 @@ class HomeWidgetService {
 
   /// 功能配色（与外观设置 _masterPool 一致，原生侧为矢量图标着色）。
   static const Map<String, int> functionColors = {
-    'sunshine': 0xFF09C489,
+    'sunshine': 0xFF16A34A,
     'ehall': 0xFF1E88E5,
     'info_portal': 0xFF1976D2,
     'questionnaire': 0xFF3476E6,
@@ -375,7 +375,7 @@ class HomeWidgetService {
           'id': id,
           'label': labelOf(id),
           'emoji': functionEmoji[id] ?? '🔹',
-          'color': functionColors[id] ?? 0xFF09C489,
+          'color': functionColors[id] ?? 0xFF16A34A,
         }).toList();
     return {'title': title, 'items': items};
   }

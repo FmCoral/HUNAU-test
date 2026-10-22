@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/library_models.dart';
 import '../providers/library_provider.dart';
@@ -162,17 +163,17 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
 
       if (!mounted) return;
 
+      final colors = context.colors;
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           title: Row(
             children: [
-              const Icon(Icons.check_circle, color: Color(0xFF09C489)),
-              const SizedBox(width: 8),
+              Icon(Icons.check_circle, color: colors.brand),
+              const SizedBox(width: AppSpacing.sm),
               Text(context.l10n.reservationSuccess,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: AppText.sectionTitle.copyWith(color: colors.text)),
             ],
           ),
           content: Column(
@@ -186,10 +187,10 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
               Text(context.l10n.dateLabel(widget.day)),
               const SizedBox(height: 4),
               Text(context.l10n.timeValueLabel('$_startTime ~ $_endTime')),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 context.l10n.reservationNotice,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
             ],
           ),
@@ -197,37 +198,29 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09C489),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                minimumSize: const Size(0, 36),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6)),
+                minimumSize: const Size(0, 40),
               ),
               onPressed: () {
                 Navigator.pop(ctx);
                 Navigator.pop(context, true);
               },
-              child: Text(context.l10n.done,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(context.l10n.done),
             ),
           ],
         ),
       );
     } catch (e) {
       if (mounted) {
+        final colors = context.colors;
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Row(
               children: [
-                const Icon(Icons.error_outline, color: Colors.red),
-                const SizedBox(width: 8),
+                Icon(Icons.error_outline, color: colors.danger),
+                const SizedBox(width: AppSpacing.sm),
                 Text(context.l10n.reservationFailed,
-                    style:
-                        const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: AppText.sectionTitle.copyWith(color: colors.text)),
               ],
             ),
             content: Text(e.toString().replaceAll('Exception:', '').trim()),
@@ -235,16 +228,10 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
             actions: [
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  minimumSize: const Size(0, 36),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
+                  minimumSize: const Size(0, 40),
                 ),
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(context.l10n.iUnderstand,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(context.l10n.iUnderstand),
               ),
             ],
           ),
@@ -275,16 +262,11 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(widget.room.displayName),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -297,36 +279,34 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
         children: [
           // 顶部时段与图例栏
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.page, vertical: AppSpacing.md),
+            color: colors.surface,
             child: Column(
               children: [
                 // 时段选择卡片
                 InkWell(
                   onTap: _showTimeRangePicker,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: AppRadius.controlAll,
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF09C489)
-                          .withValues(alpha: isDark ? 0.15 : 0.08),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                          color: const Color(0xFF09C489)
-                              .withValues(alpha: isDark ? 0.35 : 0.2)),
+                      color: colors.statusBg(colors.brand),
+                      borderRadius: AppRadius.controlAll,
+                      border: Border.all(color: colors.brand),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time_filled_rounded,
-                            size: 16, color: Color(0xFF09C489)),
-                        const SizedBox(width: 8),
+                        Icon(Icons.access_time_filled_rounded,
+                            size: 16, color: colors.brand),
+                        const SizedBox(width: AppSpacing.sm),
                         Text(
-                          context.l10n.dateAndPeriod(widget.day, '$_startTime - $_endTime'),
-                          style: const TextStyle(
-                            fontSize: 13,
+                          context.l10n.dateAndPeriod(
+                              widget.day, '$_startTime - $_endTime'),
+                          style: AppText.caption.copyWith(
+                            color: colors.brandText,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF09C489),
                           ),
                         ),
                         const Spacer(),
@@ -334,12 +314,11 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
                           const SizedBox(
                             width: 14,
                             height: 14,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Color(0xFF09C489)),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         else
-                          const Icon(Icons.arrow_forward_ios_rounded,
-                              size: 12, color: Color(0xFF09C489)),
+                          Icon(Icons.arrow_forward_ios_rounded,
+                              size: 12, color: colors.brand),
                       ],
                     ),
                   ),
@@ -350,44 +329,37 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildLegendItem(
-                      color: isDark
-                          ? const Color(0xFF16382B)
-                          : const Color(0xFFE8F5E9),
-                      borderColor: const Color(0xFF09C489),
+                      color: colors.statusBg(colors.brand),
+                      borderColor: colors.brand,
                       label: context.l10n.seatAvailable,
-                      isDark: isDark,
+                      colors: colors,
                     ),
                     _buildLegendItem(
-                      color: const Color(0xFF09C489),
-                      borderColor: const Color(0xFF09C489),
+                      color: colors.brand,
+                      borderColor: colors.brand,
                       label: context.l10n.seatSelected,
-                      isDark: isDark,
+                      colors: colors,
                     ),
                     _buildLegendItem(
-                      color:
-                          isDark ? const Color(0xFF2A2A2A) : Colors.grey[300]!,
-                      borderColor:
-                          isDark ? const Color(0xFF3D3D3D) : Colors.grey[400]!,
+                      color: colors.surfaceSubtle,
+                      borderColor: colors.border,
                       label: context.l10n.seatOccupied,
-                      isDark: isDark,
+                      colors: colors,
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          Divider(
-            height: 1,
-            color: isDark ? Colors.white12 : const Color(0xFFEEEEEE),
-          ),
+          Divider(height: 1, color: colors.border),
 
           // 中间互动座位图
           Expanded(
-            child: _buildSeatGridContent(isDark),
+            child: _buildSeatGridContent(colors),
           ),
 
           // 底部确认卡片
-          _buildBottomActionCard(isDark),
+          _buildBottomActionCard(colors),
         ],
       ),
     );
@@ -397,7 +369,7 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
     required Color color,
     required Color borderColor,
     required String label,
-    required bool isDark,
+    required AppSemanticColors colors,
   }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -414,23 +386,20 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
         const SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            color: isDark ? Colors.white60 : Colors.grey[700],
-          ),
+          style: AppText.caption.copyWith(color: colors.textMuted),
         ),
       ],
     );
   }
 
-  Widget _buildSeatGridContent(bool isDark) {
+  Widget _buildSeatGridContent(AppSemanticColors colors) {
     if (_isLoadingGrid) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(color: Color(0xFF09C489)),
-            const SizedBox(height: 12),
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppSpacing.md),
             Text(context.l10n.loadingSeatMap),
           ],
         ),
@@ -442,19 +411,12 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.sentiment_dissatisfied,
-                size: 48, color: Colors.grey),
-            const SizedBox(height: 12),
+            Icon(Icons.sentiment_dissatisfied,
+                size: 48, color: colors.textMuted),
+            const SizedBox(height: AppSpacing.md),
             Text(_errorMessage ?? context.l10n.loadFailed),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09C489),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6)),
-              ),
               onPressed: _loadSeatGrid,
               child: Text(context.l10n.retry),
             ),
@@ -473,8 +435,8 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
       boundaryMargin: const EdgeInsets.all(200),
       constrained: false,
       child: Container(
-        padding: const EdgeInsets.all(24),
-        color: isDark ? const Color(0xFF141414) : const Color(0xFFF8F9FA),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        color: colors.bg,
         child: SizedBox(
           width: data.cols * cellSize,
           height: data.rows * cellSize,
@@ -489,17 +451,16 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
                   height: cellSize - 2,
                   child: Container(
                     decoration: BoxDecoration(
-                      color:
-                          isDark ? const Color(0xFF242424) : Colors.grey[200],
+                      color: colors.surfaceSubtle,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     alignment: Alignment.center,
                     child: obs.label.isNotEmpty
                         ? Text(
                             obs.label,
-                            style: TextStyle(
+                            style: AppText.caption.copyWith(
                               fontSize: 10,
-                              color: isDark ? Colors.white38 : Colors.grey,
+                              color: colors.textMuted,
                             ),
                             overflow: TextOverflow.ellipsis,
                           )
@@ -509,7 +470,7 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
 
               // 2. 渲染座位
               for (final seat in data.seats)
-                _buildSeatWidget(seat, cellSize, isDark),
+                _buildSeatWidget(seat, cellSize, colors),
             ],
           ),
         ),
@@ -517,7 +478,8 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
     );
   }
 
-  Widget _buildSeatWidget(LibrarySeatItem seat, double cellSize, bool isDark) {
+  Widget _buildSeatWidget(
+      LibrarySeatItem seat, double cellSize, AppSemanticColors colors) {
     final isOccupied =
         _usedSeats.contains(seat.seatNum) || seat.reserveStatus != 0;
     final isSelected = _selectedSeatNum == seat.seatNum;
@@ -527,18 +489,17 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
     Color textColor;
 
     if (isOccupied) {
-      bgColor = isDark ? const Color(0xFF262626) : Colors.grey[300]!;
-      borderColor = isDark ? const Color(0xFF383838) : Colors.grey[400]!;
-      textColor = isDark ? Colors.white24 : Colors.grey[600]!;
+      bgColor = colors.surfaceSubtle;
+      borderColor = colors.border;
+      textColor = colors.textMuted;
     } else if (isSelected) {
-      bgColor = const Color(0xFF09C489);
-      borderColor = const Color(0xFF09C489);
-      textColor = Colors.white;
+      bgColor = colors.brand;
+      borderColor = colors.brand;
+      textColor = Theme.of(context).colorScheme.onPrimary;
     } else {
-      bgColor = isDark ? const Color(0xFF16382B) : const Color(0xFFE8F5E9);
-      borderColor =
-          const Color(0xFF09C489).withValues(alpha: isDark ? 0.6 : 0.5);
-      textColor = isDark ? const Color(0xFF81C784) : const Color(0xFF1B5E20);
+      bgColor = colors.statusBg(colors.brand);
+      borderColor = colors.brand;
+      textColor = colors.brandText;
     }
 
     return Positioned(
@@ -578,51 +539,38 @@ class _LibrarySeatScreenState extends ConsumerState<LibrarySeatScreen> {
     );
   }
 
-  Widget _buildBottomActionCard(bool isDark) {
+  Widget _buildBottomActionCard(AppSemanticColors colors) {
+    final onBrand = Theme.of(context).colorScheme.onPrimary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: colors.surface,
         border: Border(
-          top: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : const Color(0xFFE0E0E0),
-            width: 1,
-          ),
+          top: BorderSide(color: colors.border),
         ),
       ),
       child: SafeArea(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            SizedBox(
-              height: 38,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                ),
-                onPressed: (_selectedSeatNum != null && !_isSubmitting)
-                    ? _submitReservation
-                    : null,
-                child: _isSubmitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
-                      )
-                    : Text(
-                        context.l10n.reserveNow,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
-                      ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(80, 40),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               ),
+              onPressed: (_selectedSeatNum != null && !_isSubmitting)
+                  ? _submitReservation
+                  : null,
+              child: _isSubmitting
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: onBrand),
+                    )
+                  : Text(context.l10n.reserveNow),
             ),
           ],
         ),

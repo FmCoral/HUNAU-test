@@ -4,6 +4,7 @@ import '../models/timetable_rule_model.dart';
 import '../services/timetable_rule_service.dart';
 import '../utils/date_calculator.dart';
 import '../utils/week_parser.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 
 /// 课表规则操作管理组件
@@ -15,17 +16,12 @@ class TimetableRuleDialogs {
     DateTime? firstWeekMonday,
     required VoidCallback onRuleApplied,
   }) async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentWeek = firstWeekMonday != null
         ? DateCalculator.getCurrentWeekNumber(firstWeekMonday).clamp(1, 25)
         : 1;
 
     await showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(6)),
-      ),
       builder: (ctx) {
         return SafeArea(
           child: Padding(
@@ -37,7 +33,7 @@ class TimetableRuleDialogs {
                 const SizedBox(height: 8),
                 _buildActionTile(
                   icon: Icons.swap_horiz_rounded,
-                  iconColor: Colors.blue,
+                  iconColor: context.colors.info,
                   title: context.l10n.reschedule,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -51,7 +47,7 @@ class TimetableRuleDialogs {
                 ),
                 _buildActionTile(
                   icon: Icons.event_busy_rounded,
-                  iconColor: Colors.orange,
+                  iconColor: context.colors.warning,
                   title: context.l10n.suspension,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -65,7 +61,7 @@ class TimetableRuleDialogs {
                 ),
                 _buildActionTile(
                   icon: Icons.add_circle_outline_rounded,
-                  iconColor: Colors.green,
+                  iconColor: context.colors.brand,
                   title: context.l10n.addCourse,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -78,7 +74,7 @@ class TimetableRuleDialogs {
                 ),
                 _buildActionTile(
                   icon: Icons.rule_folder_outlined,
-                  iconColor: Colors.redAccent,
+                  iconColor: context.colors.danger,
                   title: context.l10n.myAdjustments,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -115,7 +111,7 @@ class TimetableRuleDialogs {
               height: 40,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: iconColor.withOpacity(0.15),
+                color: iconColor.withValues(alpha: 0.12),
               ),
               child: Icon(icon, color: iconColor, size: 22),
             ),
@@ -137,22 +133,19 @@ class TimetableRuleDialogs {
     required String label,
     required VoidCallback onTap,
   }) {
-    final primary = Theme.of(context).primaryColor;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.controlAll,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: AppRadius.controlAll,
             border: Border.all(
-              color: selected
-                  ? primary
-                  : (isDark ? Colors.white24 : const Color(0xFFDADCE0)),
+              color: selected ? colors.brand : colors.border,
               width: 1,
             ),
           ),
@@ -160,9 +153,7 @@ class TimetableRuleDialogs {
             label,
             style: TextStyle(
               fontSize: 13,
-              color: selected
-                  ? primary
-                  : (isDark ? Colors.white70 : Colors.black87),
+              color: selected ? colors.brandText : colors.text,
               fontWeight: selected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -224,8 +215,6 @@ class TimetableRuleDialogs {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-
             // 单门调课计算
             final matchingSlots = singleCourseName != null
                 ? currentCourses
@@ -274,7 +263,7 @@ class TimetableRuleDialogs {
             return AlertDialog(
               title: Row(
                 children: [
-                  const Icon(Icons.swap_horiz_rounded, color: Colors.blue),
+                  Icon(Icons.swap_horiz_rounded, color: context.colors.info),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(context.l10n.reschedule,
@@ -316,7 +305,7 @@ class TimetableRuleDialogs {
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: Text(context.l10n.noCoursesSyncFirst,
-                              style: const TextStyle(color: Colors.grey)),
+                              style: TextStyle(color: context.colors.textMuted)),
                         )
                       else ...[
                         DropdownButtonFormField<String>(
@@ -399,8 +388,7 @@ class TimetableRuleDialogs {
                             context.l10n.usualTimeFormat(weekdayNames[slotDay], slotStartP, slotEndP, activeSlot.weeks),
                             style: TextStyle(
                                 fontSize: 12,
-                                color:
-                                    isDark ? Colors.white60 : Colors.black54),
+                                color: context.colors.textMuted),
                           ),
                         ],
                         const SizedBox(height: 12),
@@ -434,11 +422,9 @@ class TimetableRuleDialogs {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 14),
                                 decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: isDark
-                                          ? Colors.white24
-                                          : Colors.black26),
-                                  borderRadius: BorderRadius.circular(4),
+                                  border:
+                                      Border.all(color: context.colors.border),
+                                  borderRadius: AppRadius.controlAll,
                                 ),
                                 child: Text(
                                     context.l10n.originalPeriodSummary(weekdayNames[slotDay], slotStartP, slotEndP),
@@ -451,9 +437,9 @@ class TimetableRuleDialogs {
                           const SizedBox(height: 6),
                           Text(
                             context.l10n.noClassInWeek(effSingleSourceWeek),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.orange,
+                                color: context.colors.warning,
                                 fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -522,10 +508,11 @@ class TimetableRuleDialogs {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.08),
+                            color: context.colors.statusBg(context.colors.info),
                             borderRadius: BorderRadius.circular(8),
-                            border:
-                                Border.all(color: Colors.blue.withOpacity(0.3)),
+                            border: Border.all(
+                                color: context.colors.info
+                                    .withValues(alpha: 0.3)),
                           ),
                           child: Text(
                             context.l10n.courseSummaryText(
@@ -539,8 +526,8 @@ class TimetableRuleDialogs {
                               targetStartP,
                               targetEndP,
                             ),
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.blue),
+                            style: TextStyle(
+                                fontSize: 12, color: context.colors.info),
                           ),
                         ),
                       ],
@@ -593,9 +580,9 @@ class TimetableRuleDialogs {
                       if (wholeSourceCourses.isEmpty)
                         Text(
                           context.l10n.noCoursesOnDay,
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 12,
-                              color: Colors.red,
+                              color: context.colors.danger,
                               fontWeight: FontWeight.bold),
                         ),
                       const SizedBox(height: 16),
@@ -680,8 +667,7 @@ class TimetableRuleDialogs {
                                 : context.l10n.rescheduleShiftDesc),
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).textTheme.bodySmall?.color ??
-                              Colors.grey,
+                          color: context.colors.textMuted,
                         ),
                       ),
                     ],
@@ -761,7 +747,7 @@ class TimetableRuleDialogs {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content: Text(context.l10n.noCoursesOnDayCannotReschedule),
-                              backgroundColor: Colors.red),
+                              backgroundColor: context.colors.danger),
                         );
                         return;
                       }
@@ -834,7 +820,7 @@ class TimetableRuleDialogs {
             return AlertDialog(
               title: Row(
                 children: [
-                  const Icon(Icons.event_busy_rounded, color: Colors.orange),
+                  Icon(Icons.event_busy_rounded, color: context.colors.warning),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(context.l10n.suspension,
@@ -1122,7 +1108,7 @@ class TimetableRuleDialogs {
             return AlertDialog(
               title: Row(
                 children: [
-                  const Icon(Icons.add_circle_outline_rounded, color: Colors.green),
+                  Icon(Icons.add_circle_outline_rounded, color: context.colors.brand),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(context.l10n.addCourseTitle,
@@ -1342,7 +1328,7 @@ class TimetableRuleDialogs {
             return AlertDialog(
               title: Row(
                 children: [
-                  const Icon(Icons.rule_folder_outlined, color: Colors.redAccent),
+                  Icon(Icons.rule_folder_outlined, color: context.colors.danger),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(context.l10n.myAdjustments,
@@ -1359,11 +1345,11 @@ class TimetableRuleDialogs {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.check_circle_outline_rounded,
-                                size: 48, color: Colors.grey),
+                            Icon(Icons.check_circle_outline_rounded,
+                                size: 48, color: context.colors.textMuted),
                             const SizedBox(height: 12),
                             Text(context.l10n.noAdjustmentsYet,
-                                style: const TextStyle(color: Colors.grey)),
+                                style: TextStyle(color: context.colors.textMuted)),
                           ],
                         ),
                       )
@@ -1376,15 +1362,15 @@ class TimetableRuleDialogs {
                           String typeName;
                           switch (rule.type) {
                             case TimetableRuleType.reschedule:
-                              typeColor = Colors.blue;
+                              typeColor = context.colors.info;
                               typeName = context.l10n.ruleTypeRescheduleDay;
                               break;
                             case TimetableRuleType.suspension:
-                              typeColor = Colors.orange;
+                              typeColor = context.colors.warning;
                               typeName = context.l10n.ruleTypeSuspension;
                               break;
                             case TimetableRuleType.customCourse:
-                              typeColor = Colors.green;
+                              typeColor = context.colors.brand;
                               typeName = context.l10n.ruleTypeAddCourse;
                               break;
                           }
@@ -1397,7 +1383,7 @@ class TimetableRuleDialogs {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: typeColor.withOpacity(0.15),
+                                color: typeColor.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -1415,8 +1401,8 @@ class TimetableRuleDialogs {
                                   fontSize: 13, fontWeight: FontWeight.w500),
                             ),
                             trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded,
-                                  size: 20, color: Colors.redAccent),
+                              icon: Icon(Icons.delete_outline_rounded,
+                                  size: 20, color: context.colors.danger),
                               onPressed: () async {
                                 await ruleService.deleteRule(rule.id);
                                 rules = await ruleService.getRules();
@@ -1438,7 +1424,7 @@ class TimetableRuleDialogs {
               actions: [
                 if (rules.isNotEmpty)
                   TextButton(
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    style: TextButton.styleFrom(foregroundColor: context.colors.danger),
                     onPressed: () async {
                       final confirm = await showDialog<bool>(
                         context: context,
@@ -1451,7 +1437,7 @@ class TimetableRuleDialogs {
                                 child: Text(context.l10n.cancel)),
                             FilledButton(
                               style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: context.colors.danger,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8))),
                               onPressed: () => Navigator.pop(c, true),

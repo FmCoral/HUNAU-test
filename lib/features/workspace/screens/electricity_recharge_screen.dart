@@ -8,7 +8,7 @@ import '../models/electricity_model.dart';
 import '../providers/electricity_cache_provider.dart';
 import 'payment_result_screen.dart';
 import 'campus_card_payment_sheet.dart';
-import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/l10n_extension.dart';
 
@@ -336,7 +336,6 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
     // 弹出确认卡片
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => PaymentResultSheet(
         type: PaymentResultType.confirm,
@@ -367,7 +366,6 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
         if (success) {
           showModalBottomSheet(
             context: context,
-            backgroundColor: Colors.transparent,
             isScrollControlled: true,
             builder: (context) => PaymentResultSheet(
               type: PaymentResultType.success,
@@ -380,7 +378,6 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
         } else {
           showModalBottomSheet(
             context: context,
-            backgroundColor: Colors.transparent,
             isScrollControlled: true,
             builder: (context) => PaymentResultSheet(
               type: PaymentResultType.failure,
@@ -396,7 +393,6 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
         setState(() => _isPaying = false);
         showModalBottomSheet(
           context: context,
-          backgroundColor: Colors.transparent,
           isScrollControlled: true,
           builder: (context) => PaymentResultSheet(
             type: PaymentResultType.failure,
@@ -456,7 +452,6 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       isDismissible: false,
       enableDrag: false,
@@ -490,7 +485,8 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
     });
   }
 
-  Widget _buildDormitoryCard(int slot, bool isDark, Color themeColor, Color amberColor) {
+  Widget _buildDormitoryCard(int slot) {
+    final colors = context.colors;
     final isExpanded = _expandedIndex == slot;
     final card = _cardSlots[slot];
 
@@ -511,14 +507,14 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
       curve: Curves.easeInOutCubic,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDark ? themeColor.withValues(alpha: isExpanded ? 0.1 : 0.08) : amberColor.withValues(alpha: isExpanded ? 0.05 : 0.04),
-        borderRadius: BorderRadius.circular(6),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
         border: Border.all(
-          color: isDark ? themeColor.withValues(alpha: 0.2) : amberColor.withValues(alpha: 0.2),
+          color: isExpanded ? colors.brand : colors.border,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.cardAll,
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           switchInCurve: Curves.easeInOutCubic,
@@ -543,14 +539,15 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
             );
           },
           child: isExpanded
-              ? _buildExpandedCardContent(slot, isDark, card)
-              : _buildCollapsedCardContent(slot, isDark, roomDesc, balanceVal),
+              ? _buildExpandedCardContent(slot, card)
+              : _buildCollapsedCardContent(slot, roomDesc, balanceVal),
         ),
       ),
     );
   }
 
-  Widget _buildCollapsedCardContent(int slot, bool isDark, String roomDesc, String? balanceVal) {
+  Widget _buildCollapsedCardContent(int slot, String roomDesc, String? balanceVal) {
+    final colors = context.colors;
     return InkWell(
       key: ValueKey('collapsed_inkwell_$slot'),
       onTap: () {
@@ -558,40 +555,38 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
           _expandedIndex = slot;
         });
       },
-      borderRadius: BorderRadius.circular(6),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.card, vertical: AppSpacing.card),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 roomDesc,
-                style: TextStyle(
-                  fontSize: 14,
+                style: AppText.bodyDense.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: colors.text,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             if (balanceVal != null) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 balanceVal,
-                style: TextStyle(
-                  fontSize: 14,
+                style: AppText.bodyDense.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black87,
+                  color: colors.text,
                 ),
               ),
             ],
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Icon(
               Icons.keyboard_arrow_down,
               size: 18,
-              color: isDark ? Colors.white54 : Colors.black45,
+              color: colors.textMuted,
             ),
           ],
         ),
@@ -599,11 +594,12 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
     );
   }
 
-  Widget _buildExpandedCardContent(int slot, bool isDark, _CardSlotState card) {
+  Widget _buildExpandedCardContent(int slot, _CardSlotState card) {
+    final colors = context.colors;
     return Container(
       key: ValueKey('expanded_content_$slot'),
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.card),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -612,10 +608,9 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
             children: [
               Text(
                 context.l10n.currentRechargeRoom,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.white54 : Colors.black54,
-                  fontWeight: FontWeight.bold,
+                style: AppText.caption.copyWith(
+                  color: colors.textMuted,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               Row(
@@ -624,61 +619,58 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
                   // 清空按钮
                   InkWell(
                     onTap: () => _handleClearCard(slot),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.innerAll,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs, vertical: 2),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.delete_outline,
-                            size: 13,
-                            color: isDark ? Colors.white54 : Colors.black54,
+                            size: 14,
+                            color: colors.textMuted,
                           ),
-                          const SizedBox(width: 3),
+                          const SizedBox(width: AppSpacing.xs),
                           Text(
                             context.l10n.clear,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isDark ? Colors.white54 : Colors.black54,
-                            ),
+                            style: AppText.caption
+                                .copyWith(color: colors.textMuted),
                           ),
                         ],
                       ),
                     ),
                   ),
                   if (card.selectedRoom != null) ...[
-                    const SizedBox(width: 10),
+                    const SizedBox(width: AppSpacing.sm),
                     InkWell(
                       onTap: card.isLoadingBalance ? null : () => _loadBalance(slot),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.innerAll,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.xs, vertical: 2),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (card.isLoadingBalance)
-                              SizedBox(
-                                width: 11,
-                                height: 11,
+                              const SizedBox(
+                                width: 12,
+                                height: 12,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 1.5,
-                                  color: isDark ? Colors.white70 : Colors.black54,
                                 ),
                               )
                             else
                               Icon(
                                 Icons.refresh,
-                                size: 13,
-                                color: isDark ? Colors.white54 : Colors.black54,
+                                size: 14,
+                                color: colors.textMuted,
                               ),
-                            const SizedBox(width: 3),
+                            const SizedBox(width: AppSpacing.xs),
                             Text(
                               card.isLoadingBalance ? context.l10n.refreshing : context.l10n.refreshBalance,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark ? Colors.white54 : Colors.black54,
-                              ),
+                              style: AppText.caption
+                                  .copyWith(color: colors.textMuted),
                             ),
                           ],
                         ),
@@ -689,23 +681,23 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.sm),
           Text(
-            card.selectedRoom != null 
+            card.selectedRoom != null
               ? '${card.selectedArea?.name} - ${card.selectedBuilding?.name} - ${card.selectedRoom?.name}'
               : context.l10n.noRoomSelectedYet,
-            style: TextStyle(fontSize: 15, color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.w600),
+            style: AppText.bodyDense.copyWith(
+                color: colors.text, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Text(
             context.l10n.electricityBalance,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.white54 : Colors.black54,
-              fontWeight: FontWeight.bold,
+            style: AppText.caption.copyWith(
+              color: colors.textMuted,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           if (card.balanceError != null && card.balanceInfo == null)
             InkWell(
               onTap: () => _loadBalance(slot),
@@ -713,14 +705,13 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
                 children: [
                   Text(
                     context.l10n.fetchFailedClickRetry,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.red.shade400,
+                    style: AppText.caption.copyWith(
+                      color: colors.danger,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  Icon(Icons.refresh, size: 13, color: Colors.red.shade400),
+                  const SizedBox(width: AppSpacing.xs),
+                  Icon(Icons.refresh, size: 14, color: colors.danger),
                 ],
               ),
             )
@@ -729,13 +720,9 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
               card.balanceInfo != null
                   ? context.l10n.amountYuan(card.balanceInfo!.balance)
                   : (card.isLoadingBalance ? context.l10n.checkingPaymentStatus : context.l10n.amountYuan('0.00')),
-              style: TextStyle(
-                fontSize: 15,
-                color: isDark ? Colors.white : Colors.black87,
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppText.keyNumber.copyWith(color: colors.text),
             ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           // 3 Dropdown boxes inside card
           _buildRoomSelectionBox(
             slot,
@@ -744,7 +731,7 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
             card.selectedArea?.name,
             (val) => _onAreaChanged(slot, val),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           _buildRoomSelectionBox(
             slot,
             context.l10n.dormBuilding,
@@ -752,7 +739,7 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
             card.selectedBuilding?.name,
             (val) => _onBuildingChanged(slot, val),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           _buildRoomSelectionBox(
             slot,
             context.l10n.dormRoom,
@@ -767,61 +754,65 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    const themeColor = Color(AppConstants.primaryColorValue);
-    const amberColor = Color(0xFFFFC107);
-    
+    final colors = context.colors;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.l10n.electricityRechargeTitle, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18)),
+        title: Text(context.l10n.electricityRechargeTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.maybePop(context),
         ),
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: themeColor))
+      body: _isLoading
+        ? const Center(child: CircularProgressIndicator())
         : _error != null
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(_error!),
-                  const SizedBox(height: 16),
+                  Text(_error!,
+                      style: AppText.bodyDense.copyWith(color: colors.text)),
+                  const SizedBox(height: AppSpacing.lg),
                   ElevatedButton(
-                    onPressed: _initData, 
-                    style: ElevatedButton.styleFrom(backgroundColor: themeColor),
-                    child: Text(context.l10n.retry, style: const TextStyle(color: Colors.white)),
+                    onPressed: _initData,
+                    child: Text(context.l10n.retry),
                   ),
                 ],
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.page),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 宿舍卡片 1
-                  _buildDormitoryCard(0, isDark, themeColor, amberColor),
-                  
-                  const SizedBox(height: 12),
-                  
+                  _buildDormitoryCard(0),
+
+                  const SizedBox(height: AppSpacing.md),
+
                   // 宿舍卡片 2
-                  _buildDormitoryCard(1, isDark, themeColor, amberColor),
-                  
-                  const SizedBox(height: 24),
-                  
-                  Text(context.l10n.selectRechargeAmount, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white54 : Colors.black54)),
-                  const SizedBox(height: 12),
-                  
-                  // Grid (No Shadow)
+                  _buildDormitoryCard(1),
+
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  Text(
+                    context.l10n.selectRechargeAmount,
+                    style: AppText.bodyDense.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // 金额预设网格
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
+                      crossAxisSpacing: AppSpacing.md,
+                      mainAxisSpacing: AppSpacing.md,
                       childAspectRatio: 2.8,
                     ),
                     itemCount: _presetAmounts.length,
@@ -830,148 +821,173 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
                       final isSelected = _selectedAmount == amount;
                       return InkWell(
                         onTap: () => _handlePresetAmountSelect(amount),
+                        borderRadius: AppRadius.controlAll,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: isSelected ? themeColor : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: isSelected ? themeColor : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.3))),
+                            color: isSelected
+                                ? colors.statusBg(colors.brand)
+                                : colors.surface,
+                            borderRadius: AppRadius.controlAll,
+                            border: Border.all(
+                              color: isSelected
+                                  ? colors.brand
+                                  : colors.border,
+                            ),
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             context.l10n.amountYuan(amount.toStringAsFixed(0)),
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            style: AppText.bodyDense.copyWith(
+                              color: isSelected
+                                  ? colors.brandText
+                                  : colors.text,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
                             ),
                           ),
                         ),
                       );
                     },
                   ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Custom Input (No Fill Color)
+
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // 自定义金额输入（标签在输入框上方）
+                  Text(
+                    context.l10n.customAmount,
+                    style: AppText.bodyDense.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                   TextField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      labelText: context.l10n.customAmount,
-                      labelStyle: TextStyle(color: isDark ? themeColor.withValues(alpha: 0.8) : themeColor),
+                    decoration: const InputDecoration(
                       prefixText: '¥ ',
-                      filled: isDark,
-                      fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : null,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: themeColor.withValues(alpha: 0.3))),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(6), borderSide: BorderSide(color: themeColor.withValues(alpha: 0.4))),
-                      focusedBorder: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(6)), borderSide: BorderSide(color: themeColor, width: 1.5)),
                     ),
+                    style: AppText.keyNumber.copyWith(color: colors.text),
                     onChanged: (value) => setState(() => _selectedAmount = double.tryParse(value)),
                   ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // 底部支付操作按钮 (校园卡支付、微信支付、支付宝支付)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IntrinsicWidth(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // 校园卡支付
-                          SizedBox(
-                            width: 125,
-                            height: 42,
-                            child: ElevatedButton(
-                              onPressed: _isPaying ? null : _handleCampusCardRecharge,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: themeColor,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                              ),
-                              child: _isPaying 
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.credit_card, size: 18),
-                                      const SizedBox(width: 6),
-                                      Text(context.l10n.campusCardPayment, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    ],
-                                  ),
+
+                  const SizedBox(height: AppSpacing.xxxl),
+
+                  // 底部支付操作按钮：一行三等分（校园卡 / 微信 / 支付宝）
+                  Row(
+                    children: [
+                      // 校园卡支付（主按钮，交给全局主题）
+                      Expanded(
+                        child: SizedBox(
+                          height: 44,
+                          child: ElevatedButton(
+                            onPressed: _isPaying ? null : _handleCampusCardRecharge,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.zero,
                             ),
+                            child: _isPaying
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.credit_card, size: 16),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Flexible(
+                                      child: Text(
+                                        context.l10n.campusCardPayment,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                           ),
-                          const SizedBox(height: 10),
-                          // 微信支付
-                          SizedBox(
-                            width: 125,
-                            height: 42,
-                            child: ElevatedButton(
-                              onPressed: _isPaying ? null : () => _handleThirdPartyRecharge(PaymentMethod.wechat),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF07C160),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.string(
-                                    kWechatSvg,
-                                    width: 18,
-                                    height: 18,
-                                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(context.l10n.wechatPay, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          // 支付宝支付
-                          SizedBox(
-                            width: 125,
-                            height: 42,
-                            child: ElevatedButton(
-                              onPressed: _isPaying ? null : () => _handleThirdPartyRecharge(PaymentMethod.alipay),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF1677FF),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SvgPicture.string(
-                                    kAlipaySvg,
-                                    width: 18,
-                                    height: 18,
-                                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(context.l10n.alipayPayment, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: AppSpacing.sm),
+                      // 微信支付
+                      Expanded(
+                        child: SizedBox(
+                          height: 44,
+                          child: ElevatedButton(
+                            onPressed: _isPaying ? null : () => _handleThirdPartyRecharge(PaymentMethod.wechat),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF07C160),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: AppRadius.controlAll),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.string(
+                                  kWechatSvg,
+                                  width: 16,
+                                  height: 16,
+                                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Flexible(
+                                  child: Text(
+                                    context.l10n.wechatPay,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      // 支付宝支付
+                      Expanded(
+                        child: SizedBox(
+                          height: 44,
+                          child: ElevatedButton(
+                            onPressed: _isPaying ? null : () => _handleThirdPartyRecharge(PaymentMethod.alipay),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1677FF),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: AppRadius.controlAll),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.string(
+                                  kAlipaySvg,
+                                  width: 16,
+                                  height: 16,
+                                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Flexible(
+                                  child: Text(
+                                    context.l10n.alipayPayment,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  
-                  const SizedBox(height: 32),
+
+                  const SizedBox(height: AppSpacing.xxxl),
                 ],
               ),
             ),
@@ -979,22 +995,17 @@ class _ElectricityRechargeScreenState extends ConsumerState<ElectricityRechargeS
   }
 
   Widget _buildRoomSelectionBox(int slot, String label, List<String> items, String? current, Function(String?) onChanged) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return DropdownButtonFormField<String>(
       key: ValueKey('${slot}_${label}_$current'),
       initialValue: items.contains(current) ? current : null,
       decoration: InputDecoration(
         labelText: label,
-        filled: isDark,
-        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : null,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(6),
-          borderSide: BorderSide(color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.3)),
-        ),
       ),
-      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
+      items: items
+          .map((e) => DropdownMenuItem(
+              value: e,
+              child: Text(e, style: AppText.bodyDense)))
+          .toList(),
       onChanged: onChanged,
       icon: const Icon(Icons.keyboard_arrow_down, size: 20),
     );

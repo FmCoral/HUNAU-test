@@ -5,6 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../core/services/course_live_service.dart';
 import '../../../core/services/flyme_live_service.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/widgets/brand_switch.dart';
 import '../providers/settings_provider.dart';
@@ -51,6 +52,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final settings = ref.watch(settingsProvider);
 
     final courseDurations = [
@@ -75,97 +77,104 @@ class NotificationSettingsScreen extends ConsumerWidget {
       {'label': context.l10n.notifHoursBefore('48'), 'value': 48.0},
     ];
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(context.l10n.notificationSettings),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
+    final items = <Widget>[
+      // 实时活动置顶（仅 Android 可见；iOS 直接隐藏）
+      if (Platform.isAndroid) const CourseLiveSection(),
+      // Flyme 实况通知：紧跟实时活动，仅 Flyme 12+ 可见
+      if (Platform.isAndroid) const FlymeLiveSection(),
+      _buildSettingItem(
+        context,
+        icon: Icons.book_outlined,
+        title: context.l10n.courseReminder,
+        subtitle: courseDurations.firstWhere(
+            (e) => e['value'] == settings.reminderMinutes,
+            orElse: () => courseDurations[0])['label'] as String,
+        onTap: () => _showPicker(
+          context,
+          title: context.l10n.courseReminderTime,
+          options: courseDurations,
+          currentValue: settings.reminderMinutes,
+          onSelected: (val) async {
+            final v = val as int;
+            if (v != 0) {
+              // 先申请权限，再排程；否则首次开启时排程会在 POST_NOTIFICATIONS
+              // 授权前执行，授权后系统不会自动补回已失败的排程。
+              await _ensurePermissionsIfNeeded();
+            }
+            await ref.read(settingsProvider.notifier).setReminderMinutes(v);
+          },
         ),
       ),
+      _buildSettingItem(
+        context,
+        icon: Icons.assignment_outlined,
+        title: context.l10n.homeworkReminder,
+        subtitle: homeworkDurations.firstWhere(
+            (e) => (e['value'] as double) == settings.homeworkReminderHours,
+            orElse: () => homeworkDurations[0])['label'] as String,
+        onTap: () => _showPicker(
+          context,
+          title: context.l10n.homeworkReminderTime,
+          options: homeworkDurations,
+          currentValue: settings.homeworkReminderHours,
+          onSelected: (val) async {
+            final v = val as double;
+            if (v != 0) {
+              await _ensurePermissionsIfNeeded();
+            }
+            await ref
+                .read(settingsProvider.notifier)
+                .setHomeworkReminderHours(v);
+          },
+        ),
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.event_seat_outlined,
+        title: context.l10n.libraryReminder,
+        subtitle: courseDurations.firstWhere(
+            (e) => e['value'] == settings.libraryReminderMinutes,
+            orElse: () => courseDurations[0])['label'] as String,
+        onTap: () => _showPicker(
+          context,
+          title: context.l10n.libraryReminderTime,
+          options: courseDurations,
+          currentValue: settings.libraryReminderMinutes,
+          onSelected: (val) async {
+            final v = val as int;
+            if (v != 0) {
+              await _ensurePermissionsIfNeeded();
+            }
+            await ref
+                .read(settingsProvider.notifier)
+                .setLibraryReminderMinutes(v);
+          },
+        ),
+      ),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.l10n.notificationSettings),
+      ),
       body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.page),
         children: [
-          // 实时活动置顶（仅 Android 可见；iOS 直接隐藏）
-          if (Platform.isAndroid) const CourseLiveSection(),
-          // Flyme 实况通知：紧跟实时活动，仅 Flyme 12+ 可见
-          if (Platform.isAndroid) const FlymeLiveSection(),
-          _buildSettingItem(
-            context,
-            icon: Icons.book_outlined,
-            title: context.l10n.courseReminder,
-            subtitle: courseDurations.firstWhere(
-                (e) => e['value'] == settings.reminderMinutes,
-                orElse: () => courseDurations[0])['label'] as String,
-            onTap: () => _showPicker(
-              context,
-              title: context.l10n.courseReminderTime,
-              options: courseDurations,
-              currentValue: settings.reminderMinutes,
-              onSelected: (val) async {
-                final v = val as int;
-                if (v != 0) {
-                  // 先申请权限，再排程；否则首次开启时排程会在 POST_NOTIFICATIONS
-                  // 授权前执行，授权后系统不会自动补回已失败的排程。
-                  await _ensurePermissionsIfNeeded();
-                }
-                await ref.read(settingsProvider.notifier).setReminderMinutes(v);
-              },
+          Container(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colors.border),
             ),
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.assignment_outlined,
-            title: context.l10n.homeworkReminder,
-            subtitle: homeworkDurations.firstWhere(
-                (e) => (e['value'] as double) == settings.homeworkReminderHours,
-                orElse: () => homeworkDurations[0])['label'] as String,
-            onTap: () => _showPicker(
-              context,
-              title: context.l10n.homeworkReminderTime,
-              options: homeworkDurations,
-              currentValue: settings.homeworkReminderHours,
-              onSelected: (val) async {
-                final v = val as double;
-                if (v != 0) {
-                  await _ensurePermissionsIfNeeded();
-                }
-                await ref
-                    .read(settingsProvider.notifier)
-                    .setHomeworkReminderHours(v);
-              },
-            ),
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.event_seat_outlined,
-            title: context.l10n.libraryReminder,
-            subtitle: courseDurations.firstWhere(
-                (e) => e['value'] == settings.libraryReminderMinutes,
-                orElse: () => courseDurations[0])['label'] as String,
-            onTap: () => _showPicker(
-              context,
-              title: context.l10n.libraryReminderTime,
-              options: courseDurations,
-              currentValue: settings.libraryReminderMinutes,
-              onSelected: (val) async {
-                final v = val as int;
-                if (v != 0) {
-                  await _ensurePermissionsIfNeeded();
-                }
-                await ref
-                    .read(settingsProvider.notifier)
-                    .setLibraryReminderMinutes(v);
-              },
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0)
+                    Divider(height: 1, indent: 54, color: colors.border),
+                  items[i],
+                ],
+              ],
             ),
           ),
         ],
@@ -178,40 +187,40 @@ class NotificationSettingsScreen extends ConsumerWidget {
       required String title,
       required String subtitle,
       required VoidCallback onTap}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Row(
-          children: [
-            Icon(icon, size: 24, color: const Color(0xFF5F6368)),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: isDark ? Colors.white : const Color(0xFF202124),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: colors.textMuted),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppText.body.copyWith(color: colors.text),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style:
+                          AppText.caption.copyWith(color: colors.textMuted),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              Icon(Icons.chevron_right_rounded,
+                  size: 20, color: colors.textMuted),
+            ],
+          ),
         ),
       ),
     );
@@ -223,24 +232,21 @@ class NotificationSettingsScreen extends ConsumerWidget {
     required List<Map<String, dynamic>> options,
     required dynamic currentValue,
     required Future<void> Function(dynamic) onSelected,
-  }) {    showModalBottomSheet(
+  }) {
+    showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
       builder: (context) {
+        final colors = context.colors;
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 child: Text(title,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                    style: AppText.sectionTitle.copyWith(color: colors.text)),
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: colors.border),
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -249,9 +255,12 @@ class NotificationSettingsScreen extends ConsumerWidget {
                     final opt = options[index];
                     final isSelected = opt['value'] == currentValue;
                     return ListTile(
-                      title: Text(opt['label']),
+                      title: Text(
+                        opt['label'],
+                        style: AppText.body.copyWith(color: colors.text),
+                      ),
                       trailing: isSelected
-                          ? const Icon(Icons.check, color: Color(0xFF09C489))
+                          ? Icon(Icons.check_rounded, color: colors.brand)
                           : null,
                       onTap: () async {
                         Navigator.pop(context);
@@ -270,7 +279,7 @@ class NotificationSettingsScreen extends ConsumerWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(context.l10n.setNotificationFailed(e.toString())),
-                              backgroundColor: Colors.red,
+                              backgroundColor: colors.danger,
                             ),
                           );
                         }
@@ -330,7 +339,7 @@ class _CourseLiveSectionState extends ConsumerState<CourseLiveSection> {
       SnackBar(
         content: Text(msg),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: error ? Colors.red : null,
+        backgroundColor: error ? context.colors.danger : null,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -420,7 +429,7 @@ class _CourseLiveSectionState extends ConsumerState<CourseLiveSection> {
   @override
   Widget build(BuildContext context) {
     final enabled = ref.watch(settingsProvider).courseLiveEnabled;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     // A16 以下直接整条隐藏（检测中也先不占位，避免闪一下再消失）
     if (_supported != true) return const SizedBox.shrink();
@@ -436,12 +445,12 @@ class _CourseLiveSectionState extends ConsumerState<CourseLiveSection> {
       onTap: _busy ? null : _onRowTap,
       onDoubleTap: _busy ? null : _onRowDoubleTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         child: Row(
           children: [
-            const Icon(Icons.timeline_outlined,
-                size: 24, color: Color(0xFF5F6368)),
-            const SizedBox(width: 16),
+            Icon(Icons.timeline_outlined, size: 22, color: colors.textMuted),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,16 +458,13 @@ class _CourseLiveSectionState extends ConsumerState<CourseLiveSection> {
                   Row(
                     children: [
                       Text(context.l10n.liveActivity,
-                          style: const TextStyle(fontSize: 16)),
+                          style: AppText.body.copyWith(color: colors.text)),
                       if (_testing) ...[
-                        const SizedBox(width: 8),
-                        SizedBox(
+                        const SizedBox(width: AppSpacing.sm),
+                        const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: isDark ? Colors.white : null,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ],
                     ],
@@ -466,10 +472,7 @@ class _CourseLiveSectionState extends ConsumerState<CourseLiveSection> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ],
               ),
@@ -529,7 +532,7 @@ class _FlymeLiveSectionState extends ConsumerState<FlymeLiveSection> {
       SnackBar(
         content: Text(msg),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: error ? Colors.red : null,
+        backgroundColor: error ? context.colors.danger : null,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -611,7 +614,7 @@ class _FlymeLiveSectionState extends ConsumerState<FlymeLiveSection> {
   @override
   Widget build(BuildContext context) {
     final enabled = ref.watch(settingsProvider).flymeLiveEnabled;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     // 非 Flyme 12+ 直接整条隐藏
     if (_supported != true) return const SizedBox.shrink();
@@ -627,12 +630,13 @@ class _FlymeLiveSectionState extends ConsumerState<FlymeLiveSection> {
       onTap: _busy ? null : _onRowTap,
       onDoubleTap: _busy ? null : _onRowDoubleTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         child: Row(
           children: [
-            const Icon(Icons.notifications_active_outlined,
-                size: 24, color: Color(0xFF5F6368)),
-            const SizedBox(width: 16),
+            Icon(Icons.notifications_active_outlined,
+                size: 22, color: colors.textMuted),
+            const SizedBox(width: AppSpacing.lg),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -640,16 +644,13 @@ class _FlymeLiveSectionState extends ConsumerState<FlymeLiveSection> {
                   Row(
                     children: [
                       Text(context.l10n.flymeLive,
-                          style: const TextStyle(fontSize: 16)),
+                          style: AppText.body.copyWith(color: colors.text)),
                       if (_testing) ...[
-                        const SizedBox(width: 8),
-                        SizedBox(
+                        const SizedBox(width: AppSpacing.sm),
+                        const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: isDark ? Colors.white : null,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ],
                     ],
@@ -657,10 +658,7 @@ class _FlymeLiveSectionState extends ConsumerState<FlymeLiveSection> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ],
               ),

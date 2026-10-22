@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/state/auth_state.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/date_format_utils.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/widgets/brand_switch.dart';
@@ -16,7 +17,7 @@ class TimetableSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
     final autoSyncEnabled =
         ref.watch(settingsProvider).timetableAutoSyncEnabled;
@@ -31,131 +32,122 @@ class TimetableSettingsScreen extends ConsumerWidget {
     final mondayEnabled = !autoSyncEnabled;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.timetableSettings),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
       ),
       body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.page),
         children: [
-          _buildSwitchItem(
-            context,
-            icon: Icons.sync_rounded,
-            title: l10n.timetableAutoSync,
-            value: autoSyncEnabled,
-            onChanged: (v) => _onAutoSyncToggle(context, ref, v),
-          ),
-          _buildSwitchItem(
-            context,
-            icon: Icons.schedule_rounded,
-            title: l10n.timetableShowEndTime,
-            value: showEndTime,
-            onChanged: (v) => ref
-                .read(settingsProvider.notifier)
-                .setTimetableShowEndTime(v),
-          ),
-          InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const TimetableSubscriptionScreen(),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  const Icon(Icons.rss_feed_rounded,
-                      size: 24, color: Color(0xFF5F6368)),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      l10n.timetableSubscription,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: isDark
-                            ? Colors.white
-                            : const Color(0xFF202124),
-                      ),
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 20,
-                    color: Color(0xFF9E9E9E),
-                  ),
-                ],
-              ),
+          Container(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colors.border),
             ),
-          ),
-          Opacity(
-            opacity: mondayEnabled ? 1.0 : 0.5,
-            child: InkWell(
-              onTap: mondayEnabled
-                  ? () => _pickFirstWeekMonday(context, ref)
-                  : null,
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.date_range_outlined,
-                        size: 24, color: Color(0xFF5F6368)),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        l10n.firstWeekMonday,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF202124),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                _buildSwitchItem(
+                  context,
+                  icon: Icons.sync_rounded,
+                  title: l10n.timetableAutoSync,
+                  value: autoSyncEnabled,
+                  onChanged: (v) => _onAutoSyncToggle(context, ref, v),
+                ),
+                Divider(height: 1, indent: 54, color: colors.border),
+                _buildSwitchItem(
+                  context,
+                  icon: Icons.schedule_rounded,
+                  title: l10n.timetableShowEndTime,
+                  value: showEndTime,
+                  onChanged: (v) => ref
+                      .read(settingsProvider.notifier)
+                      .setTimetableShowEndTime(v),
+                ),
+                Divider(height: 1, indent: 54, color: colors.border),
+                InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const TimetableSubscriptionScreen(),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                    child: Row(
+                      children: [
+                        Icon(Icons.rss_feed_rounded,
+                            size: 22, color: colors.textMuted),
+                        const SizedBox(width: AppSpacing.lg),
+                        Expanded(
+                          child: Text(
+                            l10n.timetableSubscription,
+                            style: AppText.body.copyWith(color: colors.text),
+                          ),
                         ),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 20,
+                          color: colors.textMuted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Divider(height: 1, indent: 54, color: colors.border),
+                Opacity(
+                  opacity: mondayEnabled ? 1.0 : 0.5,
+                  child: InkWell(
+                    onTap: mondayEnabled
+                        ? () => _pickFirstWeekMonday(context, ref)
+                        : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                      child: Row(
+                        children: [
+                          Icon(Icons.date_range_outlined,
+                              size: 22, color: colors.textMuted),
+                          const SizedBox(width: AppSpacing.lg),
+                          Expanded(
+                            child: Text(
+                              l10n.firstWeekMonday,
+                              style: AppText.body.copyWith(color: colors.text),
+                            ),
+                          ),
+                          FutureBuilder<DateTime>(
+                            // 未手动设置时显示当前生效值（元数据 > 按月份猜）
+                            future: TimetableStorage().resolveFirstWeekMonday(),
+                            builder: (context, snapshot) {
+                              final monday = snapshot.data ?? manualMonday;
+                              return Text(
+                                monday != null
+                                    ? formatYMMMd(
+                                        monday,
+                                        Localizations.localeOf(context)
+                                            .toString(),
+                                      )
+                                    : l10n.notSet,
+                                style: AppText.bodyDense.copyWith(
+                                  color: colors.textMuted,
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: AppSpacing.xs),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 20,
+                            color: colors.textMuted,
+                          ),
+                        ],
                       ),
                     ),
-                    FutureBuilder<DateTime>(
-                      // 未手动设置时显示当前生效值（元数据 > 按月份猜）
-                      future: TimetableStorage().resolveFirstWeekMonday(),
-                      builder: (context, snapshot) {
-                        final monday = snapshot.data ?? manualMonday;
-                        return Text(
-                          monday != null
-                              ? formatYMMMd(
-                                  monday,
-                                  Localizations.localeOf(context).toString(),
-                                )
-                              : l10n.notSet,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark
-                                ? Colors.white70
-                                : const Color(0xFF5F6368),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: Color(0xFF9E9E9E),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -171,43 +163,33 @@ class TimetableSettingsScreen extends ConsumerWidget {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, size: 24, color: const Color(0xFF5F6368)),
-          const SizedBox(width: 16),
+          Icon(icon, size: 22, color: colors.textMuted),
+          const SizedBox(width: AppSpacing.lg),
           Expanded(
             child: subtitle == null
                 ? Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: isDark ? Colors.white : const Color(0xFF202124),
-                    ),
+                    style: AppText.body.copyWith(color: colors.text),
                   )
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF202124),
-                        ),
+                        style: AppText.body.copyWith(color: colors.text),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
+                        style: AppText.caption.copyWith(
+                          color: colors.textMuted,
                         ),
                       ),
                     ],
@@ -240,11 +222,6 @@ class TimetableSettingsScreen extends ConsumerWidget {
               child: Text(l10n.cancel),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
               onPressed: () => Navigator.pop(c, true),
               child: Text(l10n.confirm),
             ),
@@ -290,7 +267,7 @@ class TimetableSettingsScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.timetableRefreshFailed(e.toString())),
-          backgroundColor: Colors.red,
+          backgroundColor: context.colors.danger,
         ),
       );
     }
@@ -314,25 +291,6 @@ class TimetableSettingsScreen extends ConsumerWidget {
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 1),
       helpText: context.l10n.selectFirstWeekMondayHelp,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).brightness == Brightness.dark
-                ? const ColorScheme.dark(
-                    primary: Colors.orange,
-                    onPrimary: Colors.black,
-                    surface: Color(0xFF1E1E1E),
-                  )
-                : ColorScheme.light(
-                    primary: Theme.of(context).primaryColor,
-                    onPrimary: Colors.white,
-                    surface: Colors.white,
-                    onSurface: const Color(0xFF202124),
-                  ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (picked == null || !context.mounted) return;

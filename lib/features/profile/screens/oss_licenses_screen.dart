@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 
 class OssLicensesScreen extends StatelessWidget {
@@ -75,7 +76,7 @@ class OssLicensesScreen extends StatelessWidget {
     },
     {
       'title': 'Share Plus',
-      'content': 'Copyright 2017, the Flutter project authors. All rights reserved. Licensed under the BSD 3-Clause License.',
+      'content': 'Copyright 2017, the Flutter project authors. Licensed under the BSD 3-Clause License.',
     },
     {
       'title': 'File Picker',
@@ -107,7 +108,7 @@ class OssLicensesScreen extends StatelessWidget {
     },
     {
       'title': 'Timezone',
-      'content': 'Copyright (c) 2014, timezone project authors. All rights reserved. Licensed under the BSD 3-Clause License.',
+      'content': 'Copyright (c) 2014, timezone project authors. Licensed under the BSD 3-Clause License.',
     },
     {
       'title': 'Flutter Native Splash',
@@ -149,63 +150,49 @@ class OssLicensesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(context.l10n.openSourceLicenses, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : Colors.black87,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
+        title: Text(context.l10n.openSourceLicenses),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         children: [
           Text(
             context.l10n.ossDescription,
-            style: const TextStyle(
-              fontSize: 15,
+            style: AppText.bodyDense.copyWith(
               height: 1.6,
-              color: Colors.grey,
+              color: colors.textMuted,
             ),
           ),
-          const SizedBox(height: 32),
-          ..._dependencies.map((dep) => _buildLicenseSection(dep['title']!, dep['content']!)),
+          const SizedBox(height: AppSpacing.xxxl),
+          ..._dependencies.map((dep) => _buildLicenseSection(context, dep['title']!, dep['content']!)),
         ],
       ),
     );
   }
 
-  Widget _buildLicenseSection(String title, String content) {
+  Widget _buildLicenseSection(BuildContext context, String title, String content) {
+    final colors = context.colors;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+            style: AppText.sectionTitle.copyWith(
+              color: colors.text,
               letterSpacing: 0.2,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             content,
-            style: TextStyle(
-              fontSize: 13,
+            style: AppText.caption.copyWith(
               height: 1.5,
-              color: Colors.grey[600],
+              color: colors.textMuted,
             ),
           ),
         ],

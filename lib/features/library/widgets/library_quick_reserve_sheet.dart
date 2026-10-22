@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/library_models.dart';
 import '../utils/library_time_utils.dart';
@@ -22,16 +23,10 @@ Future<LibraryQuickReserveResult?> showLibraryQuickReserveSheet({
   required BuildContext context,
   required LibraryReserveModel item,
 }) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-
   return showModalBottomSheet<LibraryQuickReserveResult>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-    ),
     builder: (ctx) => LibraryQuickReserveSheet(item: item),
   );
 }
@@ -139,7 +134,7 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final now = DateTime.now();
     final allSlots = LibraryTimeUtils.buildTimeSlots();
     final availableStarts =
@@ -170,16 +165,12 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
             children: [
               Text(
                 context.l10n.quickReserve,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
+                style: AppText.sectionTitle.copyWith(color: colors.text),
               ),
               IconButton(
                 icon: Icon(
                   Icons.close,
-                  color: isDark ? Colors.white60 : Colors.black54,
+                  color: colors.textMuted,
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
@@ -188,43 +179,37 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
 
           // 目标座位信息卡片
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFF09C489)
-                  .withValues(alpha: isDark ? 0.15 : 0.08),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                color: const Color(0xFF09C489)
-                    .withValues(alpha: isDark ? 0.35 : 0.2),
-              ),
+              color: colors.statusBg(colors.brand),
+              borderRadius: AppRadius.controlAll,
+              border: Border.all(color: colors.brand),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.event_seat_rounded,
                   size: 18,
-                  color: Color(0xFF09C489),
+                  color: colors.brand,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         context.l10n.seatWithNumber(widget.item.seatNum),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF09C489),
+                        style: AppText.bodyDense.copyWith(
+                          color: colors.brandText,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         widget.item.fullRoomName,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white70 : Colors.black87,
-                        ),
+                        style:
+                            AppText.caption.copyWith(color: colors.text),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -235,44 +220,38 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
 
           // 1. 选择日期
           Text(
             context.l10n.selectDate,
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark ? Colors.white60 : Colors.grey[700],
+            style: AppText.caption.copyWith(
+              color: colors.textMuted,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: _availableDays.map((day) {
                 final isSelected = day == _selectedDay;
                 return Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: ChoiceChip(
                     label: Text(_formatDayLabel(context, day)),
                     selected: isSelected,
-                    selectedColor:
-                        const Color(0xFF09C489).withValues(alpha: 0.15),
-                    labelStyle: TextStyle(
-                      fontSize: 13,
-                      color: isSelected
-                          ? const Color(0xFF09C489)
-                          : (isDark ? Colors.white70 : Colors.black87),
+                    selectedColor: colors.statusBg(colors.brand),
+                    labelStyle: AppText.caption.copyWith(
+                      color: isSelected ? colors.brandText : colors.text,
                       fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: AppRadius.controlAll,
                       side: BorderSide(
-                        color: isSelected
-                            ? const Color(0xFF09C489)
-                            : (isDark ? Colors.white12 : Colors.grey[300]!),
+                        color:
+                            isSelected ? colors.brand : colors.border,
                       ),
                     ),
                     onSelected: (selected) {
@@ -291,21 +270,19 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
           // 2. 开始时间
           Text(
             context.l10n.startTime,
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark ? Colors.white60 : Colors.grey[700],
+            style: AppText.caption.copyWith(
+              color: colors.textMuted,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           if (availableStarts.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Text(
                 context.l10n.noAvailableSlotsForDate,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.orange[300] : Colors.orange[800],
+                style: AppText.caption.copyWith(
+                  color: colors.warning,
                 ),
               ),
             )
@@ -315,29 +292,25 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: availableStarts.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: AppSpacing.sm),
                 itemBuilder: (context, index) {
                   final slot = availableStarts[index];
                   final isSelected = slot == _selectedStartTime;
                   return ChoiceChip(
                     label: Text(slot),
                     selected: isSelected,
-                    selectedColor:
-                        const Color(0xFF09C489).withValues(alpha: 0.15),
-                    labelStyle: TextStyle(
-                      fontSize: 13,
-                      color: isSelected
-                          ? const Color(0xFF09C489)
-                          : (isDark ? Colors.white70 : Colors.black87),
+                    selectedColor: colors.statusBg(colors.brand),
+                    labelStyle: AppText.caption.copyWith(
+                      color: isSelected ? colors.brandText : colors.text,
                       fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: AppRadius.controlAll,
                       side: BorderSide(
-                        color: isSelected
-                            ? const Color(0xFF09C489)
-                            : (isDark ? Colors.white12 : Colors.grey[300]!),
+                        color:
+                            isSelected ? colors.brand : colors.border,
                       ),
                     ),
                     onSelected: (selected) {
@@ -364,19 +337,19 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
           // 3. 结束时间
           Text(
             context.l10n.endTime,
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark ? Colors.white60 : Colors.grey[700],
+            style: AppText.caption.copyWith(
+              color: colors.textMuted,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           SizedBox(
             height: 38,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: candidateEnds.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(width: AppSpacing.sm),
               itemBuilder: (context, index) {
                 final slot = candidateEnds[index];
                 final isAvailable =
@@ -385,24 +358,18 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
                 return ChoiceChip(
                   label: Text(slot),
                   selected: isSelected,
-                  selectedColor:
-                      const Color(0xFF09C489).withValues(alpha: 0.15),
-                  labelStyle: TextStyle(
-                    fontSize: 13,
+                  selectedColor: colors.statusBg(colors.brand),
+                  labelStyle: AppText.caption.copyWith(
                     color: !isAvailable
-                        ? (isDark ? Colors.white24 : Colors.grey[400])
-                        : (isSelected
-                            ? const Color(0xFF09C489)
-                            : (isDark ? Colors.white70 : Colors.black87)),
+                        ? colors.textMuted.withValues(alpha: 0.5)
+                        : (isSelected ? colors.brandText : colors.text),
                     fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
+                        isSelected ? FontWeight.w600 : FontWeight.w400,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: AppRadius.controlAll,
                     side: BorderSide(
-                      color: isSelected
-                          ? const Color(0xFF09C489)
-                          : (isDark ? Colors.white12 : Colors.grey[300]!),
+                      color: isSelected ? colors.brand : colors.border,
                     ),
                   ),
                   onSelected: isAvailable
@@ -417,24 +384,13 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.xl),
 
           // 确认预约按钮
           SizedBox(
             width: double.infinity,
-            height: 42,
+            height: 48,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09C489),
-                foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    const Color(0xFF09C489).withValues(alpha: 0.35),
-                disabledForegroundColor: Colors.white70,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
               onPressed: canConfirm
                   ? () => Navigator.pop(
                         context,
@@ -454,7 +410,7 @@ class _LibraryQuickReserveSheetState extends State<LibraryQuickReserveSheet> {
                       )
                     : context.l10n.pleaseSelectValidPeriod,
                 style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
           ),

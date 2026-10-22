@@ -122,5 +122,5 @@ class AppConstants {
   static const String defaultSemester = '2025-2026-2';
   
   // 主题色 - 湖南农业大学绿 (更新为 09C489)
-  static const int primaryColorValue = 0xFF09C489;
+  static const int primaryColorValue = 0xFF16A34A;
 }

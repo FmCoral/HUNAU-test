@@ -418,9 +418,7 @@ class AppSettingsService {
       case 'traditional chinese':
         return 'zh_TW';
       case 'zh_hefei':
-      case '合肥':
-      case '合肥话':
-        return 'zh_hefei';
+        return 'zh';
       case 'en':
       case '英文':
       case '英语':
@@ -449,27 +447,6 @@ class AppSettingsService {
       case '俄语':
       case 'russian':
         return 'ru';
-      case 'yue':
-      case '粤语':
-      case '广州话':
-      case '广东话':
-      case 'cantonese':
-        return 'yue';
-      case 'wuu':
-      case '吴语':
-      case '苏州话':
-      case '上海话':
-        return 'wuu';
-      case 'hsn':
-      case '湘语':
-      case '长沙话':
-      case '湖南话':
-        return 'hsn';
-      case 'gan':
-      case '赣语':
-      case '南昌话':
-      case '江西话':
-        return 'gan';
       default:
         final trimmed = input.trim();
         if (LocaleNotifier.supportedLanguages.any((o) => o.code == trimmed)) {

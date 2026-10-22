@@ -191,7 +191,7 @@ for k, zv in zh.items():
     
     # Priority 1: Unit test strict keys
     if k == "appTitle":
-        wuu_final[k] = "自在东湖"
+        wuu_final[k] = "牛×5"
         continue
     elif k == "settings":
         wuu_final[k] = "设定"

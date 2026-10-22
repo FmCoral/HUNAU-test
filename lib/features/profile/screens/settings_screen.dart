@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/state/locale_provider.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../../../core/widgets/embedded_detail_pane.dart';
@@ -74,7 +75,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _buildMaster(context, isLargeScreen: isLargeScreen);
 
         if (isLargeScreen && _embeddedScreen != null) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final colors = context.colors;
           return PopScope(
             canPop: false,
             onPopInvokedWithResult: (didPop, result) {
@@ -85,7 +86,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               });
             },
             child: Scaffold(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               body: Row(
                 children: [
                   Expanded(
@@ -94,10 +94,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   VerticalDivider(
                     width: 1,
-                    thickness: 0.5,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : const Color(0x1A000000),
+                    thickness: 1,
+                    color: colors.border,
                   ),
                   Expanded(
                     flex: 1,
@@ -125,7 +123,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildMaster(BuildContext context, {required bool isLargeScreen}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
     final currentLocale = ref.watch(localeProvider);
 
@@ -136,126 +134,122 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
     final currentLanguageLabel = currentOption.getLocalizedName(context);
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(l10n.settings),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
+    final items = <Widget>[
+      _buildSettingItem(
+        context,
+        icon: Icons.language_rounded,
+        title: l10n.language,
+        isSelected: isLargeScreen && _selectedSettingKey == 'language',
+        trailing: Text(
+          currentLanguageLabel,
+          style: AppText.bodyDense.copyWith(color: colors.textMuted),
         ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
+        onTap: () => _safeNavigate(
+          context,
+          const LanguageSettingsScreen(),
+          key: 'language',
+          isLargeScreen: isLargeScreen,
         ),
       ),
-      body: ListView(
-        padding: isLargeScreen
-            ? const EdgeInsets.symmetric(vertical: 8)
-            : EdgeInsets.zero,
-        children: [
-          _buildSettingItem(
-            context,
-            icon: Icons.language_rounded,
-            title: l10n.language,
-            isSelected: isLargeScreen && _selectedSettingKey == 'language',
-            isLargeScreen: isLargeScreen,
-            trailing: Text(
-              currentLanguageLabel,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white70 : const Color(0xFF5F6368),
-              ),
-            ),
-            onTap: () => _safeNavigate(
-              context,
-              const LanguageSettingsScreen(),
-              key: 'language',
-              isLargeScreen: isLargeScreen,
-            ),
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.code_rounded,
-            title: l10n.agentSettings,
-            isSelected: isLargeScreen && _selectedSettingKey == 'agent',
-            isLargeScreen: isLargeScreen,
-            onTap: () => _safeNavigate(
-              context,
-              const AiSettingsScreen(),
-              key: 'agent',
-              isLargeScreen: isLargeScreen,
-            ),
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.palette_outlined,
-            title: l10n.appearanceSettings,
-            isSelected: isLargeScreen && _selectedSettingKey == 'appearance',
-            isLargeScreen: isLargeScreen,
-            onTap: () => _safeNavigate(
-              context,
-              const AppearanceSettingsScreen(),
-              key: 'appearance',
-              isLargeScreen: isLargeScreen,
-            ),
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.widgets_outlined,
+      _buildSettingItem(
+        context,
+        icon: Icons.code_rounded,
+        title: l10n.agentSettings,
+        isSelected: isLargeScreen && _selectedSettingKey == 'agent',
+        onTap: () => _safeNavigate(
+          context,
+          const AiSettingsScreen(),
+          key: 'agent',
+          isLargeScreen: isLargeScreen,
+        ),
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.palette_outlined,
+        title: l10n.appearanceSettings,
+        isSelected: isLargeScreen && _selectedSettingKey == 'appearance',
+        onTap: () => _safeNavigate(
+          context,
+          const AppearanceSettingsScreen(),
+          key: 'appearance',
+          isLargeScreen: isLargeScreen,
+        ),
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.widgets_outlined,
+        title: l10n.widgetSettings,
+        isSelected: isLargeScreen && _selectedSettingKey == 'widget',
+        onTap: () => _safeNavigate(
+          context,
+          ButtonReorderScreen(
             title: l10n.widgetSettings,
-            isSelected: isLargeScreen && _selectedSettingKey == 'widget',
-            isLargeScreen: isLargeScreen,
-            onTap: () => _safeNavigate(
-              context,
-              ButtonReorderScreen(
-                title: l10n.widgetSettings,
-                listType: 'widget',
-              ),
-              key: 'widget',
-              isLargeScreen: isLargeScreen,
-            ),
+            listType: 'widget',
           ),
-          _buildSettingItem(
-            context,
-            icon: Icons.notifications_none_rounded,
-            title: l10n.notificationSettings,
-            isSelected: isLargeScreen && _selectedSettingKey == 'notification',
-            isLargeScreen: isLargeScreen,
-            onTap: () => _safeNavigate(
-              context,
-              const NotificationSettingsScreen(),
-              key: 'notification',
-              isLargeScreen: isLargeScreen,
+          key: 'widget',
+          isLargeScreen: isLargeScreen,
+        ),
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.notifications_none_rounded,
+        title: l10n.notificationSettings,
+        isSelected: isLargeScreen && _selectedSettingKey == 'notification',
+        onTap: () => _safeNavigate(
+          context,
+          const NotificationSettingsScreen(),
+          key: 'notification',
+          isLargeScreen: isLargeScreen,
+        ),
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.calendar_month_outlined,
+        title: l10n.timetableSettings,
+        isSelected: isLargeScreen && _selectedSettingKey == 'timetable',
+        onTap: () => _safeNavigate(
+          context,
+          const TimetableSettingsScreen(),
+          key: 'timetable',
+          isLargeScreen: isLargeScreen,
+        ),
+      ),
+      _buildSettingItem(
+        context,
+        icon: Icons.sync_rounded,
+        title: l10n.dataSyncSettings,
+        isSelected: isLargeScreen && _selectedSettingKey == 'data_sync',
+        onTap: () => _safeNavigate(
+          context,
+          const DataSyncSettingsScreen(),
+          key: 'data_sync',
+          isLargeScreen: isLargeScreen,
+        ),
+      ),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.settings),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.page),
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colors.border),
             ),
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.calendar_month_outlined,
-            title: l10n.timetableSettings,
-            isSelected: isLargeScreen && _selectedSettingKey == 'timetable',
-            isLargeScreen: isLargeScreen,
-            onTap: () => _safeNavigate(
-              context,
-              const TimetableSettingsScreen(),
-              key: 'timetable',
-              isLargeScreen: isLargeScreen,
-            ),
-          ),
-          _buildSettingItem(
-            context,
-            icon: Icons.sync_rounded,
-            title: l10n.dataSyncSettings,
-            isSelected: isLargeScreen && _selectedSettingKey == 'data_sync',
-            isLargeScreen: isLargeScreen,
-            onTap: () => _safeNavigate(
-              context,
-              const DataSyncSettingsScreen(),
-              key: 'data_sync',
-              isLargeScreen: isLargeScreen,
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < items.length; i++) ...[
+                  if (i > 0)
+                    Divider(height: 1, indent: 54, color: colors.border),
+                  items[i],
+                ],
+              ],
             ),
           ),
         ],
@@ -271,75 +265,59 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     Widget? trailing,
     bool showChevron = true,
     bool isSelected = false,
-    bool isLargeScreen = false,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
-    return Padding(
-      padding: isLargeScreen
-          ? const EdgeInsets.symmetric(horizontal: 10, vertical: 2)
-          : EdgeInsets.zero,
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFEBEBEB))
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Row(
-                children: [
-                  Icon(icon, size: 24, color: const Color(0xFF5F6368)),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+    return Material(
+      color: isSelected ? colors.surfaceSubtle : Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+            child: Row(
+              children: [
+                Icon(icon, size: 22, color: colors.textMuted),
+                const SizedBox(width: AppSpacing.lg),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppText.body.copyWith(
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          color: colors.text,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
                         Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                            color: isDark ? Colors.white : const Color(0xFF202124),
+                          subtitle,
+                          style: AppText.caption.copyWith(
+                            color: colors.textMuted,
                           ),
                         ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.white54 : const Color(0xFF9E9E9E),
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
-                  if (trailing != null) ...[
-                    trailing,
-                    const SizedBox(width: 4),
-                  ],
-                  if (showChevron)
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 20,
-                      color: isSelected
-                          ? (isDark ? Colors.white70 : const Color(0xFF5F6368))
-                          : const Color(0xFF9E9E9E),
-                    ),
+                ),
+                if (trailing != null) ...[
+                  trailing,
+                  const SizedBox(width: AppSpacing.xs),
                 ],
-              ),
+                if (showChevron)
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: colors.textMuted,
+                  ),
+              ],
             ),
           ),
         ),

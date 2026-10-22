@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/utils/l10n_extension.dart';
+import '../../../core/theme/app_tokens.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -42,8 +43,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
               width: 250,
               height: 250,
               decoration: BoxDecoration(
-                border: Border.all(color: Theme.of(context).primaryColor, width: 2),
-                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: context.colors.brand, width: 2),
+                borderRadius: AppRadius.innerAll,
               ),
             ),
           ),
@@ -54,7 +55,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             child: Text(
               context.l10n.scanQrCodeHint,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70),
+              style: AppText.bodyDense.copyWith(color: Colors.white70),
             ),
           ),
         ],

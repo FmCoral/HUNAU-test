@@ -153,7 +153,7 @@ void main() {
   group('AppLocalizations Resource Tests', () {
     test('AppLocalizations returns correct zh texts', () {
       final l10n = lookupAppLocalizations(const Locale('zh'));
-      expect(l10n.appTitle, equals('自在东湖'));
+      expect(l10n.appTitle, equals('牛×5'));
       expect(l10n.settings, equals('设置'));
       expect(l10n.language, equals('语言'));
       expect(l10n.followSystem, equals('跟随系统'));
@@ -240,7 +240,7 @@ void main() {
 
     test('AppLocalizations returns correct yue texts', () {
       final l10n = lookupAppLocalizations(const Locale('yue'));
-      expect(l10n.appTitle, equals('自在东湖'));
+      expect(l10n.appTitle, equals('牛×5'));
       expect(l10n.settings, equals('设定'));
       expect(l10n.traditionalChineseHK, equals('繁体中文（中国香港）'));
       expect(l10n.traditionalChineseTW, equals('繁体中文'));
@@ -249,14 +249,14 @@ void main() {
 
     test('AppLocalizations returns correct wuu texts', () {
       final l10n = lookupAppLocalizations(const Locale('wuu'));
-      expect(l10n.appTitle, equals('自在东湖'));
+      expect(l10n.appTitle, equals('牛×5'));
       expect(l10n.settings, equals('设定'));
       expect(l10n.tabHome, equals('头一页'));
     });
 
     test('AppLocalizations returns correct hsn texts', () {
       final l10n = lookupAppLocalizations(const Locale('hsn'));
-      expect(l10n.appTitle, equals('自在东湖'));
+      expect(l10n.appTitle, equals('牛×5'));
       expect(l10n.settings, equals('设置'));
       expect(l10n.tabHome, equals('首页'));
     });
@@ -265,7 +265,7 @@ void main() {
       final l10n = lookupAppLocalizations(
         const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'hefei'),
       );
-      expect(l10n.appTitle, equals('自在东湖'));
+      expect(l10n.appTitle, equals('牛×5'));
       expect(l10n.settings, equals('设定'));
       expect(l10n.tabHome, equals('头页'));
       expect(l10n.cancel, equals('算了'));
@@ -275,7 +275,7 @@ void main() {
 
     test('AppLocalizations returns correct gan texts', () {
       final l10n = lookupAppLocalizations(const Locale('gan'));
-      expect(l10n.appTitle, equals('自在东湖'));
+      expect(l10n.appTitle, equals('牛×5'));
       expect(l10n.settings, equals('设置'));
       expect(l10n.tabHome, equals('首页'));
       expect(l10n.ganNanchang, equals('赣语（南昌话）'));

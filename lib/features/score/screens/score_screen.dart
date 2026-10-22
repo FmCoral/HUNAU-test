@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/score_provider.dart';
 import '../models/score_model.dart';
 import '../../../core/utils/l10n_extension.dart';
+import '../../../core/theme/app_tokens.dart';
 
 class ScoreScreen extends ConsumerWidget {
   const ScoreScreen({super.key});
@@ -10,17 +11,10 @@ class ScoreScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(scoreProvider);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.scoreQuery),
-        elevation: 0,
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
         actions: [
           IconButton(
             tooltip: context.l10n.refresh,
@@ -32,19 +26,13 @@ class ScoreScreen extends ConsumerWidget {
       body: Column(
         children: [
           // 1. 学期选择栏 (扁平化设计)
-          _buildSemesterPicker(context, ref, state, isDark),
-          
-          Divider(
-            height: 1,
-            thickness: 0.5,
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : const Color(0xFFE0E0E0),
-          ),
-          
+          _buildSemesterPicker(context, ref, state),
+
+          const Divider(height: 1),
+
           // 2. 成绩列表
           Expanded(
-            child: _buildScoreList(context, ref, state, isDark),
+            child: _buildScoreList(context, ref, state),
           ),
         ],
       ),
@@ -52,33 +40,28 @@ class ScoreScreen extends ConsumerWidget {
   }
 
   Widget _buildSemesterPicker(
-      BuildContext context, WidgetRef ref, ScoreState state, bool isDark) {
+      BuildContext context, WidgetRef ref, ScoreState state) {
     if (state.semesters.isEmpty && !state.isLoading) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
       height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Row(
         children: [
           Text(
             context.l10n.currentSemester,
-            style: TextStyle(
-              fontSize: 14, 
-              fontWeight: FontWeight.w600, 
-              color: isDark ? Colors.white70 : Colors.grey[800],
-              letterSpacing: 0.1,
+            style: AppText.bodyDense.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.colors.text,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           if (state.isLoading && state.semesters.isEmpty)
             const SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xFF09C489),
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2),
             )
           else
             Expanded(
@@ -87,11 +70,11 @@ class ScoreScreen extends ConsumerWidget {
                 child: DropdownButton<SemesterModel>(
                   value: state.selectedSemester,
                   underline: const SizedBox(),
-                  icon: Icon(Icons.arrow_drop_down_rounded, color: Colors.grey[600]),
-                  style: const TextStyle(
-                    color: Color(0xFF09C489),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                  icon: Icon(Icons.arrow_drop_down_rounded,
+                      color: context.colors.textMuted),
+                  style: AppText.bodyDense.copyWith(
+                    color: context.colors.brandText,
+                    fontWeight: FontWeight.w600,
                   ),
                   isExpanded: true,
                   items: state.semesters.map((s) {
@@ -114,11 +97,9 @@ class ScoreScreen extends ConsumerWidget {
   }
 
   Widget _buildScoreList(
-      BuildContext context, WidgetRef ref, ScoreState state, bool isDark) {
+      BuildContext context, WidgetRef ref, ScoreState state) {
     if (state.isLoading && state.scores.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF09C489)),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (state.errorMessage != null && state.scores.isEmpty) {
@@ -126,15 +107,21 @@ class ScoreScreen extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 48, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text(state.errorMessage!, style: TextStyle(color: Colors.grey[600])),
-            const SizedBox(height: 24),
+            Icon(Icons.error_outline_rounded,
+                size: 48, color: context.colors.danger),
+            const SizedBox(height: AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+              child: Text(
+                state.errorMessage!,
+                textAlign: TextAlign.center,
+                style: AppText.bodyDense
+                    .copyWith(color: context.colors.textMuted),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
             OutlinedButton(
               onPressed: () => ref.read(scoreProvider.notifier).refresh(),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-              ),
               child: Text(context.l10n.retry),
             ),
           ],
@@ -148,14 +135,12 @@ class ScoreScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.assignment_turned_in_outlined,
-                size: 64, color: isDark ? Colors.white24 : Colors.grey[300]),
-            const SizedBox(height: 16),
+                size: 64, color: context.colors.textMuted),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               context.l10n.noScoreData,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white38 : Colors.grey,
-              ),
+              style:
+                  AppText.bodyDense.copyWith(color: context.colors.textMuted),
             ),
           ],
         ),
@@ -163,17 +148,17 @@ class ScoreScreen extends ConsumerWidget {
     }
 
     return RefreshIndicator(
-      color: const Color(0xFF09C489),
       onRefresh: () => ref.read(scoreProvider.notifier).refresh(),
       child: Stack(
         children: [
           ListView.builder(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page, AppSpacing.lg, AppSpacing.page, 40),
             itemCount: state.scores.length,
             itemBuilder: (context, index) {
               final score = state.scores[index];
-              return _buildScoreCard(context, score, isDark);
+              return _buildScoreCard(context, score);
             },
           ),
           if (state.isLoading)
@@ -181,19 +166,14 @@ class ScoreScreen extends ConsumerWidget {
               top: 0,
               left: 0,
               right: 0,
-              child: LinearProgressIndicator(
-                minHeight: 2,
-                color: Color(0xFF09C489),
-              ),
+              child: LinearProgressIndicator(minHeight: 2),
             ),
         ],
       ),
     );
   }
 
-  Widget _buildScoreCard(BuildContext context, ScoreModel score, bool isDark) {
-    final primaryTextColor = isDark ? Colors.white : const Color(0xFF222222);
-
+  Widget _buildScoreCard(BuildContext context, ScoreModel score) {
     final courseNatureParts = [
       if (score.courseNature != null && score.courseNature!.trim().isNotEmpty)
         score.courseNature!.trim(),
@@ -209,18 +189,13 @@ class ScoreScreen extends ConsumerWidget {
     final bool showCreditInWrap = hasCourseNature;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: context.colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: context.colors.border),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.card),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -230,65 +205,52 @@ class ScoreScreen extends ConsumerWidget {
               Expanded(
                 child: Text(
                   score.courseName,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: primaryTextColor,
+                  style: AppText.sectionTitle.copyWith(
+                    color: context.colors.text,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Text(
                 score.score,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: primaryTextColor,
-                  fontFamily: 'monospace',
+                style: AppText.keyNumber.copyWith(
+                  color: context.colors.text,
                 ),
               ),
             ],
           ),
           if (secondaryText.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               secondaryText,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.white60 : Colors.black54,
-              ),
+              style:
+                  AppText.caption.copyWith(color: context.colors.textMuted),
             ),
           ],
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           Wrap(
-            spacing: 12,
-            runSpacing: 4,
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.xs,
             children: [
               if (showCreditInWrap &&
                   score.credit != null &&
                   score.credit!.trim().isNotEmpty)
                 Text(
                   context.l10n.scoreCredit(score.credit!.trim()),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white38 : Colors.grey[600],
-                  ),
+                  style: AppText.caption
+                      .copyWith(color: context.colors.textMuted),
                 ),
               Text(
                 score.examType ?? context.l10n.normalExam,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.white38 : Colors.grey[600],
-                ),
+                style:
+                    AppText.caption.copyWith(color: context.colors.textMuted),
               ),
               if (score.dailyScore != null &&
                   score.dailyScore!.trim().isNotEmpty)
                 Text(
                   '平时: ${score.dailyScore!.trim()}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white38 : Colors.grey[600],
-                  ),
+                  style: AppText.caption
+                      .copyWith(color: context.colors.textMuted),
                 ),
             ],
           ),
@@ -297,5 +259,3 @@ class ScoreScreen extends ConsumerWidget {
     );
   }
 }
-
-

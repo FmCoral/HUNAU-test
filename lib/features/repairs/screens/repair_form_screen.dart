@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/repair_models.dart';
 import '../services/repair_service.dart';
@@ -238,25 +239,28 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
     final selected = await showModalBottomSheet<RepairChoice>(
       context: context,
       showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: 20),
-          children: [
-            Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                child: Text(field.label,
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.bold))),
-            ...choices.map((choice) => ListTile(
-                  title: Text(choice.label),
-                  trailing: _choices[field.name]?.id == choice.id
-                      ? const Icon(Icons.check, color: Color(0xFF09C489))
-                      : null,
-                  onTap: () => Navigator.pop(context, choice),
-                )),
-          ],
-        ),
-      ),
+      builder: (context) {
+        final colors = context.colors;
+        return SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 20),
+            children: [
+              Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                  child: Text(field.label,
+                      style: AppText.sectionTitle.copyWith(
+                          color: colors.text))),
+              ...choices.map((choice) => ListTile(
+                    title: Text(choice.label),
+                    trailing: _choices[field.name]?.id == choice.id
+                        ? Icon(Icons.check, color: colors.brand)
+                        : null,
+                    onTap: () => Navigator.pop(context, choice),
+                  )),
+            ],
+          ),
+        );
+      },
     );
     if (selected != null) {
       setState(() {
@@ -281,7 +285,7 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
           TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(context.l10n.cancel)),
-          FilledButton(
+          ElevatedButton(
               onPressed: () => Navigator.pop(context, controller.text),
               child: Text(context.l10n.confirm)),
         ],
@@ -378,7 +382,7 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(context.l10n.cancel),
           ),
-          FilledButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(context.l10n.confirm),
           ),
@@ -459,42 +463,33 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
       _isLogistics ? true : field.required;
 
   InputDecoration _inputDecoration({
-    required BuildContext context,
-    required String label,
-    required bool isRequired,
+    required String hint,
     Widget? suffixIcon,
-    bool alignLabelWithHint = false,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? Colors.white24 : const Color(0xFFDADCE0);
-    const primaryGreen = Color(0xFF09C489);
-
     return InputDecoration(
-      labelText: '$label${isRequired ? ' *' : ''}',
-      labelStyle: TextStyle(
-        fontSize: 14,
-        color: isDark ? Colors.white60 : const Color(0xFF757575),
-      ),
-      floatingLabelStyle: const TextStyle(
-        color: primaryGreen,
-        fontWeight: FontWeight.w500,
-      ),
-      filled: false,
-      fillColor: Colors.transparent,
-      alignLabelWithHint: alignLabelWithHint,
+      hintText: hint,
       suffixIcon: suffixIcon,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: BorderSide(color: borderColor, width: 1),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: BorderSide(color: borderColor, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(6),
-        borderSide: const BorderSide(color: primaryGreen, width: 1.5),
+    );
+  }
+
+  Widget _fieldLabel(String label, bool required, AppSemanticColors colors) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: RichText(
+        text: TextSpan(
+          style: AppText.bodyDense.copyWith(
+            fontWeight: FontWeight.w600,
+            color: colors.text,
+          ),
+          children: [
+            if (required)
+              TextSpan(
+                text: '* ',
+                style: TextStyle(color: colors.danger),
+              ),
+            TextSpan(text: label),
+          ],
+        ),
       ),
     );
   }
@@ -554,7 +549,7 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                     title: Text(context.l10n.repairsSubmitSuccess),
                     content: Text(context.l10n.repairsSubmitSuccessMessage),
                     actions: [
-                      FilledButton(
+                      ElevatedButton(
                           onPressed: () => Navigator.pop(context),
                           child: Text(context.l10n.gotIt))
                     ]));
@@ -573,54 +568,37 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
     }
   }
 
-  Widget _buildBottomBar(bool isDark) {
+  Widget _buildBottomBar(AppSemanticColors colors) {
+    final onBrand = Theme.of(context).colorScheme.onPrimary;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: colors.surface,
         border: Border(
-          top: BorderSide(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : const Color(0xFFE0E0E0),
-            width: 1,
-          ),
+          top: BorderSide(color: colors.border),
         ),
       ),
       child: SafeArea(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            SizedBox(
-              height: 38,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                ),
-                onPressed: _submitting ? null : () => _submit(isDraft: false),
-                child: _submitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        context.l10n.submit,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(80, 40),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               ),
+              onPressed: _submitting ? null : () => _submit(isDraft: false),
+              child: _submitting
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: onBrand,
+                      ),
+                    )
+                  : Text(context.l10n.submit),
             ),
           ],
         ),
@@ -630,22 +608,19 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final bgColor = isDark ? theme.scaffoldBackgroundColor : Colors.white;
+    final colors = context.colors;
 
     Widget body;
     if (_loading) {
-      body = const Center(
-          child: CircularProgressIndicator(color: Color(0xFF09C489)));
+      body = const Center(child: CircularProgressIndicator());
     } else if (_error != null) {
       body = Center(
           child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(AppSpacing.xxl),
               child: Column(mainAxisSize: MainAxisSize.min, children: [
                 Text(_error!, textAlign: TextAlign.center),
                 const SizedBox(height: 14),
-                FilledButton(
+                ElevatedButton(
                     onPressed: () {
                       setState(() {
                         _loading = true;
@@ -657,71 +632,39 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
               ])));
     } else {
       body = ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.page, AppSpacing.lg, AppSpacing.page, 24),
         children: [
           ..._session!.fields
               .where((field) => !field.hidden && !field.readonly)
-              .map((field) => _buildField(field, theme)),
+              .map((field) => _buildField(field, colors)),
         ],
       );
     }
     return Scaffold(
-      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: bgColor,
-        surfaceTintColor: bgColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
-        scrolledUnderElevation: 0,
         title: Text(widget.draftOrder != null
             ? '${widget.catalog.title} · ${context.l10n.repairsDrafts}'
             : widget.catalog.title),
       ),
       body: body,
       bottomNavigationBar:
-          _loading || _error != null ? null : _buildBottomBar(isDark),
+          _loading || _error != null ? null : _buildBottomBar(colors),
     );
   }
 
-  Widget _buildUploadField(RepairField field, ThemeData theme) {
+  Widget _buildUploadField(RepairField field, AppSemanticColors colors) {
     final images = _attachments[field.name] ?? [];
     final isUploading = _uploading[field.name] == true;
     final required = _isFieldRequired(field);
-    final isDark = theme.brightness == Brightness.dark;
-    final borderColor = isDark ? Colors.white24 : const Color(0xFFDADCE0);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                Text(
-                  '${field.label}${required ? ' *' : ''}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: theme.textTheme.bodyMedium?.color
-                        ?.withValues(alpha: .85),
-                  ),
-                ),
-                if (images.isNotEmpty) ...[
-                  const SizedBox(width: 6),
-                  Text(
-                    '(${images.length})',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: theme.textTheme.bodySmall?.color
-                          ?.withValues(alpha: .7),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+          _fieldLabel('${field.label}${images.isNotEmpty ? ' (${images.length})' : ''}',
+              required, colors),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -738,10 +681,10 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: Colors.transparent,
+                            color: colors.surfaceSubtle,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: borderColor,
+                              color: colors.border,
                               width: 1,
                             ),
                           ),
@@ -750,9 +693,9 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                               ? Image.file(
                                   File(item.localFilePath!),
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Center(
+                                  errorBuilder: (_, __, ___) => Center(
                                     child: Icon(Icons.broken_image_rounded,
-                                        size: 26),
+                                        size: 26, color: colors.textMuted),
                                   ),
                                 )
                               : AuthenticatedBxptImage(
@@ -767,8 +710,9 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                                           strokeWidth: 2),
                                     ),
                                   ),
-                                  errorWidget: const Center(
-                                    child: Icon(Icons.image_outlined, size: 26),
+                                  errorWidget: Center(
+                                    child: Icon(Icons.image_outlined,
+                                        size: 26, color: colors.textMuted),
                                   ),
                                 ),
                         ),
@@ -780,8 +724,8 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                           onTap: () => _deleteAttachment(field, item),
                           child: Container(
                             padding: const EdgeInsets.all(3),
-                            decoration: const BoxDecoration(
-                              color: Colors.redAccent,
+                            decoration: BoxDecoration(
+                              color: colors.danger,
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -799,10 +743,10 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.transparent,
+                    color: colors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: borderColor,
+                      color: colors.border,
                       width: 1,
                     ),
                   ),
@@ -812,7 +756,6 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                       height: 22,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Color(0xFF09C489),
                       ),
                     ),
                   ),
@@ -824,10 +767,10 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.transparent,
+                    color: colors.surfaceSubtle,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: borderColor,
+                      color: colors.border,
                       width: 1,
                     ),
                   ),
@@ -837,15 +780,13 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
                       Icon(
                         Icons.add_a_photo_outlined,
                         size: 22,
-                        color: theme.hintColor,
+                        color: colors.textMuted,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         context.l10n.repairsUploadImage,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: theme.hintColor,
-                        ),
+                        style: AppText.caption
+                            .copyWith(fontSize: 11, color: colors.textMuted),
                       ),
                     ],
                   ),
@@ -858,93 +799,87 @@ class _RepairFormScreenState extends ConsumerState<RepairFormScreen> {
     );
   }
 
-  Widget _buildField(RepairField field, ThemeData theme) {
+  Widget _buildField(RepairField field, AppSemanticColors colors) {
     if (field.isUpload) {
-      return _buildUploadField(field, theme);
+      return _buildUploadField(field, colors);
     }
     final controller = _controllers[field.name]!;
     final required = _isFieldRequired(field);
     if (field.isDate) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
-        child: InkWell(
-          onTap: () => _pickDate(field),
-          borderRadius: BorderRadius.circular(6),
-          child: InputDecorator(
-            decoration: _inputDecoration(
-              context: context,
-              label: field.label,
-              isRequired: required,
-              suffixIcon: const Icon(
-                Icons.calendar_today_outlined,
-                size: 20,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _fieldLabel(field.label, required, colors),
+            InkWell(
+              onTap: () => _pickDate(field),
+              borderRadius: BorderRadius.circular(4),
+              child: InputDecorator(
+                decoration: _inputDecoration(
+                  hint: context.l10n.repairsSelectValue,
+                  suffixIcon: const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 20,
+                  ),
+                ),
+                child: Text(
+                  controller.text.isEmpty
+                      ? context.l10n.repairsSelectValue
+                      : controller.text,
+                  style: AppText.bodyDense.copyWith(color: colors.text),
+                ),
               ),
             ),
-            child: Text(
-              controller.text.isEmpty
-                  ? context.l10n.repairsSelectValue
-                  : controller.text,
-              style: TextStyle(
-                fontSize: 14,
-                color: controller.text.isEmpty
-                    ? theme.hintColor
-                    : theme.textTheme.bodyMedium?.color,
-              ),
-            ),
-          ),
+          ],
         ),
       );
     }
     if (field.isChoice) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 14),
-        child: InkWell(
-          onTap: () => _choose(field),
-          borderRadius: BorderRadius.circular(6),
-          child: InputDecorator(
-            decoration: _inputDecoration(
-              context: context,
-              label: field.label,
-              isRequired: required,
-              suffixIcon: const Icon(
-                Icons.expand_more_rounded,
-                size: 22,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _fieldLabel(field.label, required, colors),
+            InkWell(
+              onTap: () => _choose(field),
+              borderRadius: BorderRadius.circular(4),
+              child: InputDecorator(
+                decoration: _inputDecoration(
+                  hint: context.l10n.repairsSelectValue,
+                  suffixIcon: const Icon(
+                    Icons.expand_more_rounded,
+                    size: 22,
+                  ),
+                ),
+                child: Text(
+                  controller.text.isEmpty
+                      ? context.l10n.repairsSelectValue
+                      : controller.text,
+                  style: AppText.bodyDense.copyWith(color: colors.text),
+                ),
               ),
             ),
-            child: Text(
-              controller.text.isEmpty
-                  ? context.l10n.repairsSelectValue
-                  : controller.text,
-              style: TextStyle(
-                fontSize: 14,
-                color: controller.text.isEmpty
-                    ? theme.hintColor
-                    : theme.textTheme.bodyMedium?.color,
-              ),
-            ),
-          ),
+          ],
         ),
       );
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
-      child: TextField(
-        controller: controller,
-        minLines: field.isMultiline ? 4 : 1,
-        maxLines: field.isMultiline ? 7 : 1,
-        textInputAction:
-            field.isMultiline ? TextInputAction.newline : TextInputAction.next,
-        cursorColor: const Color(0xFF09C489),
-        style: TextStyle(
-          fontSize: 14,
-          color: theme.textTheme.bodyMedium?.color,
-        ),
-        decoration: _inputDecoration(
-          context: context,
-          label: field.label,
-          isRequired: required,
-          alignLabelWithHint: field.isMultiline,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _fieldLabel(field.label, required, colors),
+          TextField(
+            controller: controller,
+            minLines: field.isMultiline ? 4 : 1,
+            maxLines: field.isMultiline ? 7 : 1,
+            textInputAction:
+                field.isMultiline ? TextInputAction.newline : TextInputAction.next,
+            style: AppText.bodyDense.copyWith(color: colors.text),
+          ),
+        ],
       ),
     );
   }

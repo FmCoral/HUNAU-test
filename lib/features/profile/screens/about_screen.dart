@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/route_utils.dart';
 import '../../../core/services/update_service.dart';
 import '../../../core/utils/l10n_extension.dart';
@@ -11,122 +12,98 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
-      ),
+      appBar: AppBar(),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.all(AppSpacing.page),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Logo - 圆角矩形 + 固定大小 (80x80)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : Colors.black.withValues(alpha: 0.08),
-                    width: 1,
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: AppRadius.cardAll,
+                border: Border.all(color: colors.border),
+                image: DecorationImage(
+                  image: AssetImage(
+                    Theme.of(context).brightness == Brightness.dark
+                        ? 'assets/images/logo_dark.png'
+                        : 'assets/images/logo.png',
                   ),
-                  image: DecorationImage(
-                    image: AssetImage(
-                      isDark
-                          ? 'assets/images/logo_dark.png'
-                          : 'assets/images/logo.png',
-                    ),
-                    fit: BoxFit.cover,
-                  ),
-                  boxShadow: [
-                    if (!isDark)
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                  ],
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            
+            const SizedBox(height: AppSpacing.xxl),
+
             // 应用名称
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Text(
-                context.l10n.appTitle,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF202124),
-                  letterSpacing: -0.5,
-                ),
-              ),
+            Text(
+              context.l10n.appTitle,
+              style: AppText.pageTitle.copyWith(color: colors.text),
             ),
-            
+
             // 版本号
-            const SizedBox(height: 4),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: FutureBuilder<PackageInfo>(
-                future: PackageInfo.fromPlatform(),
-                builder: (context, snapshot) {
-                  final versionStr = snapshot.hasData ? snapshot.data!.version : '2';
-                  return Text(
-                    'Version $versionStr',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                      letterSpacing: 0.2,
-                    ),
-                  );
-                },
-              ),
-            ),
-            
-            const SizedBox(height: 48),
-            
-            // 列表项 - 无分割线，涟漪延伸到两侧
-            _buildAboutItem(
-              context,
-              title: context.l10n.visitWebsite,
-              onTap: () async {
-                final Uri url = Uri.parse('https://mou.hunau.fmcoral.com');
-                if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('无法打开 $url')),
-                    );
-                  }
-                }
-              },
-            ),
-            _buildAboutItem(
-              context,
-              title: context.l10n.checkUpdate,
-              onTap: () => UpdateService().checkUpdate(context, showNoUpdate: true),
-            ),
-            _buildAboutItem(
-              context,
-              title: context.l10n.openSourceLicenses,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  createSlideUpRoute(const OssLicensesScreen()),
+            const SizedBox(height: AppSpacing.xs),
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                final versionStr = snapshot.hasData ? snapshot.data!.version : '2';
+                return Text(
+                  'Version $versionStr',
+                  style: AppText.caption.copyWith(color: colors.textMuted),
                 );
               },
+            ),
+
+            const SizedBox(height: AppSpacing.xxl),
+
+            // 列表项分组卡片
+            Container(
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: AppRadius.cardAll,
+                border: Border.all(color: colors.border),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  _buildAboutItem(
+                    context,
+                    title: context.l10n.visitWebsite,
+                    onTap: () async {
+                      final Uri url = Uri.parse('https://mou.hunau.fmcoral.com');
+                      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('无法打开 $url')),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                  Divider(height: 1, color: colors.border),
+                  _buildAboutItem(
+                    context,
+                    title: context.l10n.checkUpdate,
+                    onTap: () => UpdateService().checkUpdate(context, showNoUpdate: true),
+                  ),
+                  Divider(height: 1, color: colors.border),
+                  _buildAboutItem(
+                    context,
+                    title: context.l10n.openSourceLicenses,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        createSlideUpRoute(const OssLicensesScreen()),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -139,25 +116,27 @@ class AboutScreen extends StatelessWidget {
     required String title,
     required VoidCallback onTap,
   }) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    
+    final colors = context.colors;
+
     return InkWell(
       onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: isDark ? Colors.white.withValues(alpha: 0.9) : const Color(0xFF202124),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: AppText.body.copyWith(color: colors.text),
+                ),
               ),
-            ),
-          ],
+              Icon(Icons.chevron_right_rounded,
+                  size: 20, color: colors.textMuted),
+            ],
+          ),
         ),
       ),
     );

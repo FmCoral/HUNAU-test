@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/update_service.dart';
+import '../theme/app_tokens.dart';
 import '../utils/l10n_extension.dart';
 
 class UpdateScreen extends StatelessWidget {
@@ -18,14 +19,10 @@ class UpdateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).primaryColor;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -35,7 +32,8 @@ class UpdateScreen extends StatelessWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -43,30 +41,23 @@ class UpdateScreen extends StatelessWidget {
                   Icon(
                     Icons.system_update_rounded,
                     size: 38,
-                    color: primaryColor,
+                    color: colors.brand,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // 发现新版本标题，左对齐
                   Text(
                     context.l10n.foundNewVersion(version),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppText.keyNumber.copyWith(color: colors.text),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // 更新日志标题
                   Text(
                     context.l10n.releaseNotes,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
+                    style: AppText.sectionTitle.copyWith(color: colors.text),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
 
                   // 更新日志直接展示，不加外框，支持 Markdown 渲染
                   MarkdownBody(
@@ -85,35 +76,35 @@ class UpdateScreen extends StatelessWidget {
                       p: TextStyle(
                         fontSize: 14,
                         height: 1.6,
-                        color: isDark ? const Color(0xFFD0D0D0) : const Color(0xFF3C4043),
+                        color: colors.text,
                       ),
                       h1: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF202124),
+                        color: colors.text,
                       ),
                       h2: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF202124),
+                        color: colors.text,
                       ),
                       h3: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : const Color(0xFF202124),
+                        color: colors.text,
                       ),
                       listBullet: TextStyle(
                         fontSize: 14,
-                        color: isDark ? Colors.white70 : const Color(0xFF5F6368),
+                        color: colors.textMuted,
                       ),
                       a: TextStyle(
-                        color: primaryColor,
+                        color: colors.brand,
                         decoration: TextDecoration.underline,
                       ),
                       code: TextStyle(
                         fontSize: 12.5,
-                        backgroundColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
-                        color: primaryColor,
+                        backgroundColor: colors.surfaceSubtle,
+                        color: colors.brand,
                         fontFamily: 'monospace',
                       ),
                     ),
@@ -122,11 +113,12 @@ class UpdateScreen extends StatelessWidget {
               ),
             ),
           ),
-          // 底部操作栏：小圆角矩形，右对齐，去掉“以后再说”
+          // 底部操作栏：右对齐，去掉“以后再说”
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl, vertical: AppSpacing.lg),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: ElevatedButton(
@@ -139,18 +131,9 @@ class UpdateScreen extends StatelessWidget {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: 12),
                   ),
-                  child: Text(
-                    context.l10n.updateNow,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  ),
+                  child: Text(context.l10n.updateNow),
                 ),
               ),
             ),

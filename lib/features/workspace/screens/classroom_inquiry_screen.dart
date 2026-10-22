@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/classroom_model.dart';
 import '../services/classroom_service.dart';
+import '../../../core/theme/app_tokens.dart';
 
 final classroomServiceProvider = Provider((ref) => ClassroomService());
 
@@ -80,20 +81,16 @@ class _ClassroomInquiryScreenState extends ConsumerState<ClassroomInquiryScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.classroomInquiry),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: _loadingOptions 
+      body: _loadingOptions
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 _buildSearchPanel(),
                 Expanded(
-                  child: _searching 
+                  child: _searching
                       ? const Center(child: CircularProgressIndicator())
                       : _buildResultList(),
                 ),
@@ -106,25 +103,26 @@ class _ClassroomInquiryScreenState extends ConsumerState<ClassroomInquiryScreen>
     if (_options == null) return const SizedBox();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page, vertical: AppSpacing.sm),
       child: Column(
         children: [
           Row(
             children: [
               Expanded(child: _buildPlainDropdown(context.l10n.building, _options!.buildings, _selectedBuilding, (val) => setState(() => _selectedBuilding = val))),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(child: _buildPlainDropdown(context.l10n.weeksLabel, _options!.weeks, _selectedWeek, (val) => setState(() => _selectedWeek = val))),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(child: _buildPlainDropdown(context.l10n.periodSlot, _options!.sections, _selectedSection, (val) => setState(() => _selectedSection = val))),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: _buildPlainDropdown(
-                  context.l10n.weekday, 
-                  _options!.days.map((e) => e['label']!).toList(), 
+                  context.l10n.weekday,
+                  _options!.days.map((e) => e['label']!).toList(),
                   _options!.days.firstWhere((e) => e['value'] == _selectedDay, orElse: () => _options!.days.first)['label'],
                   (label) {
                     final val = _options!.days.firstWhere((e) => e['label'] == label)['value'];
@@ -134,21 +132,15 @@ class _ClassroomInquiryScreenState extends ConsumerState<ClassroomInquiryScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Align(
             alignment: Alignment.centerRight,
             child: SizedBox(
-              height: 36,
+              height: 48,
               child: ElevatedButton.icon(
                 onPressed: _search,
                 icon: const Icon(Icons.search, size: 18),
                 label: Text(context.l10n.query),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                ),
               ),
             ),
           ),
@@ -158,26 +150,32 @@ class _ClassroomInquiryScreenState extends ConsumerState<ClassroomInquiryScreen>
   }
 
   Widget _buildPlainDropdown(String label, List<String> items, String? current, Function(String?) onChanged) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-        const SizedBox(height: 4),
+        Text(label,
+            style: AppText.caption.copyWith(color: colors.textMuted)),
+        const SizedBox(height: AppSpacing.xs),
         Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
-            color: isDark ? Colors.black : Colors.white,
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(6),
+            color: colors.surface,
+            border: Border.all(color: colors.border),
+            borderRadius: AppRadius.controlAll,
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: current,
               isExpanded: true,
-              dropdownColor: isDark ? Colors.black : Colors.white,
-              items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
+              dropdownColor: colors.surface,
+              style: AppText.bodyDense.copyWith(color: colors.text),
+              icon: Icon(Icons.keyboard_arrow_down,
+                  size: 20, color: colors.textMuted),
+              items: items
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                  .toList(),
               onChanged: onChanged,
             ),
           ),
@@ -187,41 +185,42 @@ class _ClassroomInquiryScreenState extends ConsumerState<ClassroomInquiryScreen>
   }
 
   Widget _buildResultList() {
+    final colors = context.colors;
     if (_classrooms.isEmpty) {
       if (!_searching && _options != null) {
         return Center(
-          child: Text(context.l10n.noData, style: TextStyle(color: Colors.grey[400])),
+          child: Text(context.l10n.noData,
+              style: AppText.bodyDense.copyWith(color: colors.textMuted)),
         );
       }
       return const SizedBox();
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page, vertical: AppSpacing.sm),
       itemCount: _classrooms.length,
+      separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, index) {
         final room = _classrooms[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 32),
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.card),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border.all(color: colors.border),
+            borderRadius: AppRadius.cardAll,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 room.jsmc,
-                style: const TextStyle(
-                  fontSize: 18, 
-                  fontWeight: FontWeight.bold,
-                  height: 1.2,
-                ),
+                style: AppText.sectionTitle.copyWith(color: colors.text),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: AppSpacing.xs),
               Text(
                 context.l10n.capacityCount(room.zws),
-                style: TextStyle(
-                  fontSize: 14, 
-                  color: Colors.grey[600],
-                  height: 1.2,
-                ),
+                style: AppText.bodyDense.copyWith(color: colors.textMuted),
               ),
             ],
           ),

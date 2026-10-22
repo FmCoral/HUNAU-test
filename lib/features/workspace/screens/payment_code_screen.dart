@@ -8,6 +8,7 @@ import '../services/campus_card_service.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/route_utils.dart';
 import 'payment_result_screen.dart';
+import '../../../core/theme/app_tokens.dart';
 import 'campus_card_recharge_screen.dart';
 import 'transaction_history_screen.dart';
 
@@ -212,7 +213,6 @@ class _PaymentCodeScreenState extends ConsumerState<PaymentCodeScreen> with Widg
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => PaymentResultSheet(
         type: PaymentResultType.success,
@@ -242,7 +242,6 @@ class _PaymentCodeScreenState extends ConsumerState<PaymentCodeScreen> with Widg
   void _handlePaymentError(String message) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
       builder: (context) => PaymentResultSheet(
         type: PaymentResultType.failure,
         message: message,
@@ -254,87 +253,80 @@ class _PaymentCodeScreenState extends ConsumerState<PaymentCodeScreen> with Widg
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: isDark ? Colors.white70 : Colors.black87),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.maybePop(context),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
             child: Column(
               children: [
-                const SizedBox(height: 10),
-                // 主体蓝色卡片
+                const SizedBox(height: AppSpacing.sm),
+                // 付款码主卡片
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1677FF), // 支付宝蓝
-                    borderRadius: BorderRadius.circular(6), // 圆角 8px
+                    color: colors.surface,
+                    borderRadius: AppRadius.cardAll,
+                    border: Border.all(color: colors.border),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 卡片顶栏
                       Padding(
-                        padding: const EdgeInsets.all(20.0),
+                        padding: const EdgeInsets.all(AppSpacing.xl),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
+                              padding: const EdgeInsets.all(AppSpacing.xs),
+                              decoration: BoxDecoration(
+                                color: colors.statusBg(colors.brand),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.credit_card, size: 16, color: Color(0xFF1677FF)),
+                              child: Icon(Icons.credit_card,
+                                  size: 16, color: colors.brand),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.md),
                             Text(
                               context.l10n.campusCard,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppText.sectionTitle
+                                  .copyWith(color: colors.text),
                             ),
                           ],
                         ),
                       ),
-                      
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: SizedBox(height: 38), // 保留原本“付款码”文字的高度空间
-                      ),
-                      
-                      const SizedBox(height: 30),
-                      
+
+                      const SizedBox(height: AppSpacing.xxxl),
+
                       // 二维码区域
                       Center(
                         child: Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(AppSpacing.lg),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(6), // 圆角 8px
+                            borderRadius: AppRadius.innerAll,
+                            border: Border.all(color: colors.border),
                           ),
                           child: GestureDetector(
                             onTap: _isLoading ? null : () => _loadPaymentCode(),
                             behavior: HitTestBehavior.opaque,
-                            child: Container(
+                            child: SizedBox(
                               width: 180,
                               height: 180,
-                              alignment: Alignment.center,
                               child: (_isLoading && _qrBytes == null)
-                                ? const CircularProgressIndicator(color: Color(0xFF1677FF))
+                                ? const Center(
+                                    child: CircularProgressIndicator())
                                 : _error != null && _qrBytes == null
-                                  ? const Icon(Icons.error_outline, color: Colors.red, size: 48)
+                                  ? Icon(Icons.error_outline,
+                                      color: colors.danger, size: 48)
                                   : _qrBytes != null
                                     ? Image.memory(
                                         _qrBytes!,
@@ -347,120 +339,103 @@ class _PaymentCodeScreenState extends ConsumerState<PaymentCodeScreen> with Widg
                           ),
                         ),
                       ),
-                      
-                      const SizedBox(height: 80),
+
+                      const SizedBox(height: AppSpacing.xxxl),
                     ],
                   ),
                 ),
-                
-                const SizedBox(height: 24), // 蓝色卡片下方增加空间
-                
-                // 余额展示卡片 (灰色圆角矩形)
+
+                const SizedBox(height: AppSpacing.xxl),
+
+                // 余额展示卡片
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(6),
+                    color: colors.surface,
+                    borderRadius: AppRadius.cardAll,
+                    border: Border.all(color: colors.border),
                   ),
                   child: Row(
                     children: [
                       Icon(
-                        Icons.credit_card_outlined, 
-                        size: 20, 
-                        color: isDark ? Colors.white70 : Colors.black45,
-                      ), // 镂空银行卡图标
-                      const SizedBox(width: 12),
-                      Text(
-                        context.l10n.balanceAmount(_getBalance()),
-                        style: TextStyle(
-                          color: isDark ? Colors.white70 : Colors.black.withOpacity(0.6), // 稍微灰一点的文字
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
+                        Icons.credit_card_outlined,
+                        size: 20,
+                        color: colors.textMuted,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Text(
+                          context.l10n.balanceAmount(_getBalance()),
+                          style: AppText.bodyDense.copyWith(
+                            color: colors.text,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                      const Spacer(),
                       TextButton(
                         onPressed: () => Navigator.push(context, createSlideUpRoute(const CampusCardRechargeScreen())).then((_) => _loadPaymentCode()),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(context.l10n.transactionRecharge, style: const TextStyle(color: Color(0xFF1677FF), fontWeight: FontWeight.bold)),
+                        child: Text(context.l10n.transactionRecharge),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.md),
 
-                // 独立账单入口 (阳光「填写诉求」条目样式)
+                // 独立账单入口
                 InkWell(
                   onTap: () => Navigator.push(context, createSlideUpRoute(const TransactionHistoryScreen())),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.cardAll,
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                        horizontal: AppSpacing.lg, vertical: AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1E1E1E)
-                          : Colors.white,
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.12)
-                            : Colors.grey.withOpacity(0.3),
-                      ),
-                      borderRadius: BorderRadius.circular(8),
+                      color: colors.surface,
+                      border: Border.all(color: colors.border),
+                      borderRadius: AppRadius.cardAll,
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.receipt_long_outlined,
                           size: 20,
-                          color: Color(0xFF1677FF),
+                          color: colors.textMuted,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          context.l10n.bill,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF202124),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(
+                            context.l10n.bill,
+                            style: AppText.bodyDense.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: colors.text,
+                            ),
                           ),
                         ),
-                        const Spacer(),
                         Icon(
                           Icons.chevron_right,
                           size: 20,
-                          color:
-                              isDark ? Colors.white38 : Colors.grey,
+                          color: colors.textMuted,
                         ),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
-                
+                const SizedBox(height: AppSpacing.xxl),
+
                 // 提示语 (左对齐)
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     context.l10n.tapQrToRefresh,
-                    style: TextStyle(
-                      color: isDark ? Colors.white38 : Colors.black54,
-                      fontSize: 14,
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ),
-                
-                const SizedBox(height: 40),
-                
-                const SizedBox(height: 40),
+
+                const SizedBox(height: AppSpacing.xxxl),
               ],
             ),
           ),

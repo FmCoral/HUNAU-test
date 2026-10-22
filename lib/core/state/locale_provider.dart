@@ -90,36 +90,6 @@ class LocaleNotifier extends StateNotifier<Locale?> {
       nativeName: 'Русский',
       getLocalizedName: (context) => context.l10n.russian,
     ),
-    AppLanguageOption(
-      code: 'yue',
-      locale: const Locale('yue'),
-      nativeName: '粵語（廣州話）',
-      getLocalizedName: (context) => context.l10n.cantonese,
-    ),
-    AppLanguageOption(
-      code: 'wuu',
-      locale: const Locale('wuu'),
-      nativeName: '吴语（苏州话）',
-      getLocalizedName: (context) => context.l10n.wuSuzhou,
-    ),
-    AppLanguageOption(
-      code: 'hsn',
-      locale: const Locale('hsn'),
-      nativeName: '湘语（长沙话）',
-      getLocalizedName: (context) => context.l10n.xiangChangsha,
-    ),
-    AppLanguageOption(
-      code: 'zh_hefei',
-      locale: const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'hefei'),
-      nativeName: '江淮官话（合肥话）',
-      getLocalizedName: (context) => context.l10n.jianghuaiHefei,
-    ),
-    AppLanguageOption(
-      code: 'gan',
-      locale: const Locale('gan'),
-      nativeName: '赣语（南昌话）',
-      getLocalizedName: (context) => context.l10n.ganNanchang,
-    ),
   ];
 
   LocaleNotifier() : super(null) {
@@ -130,7 +100,6 @@ class LocaleNotifier extends StateNotifier<Locale?> {
   static String localeToCode(Locale? locale) {
     if (locale == null) return 'system';
     if (locale.languageCode == 'zh') {
-      if (locale.scriptCode == 'hefei') return 'zh_hefei';
       if (locale.countryCode == 'HK') return 'zh_HK';
       if (locale.countryCode == 'TW') return 'zh_TW';
       return 'zh';
@@ -138,16 +107,11 @@ class LocaleNotifier extends StateNotifier<Locale?> {
     return locale.languageCode;
   }
 
-  /// 中文及汉语族方言语言代码集合
+  /// 中文语言代码集合
   static const Set<String> chineseLanguageCodes = {
     'zh',
     'zh_HK',
     'zh_TW',
-    'zh_hefei',
-    'yue',
-    'wuu',
-    'hsn',
-    'gan',
   };
 
   /// 判断指定代码是否为中文或其方言
@@ -156,12 +120,11 @@ class LocaleNotifier extends StateNotifier<Locale?> {
     return chineseLanguageCodes.contains(code);
   }
 
-  /// 判断指定 Locale 是否为中文或其方言
+  /// 判断指定 Locale 是否为中文
   static bool isChineseLocale(Locale? locale) {
     if (locale == null) return false;
     if (chineseLanguageCodes.contains(localeToCode(locale))) return true;
-    const prefixes = {'zh', 'yue', 'wuu', 'hsn', 'gan'};
-    return prefixes.contains(locale.languageCode);
+    return locale.languageCode == 'zh';
   }
 
   /// 获取适合在界面列表中展示的语言项名称
@@ -195,8 +158,6 @@ class LocaleNotifier extends StateNotifier<Locale?> {
         return const Locale('zh', 'HK');
       case 'zh_TW':
         return const Locale('zh', 'TW');
-      case 'zh_hefei':
-        return const Locale.fromSubtags(languageCode: 'zh', scriptCode: 'hefei');
       default:
         return Locale(code);
     }

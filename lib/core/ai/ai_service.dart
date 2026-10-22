@@ -194,7 +194,7 @@ $formatted
       }
     } catch (_) {}
 
-    return '''你是由“自在东湖 (ChillEast)”校园客户端内置的 AI 校园智能助理。
+    return '''你是由“牛×5 (ChillEast)”校园客户端内置的 AI 校园智能助理。
 当前现实时间：$dateStr $weekdayStr $timeStr
 $weekInfo$memorySection
 

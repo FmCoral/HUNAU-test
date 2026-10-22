@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../models/repair_models.dart';
@@ -56,8 +57,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
 
     final currentOrders = _selectedTab == 0
         ? _ongoing
@@ -66,13 +66,8 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
     final isDraftTab = _selectedTab == 2;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.repairsTitle),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             onPressed: _loading ? null : _load,
@@ -82,93 +77,84 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
         ],
       ),
       body: RefreshIndicator(
-        color: const Color(0xFF09C489),
         onRefresh: _load,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 36),
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.page, AppSpacing.md, AppSpacing.page, 36),
           children: [
             // 1. 四大报修分类 2x2 卡片（无箭头，与图书馆风格一致）
-            _buildCatalogGrid(isDark),
-            const SizedBox(height: 24),
+            _buildCatalogGrid(colors),
+            const SizedBox(height: AppSpacing.xxl),
 
             // 2. 我的工单（纯标题）
             Text(
               context.l10n.repairsMyOrders,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
+              style: AppText.sectionTitle.copyWith(color: colors.text),
             ),
             const SizedBox(height: 10),
 
-            // 3. 处理中 / 已完成 / 草稿箱 筛选标签（与阳光服务风格一致）
+            // 3. 处理中 / 已完成 / 草稿箱 筛选标签
             Wrap(
-              spacing: 8,
+              spacing: AppSpacing.sm,
               children: [
-                _buildTabChip(0, context.l10n.repairsInProgress, isDark),
-                _buildTabChip(1, context.l10n.repairsCompleted, isDark),
-                _buildTabChip(2, context.l10n.repairsDrafts, isDark),
+                _buildTabChip(0, context.l10n.repairsInProgress, colors),
+                _buildTabChip(1, context.l10n.repairsCompleted, colors),
+                _buildTabChip(2, context.l10n.repairsDrafts, colors),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
 
-            if (_error != null) _buildError(theme),
+            if (_error != null) _buildError(colors),
 
             // 4. 工单列表（加载中不打断展示，不走进度条）
             if (currentOrders.isEmpty)
-              if (!_loading) _buildEmptyState(isDark)
+              if (!_loading) _buildEmptyState(colors)
               else
                 const SizedBox.shrink()
             else
-              ...currentOrders
-                  .map((order) => _buildOrderItem(order, isDark, isDraftTab)),
+              ...currentOrders.map(
+                  (order) => _buildOrderItem(order, colors, isDraftTab)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCatalogGrid(bool isDark) {
+  Widget _buildCatalogGrid(AppSemanticColors colors) {
     const catalogs = RepairService.catalogs;
     return Column(
       children: [
         Row(
           children: [
-            Expanded(child: _buildCatalogCard(catalogs[0], isDark)),
+            Expanded(child: _buildCatalogCard(catalogs[0], colors)),
             const SizedBox(width: 10),
-            Expanded(child: _buildCatalogCard(catalogs[1], isDark)),
+            Expanded(child: _buildCatalogCard(catalogs[1], colors)),
           ],
         ),
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildCatalogCard(catalogs[2], isDark)),
+            Expanded(child: _buildCatalogCard(catalogs[2], colors)),
             const SizedBox(width: 10),
-            Expanded(child: _buildCatalogCard(catalogs[3], isDark)),
+            Expanded(child: _buildCatalogCard(catalogs[3], colors)),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildCatalogCard(RepairCatalog catalog, bool isDark) {
+  Widget _buildCatalogCard(RepairCatalog catalog, AppSemanticColors colors) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () async {
             await Navigator.push(
               context,
@@ -182,7 +168,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
               children: [
                 Icon(
                   catalog.icon,
-                  color: const Color(0xFF09C489),
+                  color: colors.brand,
                   size: 20,
                 ),
                 const SizedBox(width: 10),
@@ -191,10 +177,9 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
                     catalog.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
+                    style: AppText.bodyDense.copyWith(
+                      color: colors.text,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -206,33 +191,29 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
     );
   }
 
-  Widget _buildTabChip(int index, String label, bool isDark) {
+  Widget _buildTabChip(int index, String label, AppSemanticColors colors) {
     final isSelected = _selectedTab == index;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => setState(() => _selectedTab = index),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.controlAll,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            color: isSelected
+                ? colors.statusBg(colors.brand)
+                : Colors.transparent,
+            borderRadius: AppRadius.controlAll,
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white24 : const Color(0xFFDADCE0)),
-              width: 1,
+              color: isSelected ? colors.brand : colors.border,
             ),
           ),
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white70 : Colors.black87),
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            style: AppText.caption.copyWith(
+              color: isSelected ? colors.brandText : colors.text,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ),
@@ -240,7 +221,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isDark) {
+  Widget _buildEmptyState(AppSemanticColors colors) {
     final emptyText = _selectedTab == 0
         ? context.l10n.repairsNoOngoing
         : (_selectedTab == 1
@@ -251,16 +232,14 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
       child: Center(
         child: Text(
           emptyText,
-          style: TextStyle(
-            fontSize: 14,
-            color: isDark ? Colors.white38 : Colors.grey,
-          ),
+          style: AppText.bodyDense.copyWith(color: colors.textMuted),
         ),
       ),
     );
   }
 
-  Widget _buildOrderItem(RepairOrder order, bool isDark, bool isDraftTab) {
+  Widget _buildOrderItem(
+      RepairOrder order, AppSemanticColors colors, bool isDraftTab) {
     final catalog = RepairService.resolveCatalog(order);
 
     String dateStr = '';
@@ -281,23 +260,21 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
             : order.status;
     final isDone = order.isDone;
     final isDraft = order.isDraft || isDraftTab;
+    final statusColor = isDone
+        ? colors.brand
+        : (isDraft ? colors.warning : colors.textMuted);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () {
             if (isDraftTab) {
               Navigator.push(
@@ -313,7 +290,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
             }
           },
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -325,67 +302,60 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
                         order.title.isEmpty
                             ? context.l10n.repairsUnnamedOrder
                             : order.title,
-                        style: TextStyle(
+                        style: AppText.sectionTitle.copyWith(
+                          color: colors.text,
                           fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color:
-                              isDark ? Colors.white : const Color(0xFF222222),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 13,
-                      color: isDark ? Colors.white24 : Colors.grey[400],
+                      color: colors.textMuted,
                     ),
                   ],
                 ),
                 if (department.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     department,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white60 : Colors.black54,
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ],
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Wrap(
-                  spacing: 12,
+                  spacing: AppSpacing.md,
                   runSpacing: 4,
                   children: [
                     if (type.isNotEmpty)
                       Text(
                         type,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white38 : Colors.grey[600],
-                        ),
+                        style:
+                            AppText.caption.copyWith(color: colors.textMuted),
                       ),
                     if (dateStr.isNotEmpty)
                       Text(
                         dateStr,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white38 : Colors.grey[600],
-                        ),
+                        style:
+                            AppText.caption.copyWith(color: colors.textMuted),
                       ),
                     if (statusText.isNotEmpty)
-                      Text(
-                        statusText,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDone
-                              ? const Color(0xFF09C489)
-                              : (isDraft
-                                  ? Colors.orange
-                                  : (isDark
-                                      ? Colors.white38
-                                      : Colors.grey[600])),
-                          fontWeight:
-                              isDone ? FontWeight.bold : FontWeight.normal,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: colors.statusBg(statusColor),
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.pill),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: AppText.caption.copyWith(
+                            fontSize: 12,
+                            color: statusColor,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                   ],
@@ -398,7 +368,7 @@ class _RepairScreenState extends ConsumerState<RepairScreen> {
     );
   }
 
-  Widget _buildError(ThemeData theme) => Padding(
+  Widget _buildError(AppSemanticColors colors) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Text(_error!, style: TextStyle(color: theme.colorScheme.error)));
+      child: Text(_error!, style: TextStyle(color: colors.danger)));
 }

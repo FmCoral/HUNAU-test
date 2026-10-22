@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/library_models.dart';
 import '../providers/library_provider.dart';
@@ -256,20 +257,18 @@ class _LibraryQuickReserveScreenState
 
       if (!mounted) return;
 
+      final colors = context.colors;
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           title: Row(
             children: [
-              const Icon(Icons.check_circle, color: Color(0xFF09C489)),
-              const SizedBox(width: 8),
+              Icon(Icons.check_circle, color: colors.brand),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 context.l10n.reservationSuccess,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: AppText.sectionTitle.copyWith(color: colors.text),
               ),
             ],
           ),
@@ -285,10 +284,10 @@ class _LibraryQuickReserveScreenState
               Text(context.l10n.dateLabel(_selectedDay)),
               const SizedBox(height: 4),
               Text(context.l10n.timeValueLabel('$_startTime ~ $_endTime')),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 context.l10n.reservationNotice,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
             ],
           ),
@@ -296,21 +295,13 @@ class _LibraryQuickReserveScreenState
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09C489),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                minimumSize: const Size(0, 36),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6)),
+                minimumSize: const Size(0, 40),
               ),
               onPressed: () {
                 Navigator.pop(ctx);
                 Navigator.pop(context, true);
               },
-              child: Text(
-                context.l10n.done,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+              child: Text(context.l10n.done),
             ),
           ],
         ),
@@ -318,19 +309,17 @@ class _LibraryQuickReserveScreenState
     } catch (e) {
       if (mounted) {
         final errorMsg = e.toString().replaceAll('Exception:', '').trim();
+        final colors = context.colors;
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
             title: Row(
               children: [
-                const Icon(Icons.error_outline, color: Colors.red),
-                const SizedBox(width: 8),
+                Icon(Icons.error_outline, color: colors.danger),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   context.l10n.reservationFailed,
-                  style:
-                      const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: AppText.sectionTitle.copyWith(color: colors.text),
                 ),
               ],
             ),
@@ -341,18 +330,10 @@ class _LibraryQuickReserveScreenState
             actions: [
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  minimumSize: const Size(0, 36),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
+                  minimumSize: const Size(0, 40),
                 ),
                 onPressed: () => Navigator.pop(ctx),
-                child: Text(
-                  context.l10n.iUnderstand,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                child: Text(context.l10n.iUnderstand),
               ),
             ],
           ),
@@ -383,17 +364,12 @@ class _LibraryQuickReserveScreenState
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final durationText = _calculateDurationText();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(context.l10n.quickReserve),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -410,101 +386,86 @@ class _LibraryQuickReserveScreenState
       ),
       body: _isLoadingConfig
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.page),
               children: [
                 // 1. 预约时段选择卡片
-                _buildTimePickerCard(isDark, durationText),
-                const SizedBox(height: 16),
+                _buildTimePickerCard(colors, durationText),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 2. 位置偏好选择卡片
-                _buildLocationCard(isDark),
-                const SizedBox(height: 16),
+                _buildLocationCard(colors),
+                const SizedBox(height: AppSpacing.lg),
 
                 // 3. 预约匹配按钮
                 _buildMatchButton(),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
 
                 // 4. 匹配结果或未匹配到提示
                 if (_matchedSeat != null) ...[
-                  _buildMatchedResultCard(isDark),
+                  _buildMatchedResultCard(colors),
                 ] else if (_matchErrorMessage != null) ...[
-                  _buildErrorCard(isDark),
+                  _buildErrorCard(colors),
                 ],
               ],
             ),
     );
   }
 
-  Widget _buildTimePickerCard(bool isDark, String durationText) {
+  Widget _buildTimePickerCard(AppSemanticColors colors, String durationText) {
     final dayLabel =
         LibraryTimeUtils.formatDayLabelLocalized(context, _selectedDay);
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: _pickTimeRange,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.access_time_rounded,
-                      color: Color(0xFF09C489),
+                      color: colors.brand,
                       size: 18,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(
                       context.l10n.selectReservationPeriod,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white70 : Colors.black87,
-                      ),
+                      style: AppText.sectionTitle
+                          .copyWith(color: colors.text, fontSize: 14),
                     ),
                     const Spacer(),
                     Text(
                       dayLabel,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? Colors.white38 : Colors.grey[600],
-                      ),
+                      style: AppText.caption.copyWith(color: colors.textMuted),
                     ),
                     const SizedBox(width: 4),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 12,
-                      color: isDark ? Colors.white38 : Colors.grey,
+                      color: colors.textMuted,
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
                     Text(
                       '$_startTime ~ $_endTime',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
+                      style: AppText.keyNumber.copyWith(color: colors.text),
                     ),
                     if (durationText.isNotEmpty) ...[
                       const SizedBox(width: 10),
@@ -512,16 +473,15 @@ class _LibraryQuickReserveScreenState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF09C489)
-                              .withValues(alpha: isDark ? 0.2 : 0.12),
-                          borderRadius: BorderRadius.circular(4),
+                          color: colors.statusBg(colors.brand),
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.pill),
                         ),
                         child: Text(
                           durationText,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF09C489),
+                          style: AppText.caption.copyWith(
+                            color: colors.brandText,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -536,45 +496,34 @@ class _LibraryQuickReserveScreenState
     );
   }
 
-  Widget _buildLocationCard(bool isDark) {
+  Widget _buildLocationCard(AppSemanticColors colors) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.card),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.place_outlined,
-                color: Color(0xFF09C489),
+                color: colors.brand,
                 size: 18,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               Text(
                 context.l10n.locationPreference,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
+                style: AppText.sectionTitle
+                    .copyWith(color: colors.text, fontSize: 14),
               ),
               const SizedBox(width: 6),
               Text(
                 '(${context.l10n.optionalLabel})',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.white38 : Colors.grey,
-                ),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
             ],
           ),
@@ -583,41 +532,34 @@ class _LibraryQuickReserveScreenState
           // 楼层选项
           Text(
             context.l10n.floorLabel,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.white38 : Colors.grey[600],
-            ),
+            style: AppText.caption.copyWith(color: colors.textMuted),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: AppSpacing.sm),
                   child: ChoiceChip(
                     label: Text(context.l10n.allFloors),
                     selected: _selectedSecondLevel == null,
-                    selectedColor: const Color(0xFF09C489)
-                        .withValues(alpha: isDark ? 0.25 : 0.15),
-                    labelStyle: TextStyle(
-                      fontSize: 13,
+                    selectedColor: colors.statusBg(colors.brand),
+                    labelStyle: AppText.caption.copyWith(
                       color: _selectedSecondLevel == null
-                          ? const Color(0xFF09C489)
-                          : (isDark ? Colors.white70 : Colors.black87),
+                          ? colors.brandText
+                          : colors.text,
                       fontWeight: _selectedSecondLevel == null
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: AppRadius.controlAll,
                     ),
                     side: BorderSide(
                       color: _selectedSecondLevel == null
-                          ? const Color(0xFF09C489)
-                          : (isDark
-                              ? Colors.white.withValues(alpha: 0.12)
-                              : const Color(0xFFE0E0E0)),
+                          ? colors.brand
+                          : colors.border,
                     ),
                     onSelected: (selected) {
                       if (selected) _onFloorSelected(null);
@@ -626,30 +568,26 @@ class _LibraryQuickReserveScreenState
                 ),
                 for (final floor in _secondLevels)
                   Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: AppSpacing.sm),
                     child: ChoiceChip(
                       label: Text(floor),
                       selected: _selectedSecondLevel == floor,
-                      selectedColor: const Color(0xFF09C489)
-                          .withValues(alpha: isDark ? 0.25 : 0.15),
-                      labelStyle: TextStyle(
-                        fontSize: 13,
+                      selectedColor: colors.statusBg(colors.brand),
+                      labelStyle: AppText.caption.copyWith(
                         color: _selectedSecondLevel == floor
-                            ? const Color(0xFF09C489)
-                            : (isDark ? Colors.white70 : Colors.black87),
+                            ? colors.brandText
+                            : colors.text,
                         fontWeight: _selectedSecondLevel == floor
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                            ? FontWeight.w600
+                            : FontWeight.w400,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: AppRadius.controlAll,
                       ),
                       side: BorderSide(
                         color: _selectedSecondLevel == floor
-                            ? const Color(0xFF09C489)
-                            : (isDark
-                                ? Colors.white.withValues(alpha: 0.12)
-                                : const Color(0xFFE0E0E0)),
+                            ? colors.brand
+                            : colors.border,
                       ),
                       onSelected: (selected) {
                         _onFloorSelected(selected ? floor : null);
@@ -665,22 +603,16 @@ class _LibraryQuickReserveScreenState
             const SizedBox(height: 14),
             Text(
               context.l10n.roomLabel,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white38 : Colors.grey[600],
-              ),
+              style: AppText.caption.copyWith(color: colors.textMuted),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             if (_isLoadingRooms)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
                 child: SizedBox(
                   height: 24,
                   width: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xFF09C489),
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               )
             else
@@ -689,30 +621,26 @@ class _LibraryQuickReserveScreenState
                 child: Row(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
                       child: ChoiceChip(
                         label: Text(context.l10n.allRooms),
                         selected: _selectedThirdLevel == null,
-                        selectedColor: const Color(0xFF09C489)
-                            .withValues(alpha: isDark ? 0.25 : 0.15),
-                        labelStyle: TextStyle(
-                          fontSize: 13,
+                        selectedColor: colors.statusBg(colors.brand),
+                        labelStyle: AppText.caption.copyWith(
                           color: _selectedThirdLevel == null
-                              ? const Color(0xFF09C489)
-                              : (isDark ? Colors.white70 : Colors.black87),
+                              ? colors.brandText
+                              : colors.text,
                           fontWeight: _selectedThirdLevel == null
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: AppRadius.controlAll,
                         ),
                         side: BorderSide(
                           color: _selectedThirdLevel == null
-                              ? const Color(0xFF09C489)
-                              : (isDark
-                                  ? Colors.white.withValues(alpha: 0.12)
-                                  : const Color(0xFFE0E0E0)),
+                              ? colors.brand
+                              : colors.border,
                         ),
                         onSelected: (selected) {
                           if (selected) {
@@ -726,30 +654,26 @@ class _LibraryQuickReserveScreenState
                     ),
                     for (final room in _thirdLevels)
                       Padding(
-                        padding: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.only(right: AppSpacing.sm),
                         child: ChoiceChip(
                           label: Text(room),
                           selected: _selectedThirdLevel == room,
-                          selectedColor: const Color(0xFF09C489)
-                              .withValues(alpha: isDark ? 0.25 : 0.15),
-                          labelStyle: TextStyle(
-                            fontSize: 13,
+                          selectedColor: colors.statusBg(colors.brand),
+                          labelStyle: AppText.caption.copyWith(
                             color: _selectedThirdLevel == room
-                                ? const Color(0xFF09C489)
-                                : (isDark ? Colors.white70 : Colors.black87),
+                                ? colors.brandText
+                                : colors.text,
                             fontWeight: _selectedThirdLevel == room
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: AppRadius.controlAll,
                           ),
                           side: BorderSide(
                             color: _selectedThirdLevel == room
-                                ? const Color(0xFF09C489)
-                                : (isDark
-                                    ? Colors.white.withValues(alpha: 0.12)
-                                    : const Color(0xFFE0E0E0)),
+                                ? colors.brand
+                                : colors.border,
                           ),
                           onSelected: (selected) {
                             setState(() {
@@ -773,56 +697,39 @@ class _LibraryQuickReserveScreenState
       alignment: Alignment.centerRight,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF09C489),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
           minimumSize: const Size(80, 40),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: 10),
         ),
         onPressed: (_isMatching || _isSubmitting)
             ? null
             : () => _handleMatchSeat(isReMatch: false),
         child: _isMatching
-            ? const SizedBox(
+            ? SizedBox(
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onPrimary,
                 ),
               )
-            : Text(
-                context.l10n.reserve,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            : Text(context.l10n.reserve),
       ),
     );
   }
 
-  Widget _buildMatchedResultCard(bool isDark) {
+  Widget _buildMatchedResultCard(AppSemanticColors colors) {
     final seat = _matchedSeat!;
     final cooldownActive = _cooldownRemaining > 0;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.card),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
         border: Border.all(
-          color: const Color(0xFF09C489),
+          color: colors.brand,
           width: 1.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF09C489).withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -830,11 +737,7 @@ class _LibraryQuickReserveScreenState
           // 座位号展示
           Text(
             context.l10n.seatNumberLabel(seat.seatNum),
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF222222),
-            ),
+            style: AppText.keyNumber.copyWith(color: colors.text),
           ),
           const SizedBox(height: 6),
 
@@ -844,16 +747,13 @@ class _LibraryQuickReserveScreenState
               Icon(
                 Icons.room_rounded,
                 size: 16,
-                color: isDark ? Colors.white38 : Colors.grey[600],
+                color: colors.textMuted,
               ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   seat.fullRoomName,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
+                  style: AppText.bodyDense.copyWith(color: colors.text),
                 ),
               ),
             ],
@@ -866,15 +766,12 @@ class _LibraryQuickReserveScreenState
               Icon(
                 Icons.schedule_rounded,
                 size: 16,
-                color: isDark ? Colors.white38 : Colors.grey[600],
+                color: colors.textMuted,
               ),
               const SizedBox(width: 6),
               Text(
                 '$_selectedDay  ${seat.formattedTimeRange} (${seat.duration}h)',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isDark ? Colors.white38 : Colors.grey[600],
-                ),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
             ],
           ),
@@ -886,9 +783,9 @@ class _LibraryQuickReserveScreenState
             children: [
               TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: isDark ? Colors.white54 : Colors.grey[600],
+                  foregroundColor: colors.textMuted,
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 8),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -900,44 +797,31 @@ class _LibraryQuickReserveScreenState
                       ? context.l10n
                           .changeAnotherSeatWithCooldown(_cooldownRemaining)
                       : context.l10n.changeAnotherSeat,
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppText.bodyDense.copyWith(
                     color: cooldownActive
-                        ? (isDark ? Colors.white24 : Colors.grey[400])
-                        : (isDark ? Colors.white54 : Colors.grey[600]),
+                        ? colors.textMuted.withValues(alpha: 0.5)
+                        : colors.textMuted,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                   minimumSize: const Size(80, 40),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xxl, vertical: 10),
                 ),
                 onPressed: _isSubmitting ? null : _handleSubmitReservation,
                 child: _isSubmitting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                         ),
                       )
-                    : Text(
-                        context.l10n.confirmQuickReserve,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    : Text(context.l10n.confirmQuickReserve),
               ),
             ],
           ),
@@ -946,42 +830,41 @@ class _LibraryQuickReserveScreenState
     );
   }
 
-  Widget _buildErrorCard(bool isDark) {
+  Widget _buildErrorCard(AppSemanticColors colors) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.card),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
         border: Border.all(
-          color: Colors.orange.withValues(alpha: 0.5),
+          color: colors.warning,
           width: 1,
         ),
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline_rounded,
-            color: Colors.orange,
+            color: colors.warning,
             size: 32,
           ),
           const SizedBox(height: 10),
           Text(
             _matchErrorMessage ?? context.l10n.noMatchedSeatFound,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark ? Colors.white70 : Colors.black87,
+            style: AppText.bodyDense.copyWith(
+              color: colors.text,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           TextButton(
             onPressed: () => _handleMatchSeat(isReMatch: false),
             child: Text(
               context.l10n.retry,
-              style: const TextStyle(
-                color: Color(0xFF09C489),
-                fontWeight: FontWeight.bold,
+              style: AppText.bodyDense.copyWith(
+                color: colors.brandText,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),

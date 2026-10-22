@@ -1,11 +1,11 @@
 {
-    "name": "自在东湖",
-    "short_name": "自在东湖",
+    "name": "牛×5",
+    "short_name": "牛×5",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#FFFFFF",
-    "description": "自在东湖 - 校园服务 App",
+    "description": "牛×5 - 校园服务 App",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

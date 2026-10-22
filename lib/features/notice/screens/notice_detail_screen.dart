@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/l10n_extension.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../providers/notice_provider.dart';
 import '../services/notice_service.dart';
 import 'package:logger/logger.dart';
@@ -75,14 +76,9 @@ class _NoticeDetailScreenState extends ConsumerState<NoticeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
       appBar: AppBar(
         title: Text(context.l10n.noticeDetail),
-        elevation: 0,
-        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
         leading: widget.isEmbedded
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -109,10 +105,18 @@ class _NoticeDetailScreenState extends ConsumerState<NoticeDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.orange),
-            const SizedBox(height: 16),
-            Text(_errorMessage!, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
+            Icon(Icons.error_outline, size: 48, color: context.colors.danger),
+            const SizedBox(height: AppSpacing.lg),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+              child: Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style:
+                    AppText.bodyDense.copyWith(color: context.colors.textMuted),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
             ElevatedButton(onPressed: _loadDetail, child: Text(context.l10n.retry)),
           ],
         ),
@@ -133,22 +137,17 @@ class _NoticeDetailScreenState extends ConsumerState<NoticeDetailScreen> {
 
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 标题渲染
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.5,
-              height: 1.3,
-            ),
+            style: AppText.pageTitle.copyWith(color: context.colors.text),
           ),
-          const SizedBox(height: 16),
-          
+          const SizedBox(height: AppSpacing.lg),
+
           // 发布信息栏
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,12 +156,14 @@ class _NoticeDetailScreenState extends ConsumerState<NoticeDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.person_outline,
-                      size: 16, color: Colors.grey[600]),
+                      size: 16, color: context.colors.textMuted),
                   const SizedBox(width: 6),
                   Text(
                     sender,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w500, fontSize: 13),
+                    style: AppText.caption.copyWith(
+                      color: context.colors.text,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -171,28 +172,26 @@ class _NoticeDetailScreenState extends ConsumerState<NoticeDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.schedule,
-                      size: 16, color: Colors.grey[600]),
+                      size: 16, color: context.colors.textMuted),
                   const SizedBox(width: 6),
                   Text(
                     time,
-                    style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 13,
-                        color: Colors.grey[600]),
+                    style: AppText.caption.copyWith(
+                      color: context.colors.textMuted,
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          
+          const SizedBox(height: AppSpacing.xl),
+
           // 正文渲染 (原生 Text 实现)
           Text(
             cleanText.trim(),
-            style: TextStyle(
-              fontSize: 17,
+            style: AppText.body.copyWith(
               height: 1.7,
-              color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(0xFF2C3E50),
+              color: context.colors.text,
             ),
           ),
           const SizedBox(height: 40),

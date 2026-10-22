@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
 import '../models/library_book_models.dart';
@@ -51,7 +52,7 @@ class _LibraryBookSearchScreenState
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(libraryBookSearchProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return PopScope(
       canPop: true,
@@ -61,26 +62,20 @@ class _LibraryBookSearchScreenState
         }
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text(context.l10n.bookSearch),
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
-          foregroundColor: isDark ? Colors.white : Colors.black87,
-          elevation: 0,
         ),
         body: Column(
           children: [
             // 1. 搜索框与类型切换栏
-            _buildSearchHeader(searchState, isDark),
+            _buildSearchHeader(searchState, colors),
 
             // 2. 加载进度提示栏
-            if (searchState.isLoading)
-              _buildLoadingIndicator(searchState, isDark),
+            if (searchState.isLoading) _buildLoadingIndicator(colors),
 
             // 3. 结果或状态内容区
             Expanded(
-              child: _buildBody(searchState, isDark),
+              child: _buildBody(searchState, colors),
             ),
           ],
         ),
@@ -88,12 +83,11 @@ class _LibraryBookSearchScreenState
     );
   }
 
-  Widget _buildSearchHeader(LibraryBookSearchState state, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-      ),
+  Widget _buildSearchHeader(
+      LibraryBookSearchState state, AppSemanticColors colors) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.page, AppSpacing.sm, AppSpacing.page, AppSpacing.md),
       child: Column(
         children: [
           // 输入框行
@@ -101,35 +95,28 @@ class _LibraryBookSearchScreenState
             children: [
               Expanded(
                 child: Container(
-                  height: 44,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.12)
-                          : const Color(0xFFE2E4E8),
-                    ),
+                    color: colors.surfaceSubtle,
+                    borderRadius: AppRadius.controlAll,
                   ),
                   child: Row(
                     children: [
-                      const SizedBox(width: 12),
+                      const SizedBox(width: AppSpacing.md),
                       Icon(
                         Icons.search_rounded,
                         size: 20,
-                        color: isDark ? Colors.white38 : Colors.grey[500],
+                        color: colors.textMuted,
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: TextField(
                           controller: _searchController,
                           focusNode: _focusNode,
                           textInputAction: TextInputAction.search,
                           onSubmitted: (_) => _onSearch(),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDark ? Colors.white : Colors.black87,
-                          ),
+                          style:
+                              AppText.bodyDense.copyWith(color: colors.text),
                           decoration: const InputDecoration(
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
@@ -144,7 +131,7 @@ class _LibraryBookSearchScreenState
                       if (_searchController.text.isNotEmpty)
                         IconButton(
                           icon: const Icon(Icons.clear_rounded, size: 18),
-                          color: isDark ? Colors.white38 : Colors.grey[500],
+                          color: colors.textMuted,
                           splashRadius: 16,
                           onPressed: () {
                             setState(() {
@@ -156,43 +143,39 @@ class _LibraryBookSearchScreenState
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSpacing.sm),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  minimumSize: const Size(64, 44),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  minimumSize: const Size(64, 48),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 ),
                 onPressed: _onSearch,
-                child: Text(
-                  context.l10n.search,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
+                child: Text(context.l10n.search),
               ),
             ],
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: AppSpacing.md),
 
-          // 检索类型切换器（书名 / 作者 / 主题 / 标准编码）左对齐，样式与阳光服务一致
+          // 检索类型切换器（书名 / 作者 / 主题 / 标准编码）左对齐
           Align(
             alignment: Alignment.centerLeft,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildTypeChip('title', context.l10n.searchTypeTitle, state.searchType, isDark),
-                  const SizedBox(width: 8),
-                  _buildTypeChip('author', context.l10n.searchTypeAuthor, state.searchType, isDark),
-                  const SizedBox(width: 8),
-                  _buildTypeChip('subject', context.l10n.searchTypeSubject, state.searchType, isDark),
-                  const SizedBox(width: 8),
-                  _buildTypeChip('Identifier', context.l10n.searchTypeIdentifier, state.searchType, isDark),
+                  _buildTypeChip(
+                      'title', context.l10n.searchTypeTitle, state.searchType, colors),
+                  const SizedBox(width: AppSpacing.sm),
+                  _buildTypeChip(
+                      'author', context.l10n.searchTypeAuthor, state.searchType, colors),
+                  const SizedBox(width: AppSpacing.sm),
+                  _buildTypeChip('subject', context.l10n.searchTypeSubject,
+                      state.searchType, colors),
+                  const SizedBox(width: AppSpacing.sm),
+                  _buildTypeChip('Identifier', context.l10n.searchTypeIdentifier,
+                      state.searchType, colors),
                 ],
               ),
             ),
@@ -206,14 +189,14 @@ class _LibraryBookSearchScreenState
     String type,
     String label,
     String currentType,
-    bool isDark,
+    AppSemanticColors colors,
   ) {
     final isSelected = type == currentType;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.controlAll,
         onTap: () {
           ref.read(libraryBookSearchProvider.notifier).setSearchType(type);
           if (_searchController.text.trim().isNotEmpty) {
@@ -223,23 +206,19 @@ class _LibraryBookSearchScreenState
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
           decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            color: isSelected
+                ? colors.statusBg(colors.brand)
+                : Colors.transparent,
+            borderRadius: AppRadius.controlAll,
             border: Border.all(
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white24 : const Color(0xFFDADCE0)),
-              width: 1,
+              color: isSelected ? colors.brand : colors.border,
             ),
           ),
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: isSelected
-                  ? const Color(0xFF09C489)
-                  : (isDark ? Colors.white70 : Colors.black87),
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            style: AppText.caption.copyWith(
+              color: isSelected ? colors.brandText : colors.text,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
         ),
@@ -247,28 +226,25 @@ class _LibraryBookSearchScreenState
     );
   }
 
-  Widget _buildLoadingIndicator(LibraryBookSearchState state, bool isDark) {
+  Widget _buildLoadingIndicator(AppSemanticColors colors) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: const Color(0xFF09C489).withValues(alpha: 0.1),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page, vertical: AppSpacing.sm),
+      color: colors.statusBg(colors.brand),
       child: Row(
         children: [
           const SizedBox(
             width: 14,
             height: 14,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Color(0xFF09C489),
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               context.l10n.bookSearchLoading,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF09C489),
+              style: AppText.caption.copyWith(
+                color: colors.brandText,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -278,33 +254,24 @@ class _LibraryBookSearchScreenState
     );
   }
 
-  Widget _buildBody(LibraryBookSearchState state, bool isDark) {
+  Widget _buildBody(LibraryBookSearchState state, AppSemanticColors colors) {
     if (state.error != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded,
-                  size: 48, color: Colors.redAccent),
-              const SizedBox(height: 12),
+              Icon(Icons.error_outline_rounded,
+                  size: 48, color: colors.danger),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 state.error!,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
+                style: AppText.bodyDense.copyWith(color: colors.text),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6)),
-                ),
                 onPressed: _onSearch,
                 child: Text(context.l10n.retry),
               ),
@@ -330,15 +297,12 @@ class _LibraryBookSearchScreenState
             Icon(
               Icons.search_off_rounded,
               size: 56,
-              color: isDark ? Colors.white24 : Colors.grey[300],
+              color: colors.textMuted,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               context.l10n.bookSearchEmpty,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white38 : Colors.grey[500],
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.textMuted),
             ),
           ],
         ),
@@ -346,7 +310,8 @@ class _LibraryBookSearchScreenState
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.page, vertical: AppSpacing.md),
       itemCount: books.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
@@ -354,38 +319,32 @@ class _LibraryBookSearchScreenState
             padding: const EdgeInsets.only(bottom: 10),
             child: Text(
               context.l10n.bookSearchTotalCount(books.length),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white54 : Colors.grey[700],
+              style: AppText.caption.copyWith(
+                color: colors.textMuted,
+                fontWeight: FontWeight.w600,
               ),
             ),
           );
         }
 
         final book = books[index - 1];
-        return _buildBookCard(book, isDark);
+        return _buildBookCard(book, colors);
       },
     );
   }
 
-  Widget _buildBookCard(LibraryBook book, bool isDark) {
+  Widget _buildBookCard(LibraryBook book, AppSemanticColors colors) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE8E8E8),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.cardAll,
           onTap: () {
             Navigator.push(
               context,
@@ -393,7 +352,7 @@ class _LibraryBookSearchScreenState
             );
           },
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(AppSpacing.card),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -406,23 +365,19 @@ class _LibraryBookSearchScreenState
                         book.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
+                        style: AppText.sectionTitle.copyWith(color: colors.text),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 14,
-                      color: isDark ? Colors.white38 : Colors.grey[400],
+                      color: colors.textMuted,
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
                 // 作者与出版社
                 if (book.author.isNotEmpty || book.publisher.isNotEmpty)
@@ -433,70 +388,59 @@ class _LibraryBookSearchScreenState
                     ].join(' · '),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.white70 : Colors.grey[700],
-                    ),
+                    style:
+                        AppText.bodyDense.copyWith(color: colors.textMuted),
                   ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
                 // 索书号与出版年份标签
                 Wrap(
-                  spacing: 8,
+                  spacing: AppSpacing.sm,
                   runSpacing: 6,
                   children: [
                     if (book.callNumber.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF09C489).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
+                          color: colors.statusBg(colors.brand),
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
                         ),
                         child: Text(
                           '${context.l10n.callNumber}: ${book.callNumber}',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF09C489),
+                          style: AppText.caption.copyWith(
+                            color: colors.brandText,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     if (book.isbn.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : const Color(0xFFF2F3F5),
-                          borderRadius: BorderRadius.circular(4),
+                          color: colors.surfaceSubtle,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
                         ),
                         child: Text(
                           'ISBN: ${book.isbn}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? Colors.white54 : Colors.grey[600],
-                          ),
+                          style: AppText.caption
+                              .copyWith(color: colors.textMuted),
                         ),
                       ),
                     if (book.publishYear.isNotEmpty)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : const Color(0xFFF2F3F5),
-                          borderRadius: BorderRadius.circular(4),
+                          color: colors.surfaceSubtle,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
                         ),
                         child: Text(
                           book.publishYear,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? Colors.white54 : Colors.grey[600],
-                          ),
+                          style: AppText.caption
+                              .copyWith(color: colors.textMuted),
                         ),
                       ),
                   ],

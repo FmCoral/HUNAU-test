@@ -4,6 +4,7 @@ import '../providers/homework_provider.dart';
 import '../models/homework_model.dart';
 import '../../../core/state/auth_state.dart';
 import '../../../core/widgets/login_required_placeholder.dart';
+import '../../../core/theme/app_tokens.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import '../../workspace/screens/webview_detail_screen.dart';
@@ -45,37 +46,17 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
   Widget build(BuildContext context) {
     final homeworkState = ref.watch(homeworkProvider);
     final authState = ref.watch(authStateProvider);
-    
+
     return _buildBody(authState, homeworkState);
   }
 
   Widget _buildBody(AuthState authState, AsyncValue<List<HomeworkModel>> homeworkState) {
     // 直接返回带有 FAB 的 Scaffold
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      floatingActionButton: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 12,
-              offset: const Offset(0, 3), // 阴影偏移 3
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: () => _showAddHomeworkSheet(context),
-          shape: const CircleBorder(),
-          elevation: 0, // 禁用默认阴影以使用自定义阴影
-          backgroundColor: Theme.of(context).brightness == Brightness.light 
-              ? Colors.white 
-              : Theme.of(context).cardTheme.color ?? const Color(0xFF1E1E1E),
-          child: Icon(
-            Icons.add, 
-            color: Theme.of(context).brightness == Brightness.light ? const Color(0xFF09C489) : Colors.white
-          ),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddHomeworkSheet(context),
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add),
       ),
       body: Column(
         children: [
@@ -84,9 +65,9 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
             child: homeworkState.when(
               data: (list) {
                 // 如果处于正在登录中，或者已经登录，显示全部内容（包含之前的缓存）
-                final displayList = (authState.status == AuthStatus.authenticated || 
-                                     authState.status == AuthStatus.authenticating) 
-                    ? list 
+                final displayList = (authState.status == AuthStatus.authenticated ||
+                                     authState.status == AuthStatus.authenticating)
+                    ? list
                     : list.where((e) => e.isManual).toList();
 
                 // 如果显示列表为空，且处于未登录状态，显示登录占位
@@ -117,10 +98,17 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-                    const SizedBox(height: 16),
-                    Text(context.l10n.homeworkLoadFailed(err.toString()), style: TextStyle(color: Colors.grey[600])),
-                    const SizedBox(height: 16),
+                    Icon(Icons.error_outline, size: 48, color: context.colors.danger),
+                    const SizedBox(height: AppSpacing.lg),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+                      child: Text(
+                        context.l10n.homeworkLoadFailed(err.toString()),
+                        textAlign: TextAlign.center,
+                        style: AppText.bodyDense.copyWith(color: context.colors.textMuted),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
                     ElevatedButton(
                       onPressed: () => ref.read(homeworkProvider.notifier).refresh(authState.username ?? ''),
                       child: Text(context.l10n.retry),
@@ -139,25 +127,20 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
     return Container(
       height: 52,
       alignment: Alignment.centerLeft,
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-      ),
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
         tabAlignment: TabAlignment.start,
         padding: EdgeInsets.zero,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-        labelColor: const Color(0xFF09C489),
-        unselectedLabelColor: Theme.of(context).brightness == Brightness.dark ? Colors.white60 : Colors.grey[600],
-        labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+        labelPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
         indicatorSize: TabBarIndicatorSize.label,
         dividerColor: Colors.transparent,
         indicator: UnderlineTabIndicator(
-          borderSide: const BorderSide(
-            width: 4,
-            color: Color(0xFF09C489),
+          borderSide: BorderSide(
+            width: 3,
+            color: context.colors.brand,
           ),
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(4),
@@ -211,7 +194,7 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
                   child: Opacity(
                     opacity: progress,
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 8),
+                      padding: const EdgeInsets.only(left: AppSpacing.sm),
                       child: Text(
                         label,
                         style: const TextStyle(fontSize: 16),
@@ -237,9 +220,12 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
         Center(
           child: Column(
             children: [
-              Icon(icon, size: 64, color: Colors.grey[200]),
-              const SizedBox(height: 16),
-              Text(msg, style: TextStyle(color: Colors.grey[400])),
+              Icon(icon, size: 64, color: context.colors.textMuted),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                msg,
+                style: AppText.bodyDense.copyWith(color: context.colors.textMuted),
+              ),
             ],
           ),
         ),
@@ -251,7 +237,7 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
   Widget _buildRefreshableList(List<HomeworkModel> items, IconData emptyIcon, String emptyMsg, String? username, {required bool isPending}) {
     return RefreshIndicator(
       onRefresh: () => ref.read(homeworkProvider.notifier).refresh(username ?? ''),
-      child: isPending 
+      child: isPending
           ? _buildPendingList(items, emptyIcon, emptyMsg)
           : _buildSimpleList(items, emptyIcon, emptyMsg),
     );
@@ -282,28 +268,28 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
       children: [
         for (var dateKey in sortedDateKeys) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page, AppSpacing.xl, AppSpacing.page, AppSpacing.sm),
             child: Text(
               dateKey,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.grey[700],
+              style: AppText.bodyDense.copyWith(
+                fontWeight: FontWeight.w600,
+                color: context.colors.text,
               ),
             ),
           ),
           ...grouped[dateKey]!.map((item) => _buildHomeworkItem(item, showDate: false)),
         ],
-        
+
         if (noTime.isNotEmpty) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.page, AppSpacing.xxl, AppSpacing.page, AppSpacing.sm),
             child: Text(
               context.l10n.noDeadlineHomework,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
+              style: AppText.bodyDense.copyWith(
+                fontWeight: FontWeight.w600,
+                color: context.colors.textMuted,
               ),
             ),
           ),
@@ -336,7 +322,7 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
             ? formatMMMdHm(item.endTime!, locale)
             : formatHm(item.endTime!, locale))
         : '';
-    
+
     final bool isCompleted = item.status == HomeworkStatus.completed;
 
     Widget content = InkWell(
@@ -362,8 +348,10 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
            }
         }
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Container(
+        color: context.colors.surface,
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.page, vertical: AppSpacing.md),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -378,49 +366,57 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
                       ref.read(homeworkProvider.notifier).toggleStatus(item.id);
                     }
                   },
-                  activeColor: const Color(0xFF09C489),
-                  checkColor: Colors.white,
-                  side: BorderSide(color: Colors.grey[400]!, width: 1.5),
                   shape: const CircleBorder(),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     item.title,
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppText.body.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF202124),
+                      color: context.colors.text,
                       decoration: isCompleted ? TextDecoration.lineThrough : null,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   if (item.courseName.isNotEmpty) ...[
-                    Text(item.courseName, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-                    const SizedBox(height: 4),
+                    Text(
+                      item.courseName,
+                      style: AppText.caption.copyWith(color: context.colors.textMuted),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
                   ],
                   Row(
                     children: [
                       if (hasTime) ...[
-                        Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[600]),
-                        const SizedBox(width: 4),
-                        Text(timeDisplay, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        const SizedBox(width: 12),
+                        Icon(Icons.access_time_rounded, size: 12, color: context.colors.textMuted),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          timeDisplay,
+                          style: AppText.caption.copyWith(fontSize: 12, color: context.colors.textMuted),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
                       ],
                       if (!item.isManual && item.dataUrl.contains('chaoxing.com')) ...[
-                        Icon(Icons.open_in_new_rounded, size: 12, color: Colors.grey[400]),
-                        const SizedBox(width: 4),
-                        Text(context.l10n.completeInChaoXing, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                        Icon(Icons.open_in_new_rounded, size: 12, color: context.colors.textMuted),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          context.l10n.completeInChaoXing,
+                          style: AppText.caption.copyWith(fontSize: 12, color: context.colors.textMuted),
+                        ),
                       ] else if (item.isManual) ...[
-                        Icon(Icons.edit_note_rounded, size: 14, color: Colors.grey[400]),
-                        const SizedBox(width: 4),
-                        Text(context.l10n.manualAdd, style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                        Icon(Icons.edit_note_rounded, size: 14, color: context.colors.textMuted),
+                        const SizedBox(width: AppSpacing.xs),
+                        Text(
+                          context.l10n.manualAdd,
+                          style: AppText.caption.copyWith(fontSize: 12, color: context.colors.textMuted),
+                        ),
                       ],
                     ],
                   ),
@@ -467,9 +463,9 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
 
   Widget _buildDismissBackground({required bool isDelete, bool isArchive = true}) {
     return Container(
-      color: isDelete ? Colors.red[400] : Colors.blue[400],
+      color: isDelete ? context.colors.danger : context.colors.info,
       alignment: isDelete ? Alignment.centerLeft : Alignment.centerRight,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
       child: Icon(
         isDelete ? Icons.delete_outline : (isArchive ? Icons.archive_outlined : Icons.unarchive_outlined),
         color: Colors.white,
@@ -486,40 +482,37 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setSheetState) => Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(6), topRight: Radius.circular(6)),
-          ),
+        builder: (context, setSheetState) => Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.sm),
                 child: TextField(
                   autofocus: true,
                   decoration: InputDecoration(
-                    hintText: context.l10n.homeworkTitleHint, 
-                    border: InputBorder.none, 
-                    hintStyle: const TextStyle(fontSize: 18),
-                    fillColor: Colors.white,
+                    hintText: context.l10n.homeworkTitleHint,
+                    hintStyle: AppText.sectionTitle
+                        .copyWith(color: context.colors.textMuted),
                   ),
-                  style: const TextStyle(fontSize: 18),
+                  style: AppText.sectionTitle.copyWith(color: context.colors.text),
                   onChanged: (v) => title = v,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                 child: Row(
                   children: [
                     IconButton(
                       icon: Icon(
-                        Icons.history_edu_rounded, 
-                        size: 22, 
-                        color: course.isNotEmpty ? const Color(0xFF09C489) : Colors.grey
+                        Icons.history_edu_rounded,
+                        size: 22,
+                        color: course.isNotEmpty
+                            ? context.colors.brand
+                            : context.colors.textMuted,
                       ),
                       onPressed: () async {
                         if (course.isNotEmpty) {
@@ -532,18 +525,20 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
                     ),
                     IconButton(
                       icon: Icon(
-                        Icons.schedule_rounded, 
-                        size: 22, 
-                        color: endTime != null ? const Color(0xFF09C489) : Colors.grey
+                        Icons.schedule_rounded,
+                        size: 22,
+                        color: endTime != null
+                            ? context.colors.brand
+                            : context.colors.textMuted,
                       ),
                       onPressed: () async {
                         if (endTime != null) {
                           setSheetState(() => endTime = null);
                         } else {
                           final date = await showDatePicker(
-                            context: context, 
-                            initialDate: DateTime.now(), 
-                            firstDate: DateTime.now(), 
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime.now(),
                             lastDate: DateTime.now().add(const Duration(days: 365))
                           );
                           if (date != null && context.mounted) {
@@ -555,9 +550,11 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
                     ),
                     IconButton(
                       icon: Icon(
-                        Icons.notes, 
-                        size: 22, 
-                        color: remarks.isNotEmpty ? const Color(0xFF09C489) : Colors.grey
+                        Icons.notes,
+                        size: 22,
+                        color: remarks.isNotEmpty
+                            ? context.colors.brand
+                            : context.colors.textMuted,
                       ),
                       onPressed: () async {
                         if (remarks.isNotEmpty) {
@@ -576,12 +573,13 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
                           Navigator.pop(context);
                         }
                       },
-                      child: Text(context.l10n.save, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF09C489))),
+                      child: Text(context.l10n.save,
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
             ],
           ),
         ),
@@ -608,25 +606,28 @@ class _HomeworkScreenState extends ConsumerState<HomeworkScreen> with SingleTick
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         title: Text(item.title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (item.courseName.isNotEmpty) ...[
-              Text(context.l10n.courseLabel, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(item.courseName, style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 16),
+              Text(context.l10n.courseLabel,
+                  style: AppText.caption.copyWith(color: context.colors.textMuted)),
+              Text(item.courseName, style: AppText.body.copyWith(color: context.colors.text)),
+              const SizedBox(height: AppSpacing.lg),
             ],
             if (item.endTime != null) ...[
-              Text(context.l10n.deadlinePrefix, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(DateFormat('yyyy-MM-dd HH:mm').format(item.endTime!), style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 16),
+              Text(context.l10n.deadlinePrefix,
+                  style: AppText.caption.copyWith(color: context.colors.textMuted)),
+              Text(DateFormat('yyyy-MM-dd HH:mm').format(item.endTime!),
+                  style: AppText.body.copyWith(color: context.colors.text)),
+              const SizedBox(height: AppSpacing.lg),
             ],
             if (item.remarks.isNotEmpty) ...[
-              Text(context.l10n.remark, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(item.remarks, style: const TextStyle(fontSize: 16)),
+              Text(context.l10n.remark,
+                  style: AppText.caption.copyWith(color: context.colors.textMuted)),
+              Text(item.remarks, style: AppText.body.copyWith(color: context.colors.text)),
             ],
           ],
         ),

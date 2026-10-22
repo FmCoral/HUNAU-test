@@ -9,7 +9,7 @@ BASE_ZH = Path("lib/l10n/app_zh.arb")
 GAN_FILE = Path("lib/l10n/app_gan.arb")
 
 PROTECTED_KEYS = {
-    "appTitle": "自在东湖",
+    "appTitle": "牛×5",
     "settings": "设置",
     "tabHome": "首页",
     "ganNanchang": "赣语（南昌话）",
@@ -184,8 +184,8 @@ NEW_TRANSLATIONS = {
     "noticeTitle": "通告消息",
     "homeworkTabArchived": "存起",
     "currentSemester": "该个学期",
-    "defaultHitokoto": "自在东湖到湖东！",
-    "feedbackEmailSubject": "自在东湖 App 提意见",
+    "defaultHitokoto": "牛×5到湖东！",
+    "feedbackEmailSubject": "牛×5 App 提意见",
 
     # 4. Services & Mini-apps
     "funcPaymentCode": "付钱码",

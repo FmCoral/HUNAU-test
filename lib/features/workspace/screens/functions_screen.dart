@@ -27,6 +27,7 @@ import '../../campus_bus/screens/campus_bus_map_screen.dart';
 import '../../dormitory/screens/dormitory_screen.dart';
 import '../../exam/screens/exam_screen.dart';
 import '../../../core/widgets/embedded_detail_pane.dart';
+import '../../../core/theme/app_tokens.dart';
 
 /// 功能页 - 展示各种功能入口
 class FunctionsScreen extends ConsumerStatefulWidget {
@@ -161,7 +162,6 @@ class _FunctionsScreenState extends ConsumerState<FunctionsScreen> {
             _buildFunctionsList(context, visibleGroups, isLoggedIn);
 
         if (isLargeScreen && _embeddedScreen != null) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
           return PopScope(
             canPop: false,
             onPopInvokedWithResult: (didPop, result) {
@@ -179,10 +179,8 @@ class _FunctionsScreenState extends ConsumerState<FunctionsScreen> {
                 ),
                 VerticalDivider(
                   width: 1,
-                  thickness: 0.5,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : const Color(0x1A000000),
+                  thickness: 1,
+                  color: context.colors.border,
                 ),
                 Expanded(
                   flex: 1,
@@ -220,19 +218,13 @@ class _FunctionsScreenState extends ConsumerState<FunctionsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (int gi = 0; gi < visibleGroups.length; gi++) ...[
-                if (gi > 0) const SizedBox(height: 20),
+                if (gi > 0) const SizedBox(height: AppSpacing.xl),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: Text(
                     functionGroupTitle(context, visibleGroups[gi].titleKey),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Colors.white70
-                              : Colors.grey[700],
-                    ),
+                    style: AppText.sectionTitle
+                        .copyWith(color: context.colors.textMuted),
                   ),
                 ),
                 GridView.builder(
@@ -253,7 +245,6 @@ class _FunctionsScreenState extends ConsumerState<FunctionsScreen> {
                       context,
                       title: item.getLocalizedTitle(context),
                       icon: item.icon,
-                      color: item.color,
                       isSelected: isSelected,
                       onTap: () =>
                           _handleFunctionTap(context, item.id, isLoggedIn),
@@ -469,53 +460,47 @@ class _FunctionsScreenState extends ConsumerState<FunctionsScreen> {
     BuildContext context, {
     required String title,
     required IconData icon,
-    required Color color,
     bool isSelected = false,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    const activeColor = Color(0xFF09C489);
+    final colors = context.colors;
 
     return Container(
       decoration: BoxDecoration(
         color: isSelected
-            ? (isDark
-                ? activeColor.withValues(alpha: 0.15)
-                : activeColor.withValues(alpha: 0.08))
-            : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
-        borderRadius: BorderRadius.circular(8),
+            ? colors.statusBg(colors.brand)
+            : colors.surface,
+        borderRadius: AppRadius.innerAll,
         border: Border.all(
-          color: isSelected
-              ? activeColor
-              : (isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFE0E0E0)),
-          width: isSelected ? 1.5 : 1,
+          color: isSelected ? colors.brand : colors.border,
+          width: 1,
         ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.innerAll,
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.md),
             child: Row(
               children: [
-                Icon(icon, color: color, size: 18),
-                const SizedBox(width: 10),
+                Icon(
+                  icon,
+                  color: isSelected ? colors.brand : colors.textMuted,
+                  size: 18,
+                ),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppText.bodyDense.copyWith(
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected
-                          ? activeColor
-                          : (isDark ? Colors.white : Colors.black87),
+                      color: isSelected ? colors.brandText : colors.text,
                     ),
                   ),
                 ),

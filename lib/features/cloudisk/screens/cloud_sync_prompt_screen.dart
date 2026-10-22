@@ -7,6 +7,7 @@ import '../../../core/services/analytics_service.dart';
 import '../../../core/services/course_live_service.dart';
 import '../../../core/services/flyme_live_service.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/widgets/brand_switch.dart';
 import '../../profile/providers/settings_provider.dart';
@@ -317,8 +318,7 @@ class _CloudSyncPromptScreenState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
 
     // 备选时长列表定义
@@ -359,18 +359,11 @@ class _CloudSyncPromptScreenState
         }
       },
       child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          elevation: 0,
-          surfaceTintColor: theme.scaffoldBackgroundColor,
           automaticallyImplyLeading: false,
           leading: _currentPage > 0
               ? IconButton(
-                  icon: Icon(
-                    Icons.arrow_back_rounded,
-                    color: isDark ? Colors.white70 : const Color(0xFF5F6368),
-                  ),
+                  icon: const Icon(Icons.arrow_back_rounded),
                   onPressed: _busy
                       ? null
                       : () => _pageController.previousPage(
@@ -381,10 +374,7 @@ class _CloudSyncPromptScreenState
               : null,
           actions: [
             IconButton(
-              icon: Icon(
-                Icons.close_rounded,
-                color: isDark ? Colors.white70 : const Color(0xFF5F6368),
-              ),
+              icon: const Icon(Icons.close_rounded),
               tooltip: l10n.close,
               onPressed: _busy ? null : _dismiss,
             ),
@@ -437,50 +427,41 @@ class _CloudSyncPromptScreenState
                           setState(() => _selectedCourseMinutes = val);
                         }
                       },
-                      isDark: isDark,
                     ),
                     if (_liveSupported) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                       Container(
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.04)
-                              : const Color(0xFFF8F9FA),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white24
-                                : const Color(0xFFDADCE0),
-                          ),
+                          color: colors.surfaceSubtle,
+                          borderRadius: AppRadius.controlAll,
+                          border: Border.all(color: colors.border),
                         ),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: AppRadius.controlAll,
                             onTap: _busy
                                 ? null
                                 : () => setState(() =>
                                     _useLiveActivity = !_useLiveActivity),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                                  horizontal: AppSpacing.card,
+                                  vertical: AppSpacing.sm),
                               child: Row(
                                 children: [
                                   Icon(
                                     Icons.notifications_active_outlined,
-                                    color: theme.primaryColor,
+                                    color: colors.brand,
                                     size: 20,
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: AppSpacing.md),
                                   Expanded(
                                     child: Text(
                                       l10n.useLiveActivityPrompt,
-                                      style: TextStyle(
-                                        fontSize: 15,
+                                      style: AppText.bodyDense.copyWith(
                                         fontWeight: FontWeight.w500,
-                                        color: isDark
-                                            ? Colors.white
-                                            : const Color(0xFF202124),
+                                        color: colors.text,
                                       ),
                                     ),
                                   ),
@@ -518,7 +499,6 @@ class _CloudSyncPromptScreenState
                   onChanged: (val) {
                     if (val != null) setState(() => _selectedHwHours = val);
                   },
-                  isDark: isDark,
                 ),
                 onEnable: () => _handleStepHomeworkReminder(true),
                 onSkip: () => _handleStepHomeworkReminder(false),
@@ -538,7 +518,6 @@ class _CloudSyncPromptScreenState
                   onChanged: (val) {
                     if (val != null) setState(() => _selectedLibMinutes = val);
                   },
-                  isDark: isDark,
                 ),
                 onEnable: () => _handleStepLibraryReminder(true),
                 onSkip: () => _handleStepLibraryReminder(false),
@@ -575,13 +554,13 @@ class _CloudSyncPromptScreenState
   }
 
   Widget _buildAnalyticsSwitch(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.controlAll,
         onTap: _busy
             ? null
             : () {
@@ -601,20 +580,16 @@ class _CloudSyncPromptScreenState
                   children: [
                     Text(
                       l10n.analyticsPromptTitle,
-                      style: TextStyle(
-                        fontSize: 14,
+                      style: AppText.bodyDense.copyWith(
                         fontWeight: FontWeight.w600,
-                        color:
-                            isDark ? Colors.white : const Color(0xFF202124),
+                        color: colors.text,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       l10n.analyticsPromptSubtitle,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color:
-                            isDark ? Colors.white60 : const Color(0xFF5F6368),
+                      style: AppText.caption.copyWith(
+                        color: colors.textMuted,
                         height: 1.25,
                       ),
                       maxLines: 2,
@@ -623,7 +598,7 @@ class _CloudSyncPromptScreenState
                   ],
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: AppSpacing.xs),
               BrandSwitch(
                 value: _analyticsEnabled,
                 onChanged: _busy
@@ -633,7 +608,7 @@ class _CloudSyncPromptScreenState
                         AnalyticsService.setEnabled(val);
                       },
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: AppSpacing.sm),
             ],
           ),
         ),
@@ -647,66 +622,23 @@ class _CloudSyncPromptScreenState
     required T value,
     required List<Map<String, dynamic>> items,
     required ValueChanged<T?> onChanged,
-    required bool isDark,
   }) {
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
       child: DropdownButtonFormField<T>(
         initialValue: value,
         items: items.map((item) {
           return DropdownMenuItem<T>(
             value: item['value'] as T,
-            child: Text(
-              item['label'] as String,
-              style: TextStyle(
-                fontSize: 15,
-                color: isDark ? Colors.white : const Color(0xFF202124),
-              ),
-            ),
+            child: Text(item['label'] as String),
           );
         }).toList(),
         onChanged: _busy ? null : onChanged,
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: TextStyle(
-            color: theme.primaryColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: isDark ? Colors.white24 : const Color(0xFFDADCE0),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: isDark ? Colors.white24 : const Color(0xFFDADCE0),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(
-              color: theme.primaryColor,
-              width: 2,
-            ),
-          ),
-          filled: true,
-          fillColor: isDark
-              ? Colors.white.withValues(alpha: 0.04)
-              : const Color(0xFFF8F9FA),
-          prefixIcon: Icon(
-            Icons.access_time_rounded,
-            color: theme.primaryColor,
-            size: 20,
-          ),
+          prefixIcon: const Icon(Icons.access_time_rounded, size: 20),
         ),
-        dropdownColor: isDark ? const Color(0xFF2A2B2E) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.controlAll,
         icon: const Icon(Icons.arrow_drop_down_rounded),
       ),
     );
@@ -725,8 +657,7 @@ class _CloudSyncPromptScreenState
     required VoidCallback onEnable,
     required VoidCallback onSkip,
   }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
 
     return Column(
@@ -735,7 +666,8 @@ class _CloudSyncPromptScreenState
         // 上方图片区域（限制宽度在 50% 且左对齐，置于标题上方一点）
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl, AppSpacing.md, AppSpacing.xl, AppSpacing.lg),
             child: Align(
               alignment: Alignment.bottomLeft,
               child: FractionallySizedBox(
@@ -753,7 +685,7 @@ class _CloudSyncPromptScreenState
 
         // 底下内容区域（标题、副标题、选择器、底部操作按钮）
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -761,22 +693,16 @@ class _CloudSyncPromptScreenState
               // 标题
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF202124),
-                  letterSpacing: -0.5,
-                ),
+                style: AppText.pageTitle.copyWith(letterSpacing: -0.5),
                 textAlign: TextAlign.left,
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSpacing.sm),
 
               // 副标题
               Text(
                 message,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white70 : const Color(0xFF5F6368),
+                style: AppText.bodyDense.copyWith(
+                  color: colors.textMuted,
                   height: 1.5,
                 ),
                 textAlign: TextAlign.left,
@@ -785,7 +711,7 @@ class _CloudSyncPromptScreenState
               // 额外部件（例如供用户自选时长的选择框、实时活动开关）
               if (extraWidget != null) extraWidget,
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
 
               // 底部操作按钮栏 (左侧可放辅助部件如统计开关，右侧为跳过和开启/完成)
               Row(
@@ -796,78 +722,64 @@ class _CloudSyncPromptScreenState
                     const Spacer(),
                   // 跳过按钮 (文字在开启按钮左边)
                   if (showSkipButton) ...[
-                      TextButton(
-                        onPressed: _busy ? null : onSkip,
-                        style: TextButton.styleFrom(
-                          foregroundColor:
-                              isDark ? Colors.white60 : const Color(0xFF5F6368),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
-                          minimumSize: const Size(64, 36),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        child: Text(
-                          l10n.postLoginSetupSkip, // "跳过"
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-
-                    // 开启/完成按钮 (名字叫开启/完成)
-                    ElevatedButton(
-                      onPressed: _busy ? null : onEnable,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.primaryColor,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor:
-                            theme.primaryColor.withValues(alpha: 0.12),
-                        disabledForegroundColor:
-                            theme.primaryColor.withValues(alpha: 0.38),
+                    TextButton(
+                      onPressed: _busy ? null : onSkip,
+                      style: TextButton.styleFrom(
+                        foregroundColor: colors.textMuted,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 10),
-                        minimumSize: const Size(88, 36),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        elevation: 0,
+                            horizontal: AppSpacing.lg, vertical: 10),
+                        minimumSize: const Size(64, 36),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (_busy) ...[
-                            const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          Text(
-                            enableButtonText ?? l10n.postLoginSetupEnable,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (showArrowIcon) ...[
-                            const SizedBox(width: 4),
-                            const Icon(Icons.arrow_forward_rounded, size: 18),
-                          ],
-                        ],
+                      child: Text(
+                        l10n.postLoginSetupSkip, // "跳过"
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: AppSpacing.sm),
                   ],
-                ),
-                const SizedBox(height: 28),
+
+                  // 开启/完成按钮 (名字叫开启/完成)
+                  ElevatedButton(
+                    onPressed: _busy ? null : onEnable,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg, vertical: 10),
+                      minimumSize: const Size(88, 40),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_busy) ...[
+                          SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                        ],
+                        Text(
+                          enableButtonText ?? l10n.postLoginSetupEnable,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (showArrowIcon) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          const Icon(Icons.arrow_forward_rounded, size: 18),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),

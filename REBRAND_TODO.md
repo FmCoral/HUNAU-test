@@ -5,11 +5,11 @@
 - Kotlin 包目录与包声明、Manifest 组件名、Proguard 规则同步改为 `mou.mou.mou`
 - 直播闹钟 Action：`su.soilzhu.chilleast.LIVE_FIRE/END` → `mou.mou.mou.LIVE_FIRE/END`
 - iOS `PRODUCT_BUNDLE_IDENTIFIER` → `mou.mou.mou` / `mou.mou.mou.RunnerTests`
-- iOS 显示名 → 牛牛牛牛牛，`CFBundleName` → moumou
-- 应用显示名（Android `android:label`）→ 牛牛牛牛牛
+- iOS 显示名 → 牛×5，`CFBundleName` → moumou
+- 应用显示名（Android `android:label`）→ 牛×5
 
 待定（等你拍板后再改）：
-1. 品牌文案：`ChillEast` / 自在东湖 / 东湖 在多语言 arb、`main.dart`、AI 系统提示词、引导页、分享文案等处的统一替换名。
+1. 品牌文案：`ChillEast` / 牛×5 / 东湖 在多语言 arb、`main.dart`、AI 系统提示词、引导页、分享文案等处的统一替换名。
 2. 作者信息：替换为你的链接/邮箱
    - `lib/features/profile/screens/help_feedback_screen.dart`（soilzhu80@gmail.com、github.com/SoilZhu、SoilZhu 署名）
    - `README.md`（官网、Release、R2、贡献者徽章、邮箱）

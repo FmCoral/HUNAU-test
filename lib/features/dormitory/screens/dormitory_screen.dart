@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/l10n_extension.dart';
 import '../models/dormitory_info.dart';
 import '../services/dormitory_service.dart';
 
-/// 我的宿舍页面（MD2 风格）
+/// 我的宿舍页面
 class DormitoryScreen extends ConsumerStatefulWidget {
   const DormitoryScreen({super.key});
 
@@ -79,24 +80,9 @@ class _DormitoryScreenState extends ConsumerState<DormitoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          context.l10n.funcDormitory,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : const Color(0xFF202124),
-          ),
-        ),
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: theme.scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : const Color(0xFF202124),
-        elevation: 0,
+        title: Text(context.l10n.funcDormitory),
         actions: [
           IconButton(
             tooltip: context.l10n.refresh,
@@ -105,51 +91,40 @@ class _DormitoryScreenState extends ConsumerState<DormitoryScreen> {
           ),
         ],
       ),
-      body: _buildBody(context, isDark),
+      body: _buildBody(context),
     );
   }
 
-  Widget _buildBody(BuildContext context, bool isDark) {
+  Widget _buildBody(BuildContext context) {
+    final colors = context.colors;
+
     if (_loading && _info == null) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF09C489),
-        ),
+        child: CircularProgressIndicator(),
       );
     }
 
     if (_error != null && _info == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.error_outline_rounded,
                 size: 48,
-                color: Colors.orange.shade400,
+                color: colors.warning,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
+                style: AppText.bodyDense.copyWith(color: colors.text),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton.icon(
                 onPressed: () => _loadData(forceRefresh: true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF09C489),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
                 icon: const Icon(Icons.refresh_rounded, size: 18),
                 label: Text(context.l10n.retry),
               ),
@@ -162,19 +137,20 @@ class _DormitoryScreenState extends ConsumerState<DormitoryScreen> {
     final info = _info ?? const DormitoryInfo(isAssigned: false);
 
     return RefreshIndicator(
-      color: const Color(0xFF09C489),
       onRefresh: () => _loadData(forceRefresh: true),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.page, AppSpacing.md, AppSpacing.page, AppSpacing.xxxl),
         children: [
-          _buildDormCard(context, info, isDark),
+          _buildDormCard(context, info, colors),
         ],
       ),
     );
   }
 
-  Widget _buildDormCard(BuildContext context, DormitoryInfo info, bool isDark) {
+  Widget _buildDormCard(
+      BuildContext context, DormitoryInfo info, AppSemanticColors colors) {
     final building = info.building ??
         (!info.isAssigned ? context.l10n.dormitoryNotAssigned : '--');
     final floor = info.floor ?? '--';
@@ -183,36 +159,35 @@ class _DormitoryScreenState extends ConsumerState<DormitoryScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           _buildItemRow(
             label: context.l10n.dormitoryBuilding,
             value: building,
-            isDark: isDark,
+            colors: colors,
           ),
+          Divider(height: 1, indent: AppSpacing.card, color: colors.border),
           _buildItemRow(
             label: context.l10n.dormitoryFloor,
             value: floor,
-            isDark: isDark,
+            colors: colors,
           ),
+          Divider(height: 1, indent: AppSpacing.card, color: colors.border),
           _buildItemRow(
             label: context.l10n.dormitoryRoom,
             value: room,
-            isDark: isDark,
+            colors: colors,
           ),
+          Divider(height: 1, indent: AppSpacing.card, color: colors.border),
           _buildItemRow(
             label: context.l10n.dormitoryBed,
             value: bed,
-            isDark: isDark,
+            colors: colors,
           ),
         ],
       ),
@@ -222,10 +197,9 @@ class _DormitoryScreenState extends ConsumerState<DormitoryScreen> {
   Widget _buildItemRow({
     required String label,
     required String value,
-    required bool isDark,
+    required AppSemanticColors colors,
   }) {
     return InkWell(
-      borderRadius: BorderRadius.circular(8),
       onLongPress: value != '--'
           ? () {
               Clipboard.setData(ClipboardData(text: value));
@@ -239,23 +213,20 @@ class _DormitoryScreenState extends ConsumerState<DormitoryScreen> {
             }
           : null,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.card, vertical: 16),
         child: Row(
           children: [
             Text(
               label,
-              style: TextStyle(
-                fontSize: 15,
-                color: isDark ? Colors.white70 : const Color(0xFF5F6368),
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.textMuted),
             ),
             const Spacer(),
             Text(
               value,
-              style: TextStyle(
-                fontSize: 15,
+              style: AppText.bodyDense.copyWith(
                 fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white : const Color(0xFF202124),
+                color: colors.text,
               ),
             ),
           ],

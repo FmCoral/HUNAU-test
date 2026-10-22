@@ -104,7 +104,7 @@ yue_dict = {
 
 # ----------------- 吴语（苏州话） -----------------
 wuu_dict = {
-    "appTitle": "自在东湖",
+    "appTitle": "牛×5",
     "settings": "设定",
     "agentSettings": "Agent 调理",
     "appearanceSettings": "模样设定",
@@ -201,7 +201,7 @@ wuu_dict = {
 
 # ----------------- 湘语（长沙话） -----------------
 hsn_dict = {
-    "appTitle": "自在东湖",
+    "appTitle": "牛×5",
     "settings": "设置",
     "agentSettings": "Agent 调哈子",
     "appearanceSettings": "皮囊设置",
@@ -298,7 +298,7 @@ hsn_dict = {
 
 # ----------------- 江淮官话（合肥话） -----------------
 hefei_dict = {
-    "appTitle": "自在东湖",
+    "appTitle": "牛×5",
     "settings": "设置",
     "agentSettings": "Agent 设置",
     "appearanceSettings": "外观设置",

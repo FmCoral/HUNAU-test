@@ -57,6 +57,7 @@ import '../../library/screens/library_home_screen.dart';
 import '../../campus_bus/screens/campus_bus_map_screen.dart';
 import '../../../core/utils/date_format_utils.dart';
 import '../../../core/network/cookie_manager.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../utils/feed_sorter.dart';
 import '../../../core/widgets/embedded_detail_pane.dart';
 
@@ -331,7 +332,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           if (isMultiColumn) {
             if (_embeddedScreen != null) {
-              final isDark = Theme.of(context).brightness == Brightness.dark;
               return PopScope(
                 canPop: false,
                 onPopInvokedWithResult: (didPop, result) {
@@ -363,9 +363,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       VerticalDivider(
                         width: 16,
                         thickness: 0.5,
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : const Color(0x1A000000),
+                        color: context.colors.border,
                       ),
                       Expanded(
                         child: EmbeddedDetailPane(
@@ -505,8 +503,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final visibleItems =
         appearance.homeItems.where((item) => item.isVisible).toList();
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     // 单页可放 6 格；第一页固定为 5 个功能 + 更多
     if (visibleItems.length <= 5) {
       final displayItems = visibleItems.toList();
@@ -517,7 +513,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           context,
           items: displayItems,
           showMore: true,
-          isDark: isDark,
           isLoggedIn: isLoggedIn,
         ),
       );
@@ -572,7 +567,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             context,
                             items: firstPageItems,
                             showMore: true,
-                            isDark: isDark,
                             isLoggedIn: isLoggedIn,
                           );
                         } else {
@@ -583,7 +577,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             context,
                             items: remaining.sublist(start, end),
                             showMore: false,
-                            isDark: isDark,
                             isLoggedIn: isLoggedIn,
                           );
                         }
@@ -611,9 +604,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 height: 6,
                 decoration: BoxDecoration(
                   color: active
-                      ? const Color(0xFF09C489)
-                      : (isDark ? Colors.white24 : Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(3),
+                      ? context.colors.brand
+                      : context.colors.border,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
               );
             }),
@@ -627,7 +620,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     BuildContext context, {
     required List<FunctionItem> items,
     required bool showMore,
-    required bool isDark,
     required bool isLoggedIn,
   }) {
     return GridView.builder(
@@ -650,7 +642,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             label: item.getLocalizedTitle(context),
             iconColor: item.color,
             isSelected: isSelected,
-            isDark: isDark,
             onTap: () => _handleActionTap(context, item.id, isLoggedIn),
           );
         }
@@ -660,7 +651,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           icon: Icons.grid_view_outlined,
           label: context.l10n.more,
           iconColor: const Color(0xFFE6A334),
-          isDark: isDark,
           onTap: () => _navigateToTab(context, 4),
         );
       },
@@ -873,32 +863,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String label,
     required Color iconColor,
     bool isSelected = false,
-    required bool isDark,
     required VoidCallback onTap,
   }) {
-    const activeColor = Color(0xFF09C489);
+    final colors = context.colors;
 
     return Container(
       decoration: BoxDecoration(
         color: isSelected
-            ? (isDark
-                ? activeColor.withValues(alpha: 0.15)
-                : activeColor.withValues(alpha: 0.08))
-            : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
-        borderRadius: BorderRadius.circular(8),
+            ? colors.statusBg(colors.brand)
+            : colors.surface,
+        borderRadius: AppRadius.controlAll,
         border: Border.all(
-          color: isSelected
-              ? activeColor
-              : (isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFE0E0E0)),
+          color: isSelected ? colors.brand : colors.border,
           width: isSelected ? 1.5 : 1,
         ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.controlAll,
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -915,13 +898,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppText.bodyDense.copyWith(
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected
-                          ? activeColor
-                          : (isDark ? Colors.white : Colors.black87),
+                      color: isSelected ? colors.brandText : colors.text,
                     ),
                   ),
                 ),
@@ -954,21 +934,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return const SizedBox.shrink();
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           context.l10n.libraryReservation,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppText.sectionTitle.copyWith(color: context.colors.text),
         ),
         const SizedBox(height: 12),
         for (int i = 0; i < todayReserves.length; i++) ...[
-          _buildSingleLibrarySeatItem(context, todayReserves[i], isDark),
+          _buildSingleLibrarySeatItem(context, todayReserves[i]),
           const SizedBox(height: 12),
         ],
         const SizedBox(height: 4),
@@ -977,7 +952,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSingleLibrarySeatItem(
-      BuildContext context, LibraryReserveModel reserve, bool isDark) {
+      BuildContext context, LibraryReserveModel reserve) {
+    final colors = context.colors;
     final timeFormat = DateFormat('HH:mm');
     final timeRange =
         '${timeFormat.format(reserve.startTime)}-${timeFormat.format(reserve.endTime)}';
@@ -985,19 +961,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.12)
-              : const Color(0xFFE0E0E0),
-          width: 1,
-        ),
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: () {
             _safeNavigate(
                 context, const LibraryHomeScreen(), id: 'library');
@@ -1010,7 +981,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Icon(
                   Icons.local_library_outlined,
                   size: 22,
-                  color: isDark ? Colors.white70 : Colors.grey[600],
+                  color: colors.textMuted,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1020,11 +991,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // 1. 座位与阅览室名称
                       Text(
                         '${reserve.seatNum}@${reserve.fullRoomName}',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              isDark ? Colors.white : const Color(0xFF222222),
+                        style: AppText.bodyDense.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colors.text,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -1038,9 +1007,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         children: [
                           Text(
                             timeRange,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: isDark ? Colors.white54 : Colors.black54,
+                            style: AppText.caption.copyWith(
+                              color: colors.textMuted,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1050,9 +1018,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 TextButton(
                                   style: TextButton.styleFrom(
-                                    foregroundColor: isDark
-                                        ? Colors.white60
-                                        : Colors.black54,
+                                    foregroundColor: colors.textMuted,
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 12, vertical: 6),
                                     minimumSize: Size.zero,
@@ -1067,15 +1033,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 const SizedBox(width: 8),
                                 ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF09C489),
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 8),
                                     minimumSize: const Size(0, 36),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
                                   ),
                                   onPressed: () => _handleSignInLibraryReserve(
                                       context, reserve),
@@ -1100,15 +1060,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           else
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF4D4F),
+                                backgroundColor: colors.danger,
                                 foregroundColor: Colors.white,
-                                elevation: 0,
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 8),
                                 minimumSize: const Size(0, 36),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
                               ),
                               onPressed: () => _handleSignBackLibraryReserve(
                                   context, reserve),
@@ -1157,7 +1113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Text(l10n.signInSuccess),
               ],
             ),
-            backgroundColor: const Color(0xFF09C489),
+            backgroundColor: context.colors.brand,
           ),
         );
       }
@@ -1175,13 +1131,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _handleSignBackLibraryReserve(
       BuildContext context, LibraryReserveModel reserve) async {
     final l10n = context.l10n;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         title: Text(l10n.signBackConfirmTitle,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            style: AppText.sectionTitle.copyWith(color: ctx.colors.text)),
         content: Text(
           l10n.signBackConfirmContent(reserve.thirdLevelName, reserve.seatNum),
         ),
@@ -1189,7 +1143,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: isDark ? Colors.white60 : Colors.black54,
+              foregroundColor: ctx.colors.textMuted,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             ),
             onPressed: () => Navigator.pop(ctx, false),
@@ -1198,13 +1152,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4D4F),
+              backgroundColor: ctx.colors.danger,
               foregroundColor: Colors.white,
-              elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               minimumSize: const Size(0, 36),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6)),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(l10n.confirmSignBack,
@@ -1246,22 +1197,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _handleCancelLibraryReserve(
       BuildContext context, LibraryReserveModel reserve) async {
     final l10n = context.l10n;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         title: Text(l10n.cancelReserveConfirmTitle,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            style: AppText.sectionTitle.copyWith(color: ctx.colors.text)),
         content: Text(l10n.cancelReserveConfirmContent(
             reserve.thirdLevelName, reserve.seatNum)),
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         actions: [
           TextButton(
             style: TextButton.styleFrom(
-              foregroundColor: isDark ? Colors.white60 : Colors.black54,
-              elevation: 0,
-              shadowColor: Colors.transparent,
+              foregroundColor: ctx.colors.textMuted,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             ),
             onPressed: () => Navigator.pop(ctx, false),
@@ -1270,15 +1217,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF4D4F),
+              backgroundColor: ctx.colors.danger,
               foregroundColor: Colors.white,
-              elevation: 0,
-              shadowColor: Colors.transparent,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               minimumSize: const Size(0, 36),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
@@ -1323,7 +1265,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _isShowingTomorrow
                 ? context.l10n.tomorrowAgenda
                 : context.l10n.todayAgenda,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: AppText.sectionTitle.copyWith(color: context.colors.text),
           ),
           const SizedBox(height: 12),
           LoginRequiredPlaceholder(
@@ -1370,10 +1312,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _isShowingTomorrow
                   ? context.l10n.tomorrowAgenda
                   : context.l10n.todayAgenda,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppText.sectionTitle.copyWith(color: context.colors.text),
             ),
             GestureDetector(
               onTap: () => _navigateToTab(context, 1),
@@ -1383,9 +1322,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Icon(
                   Icons.chevron_right_rounded,
                   size: 22,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white54
-                      : Colors.grey,
+                  color: context.colors.textMuted,
                 ),
               ),
             ),
@@ -1420,7 +1357,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// 考试卡片（红色底 + 考试时间与地点，严格显示第一个出现的时间）
   Widget _buildExamTask(ExamScheduleModel item) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final timeStr = DateFormat('HH:mm').format(item.time);
     final location = item.location?.trim() ?? '';
     final timeLocation = location.isNotEmpty ? '$timeStr @ $location' : timeStr;
@@ -1454,19 +1391,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF382326) : const Color(0xFFFFEBEE),
-          borderRadius: BorderRadius.circular(6),
+          color: colors.statusBg(colors.danger),
+          borderRadius: AppRadius.innerAll,
           border: Border.all(
-            color: const Color(0xFFE53935).withValues(alpha: isDark ? 0.3 : 0.2),
+            color: colors.danger.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.quiz_outlined,
               size: 22,
-              color: Color(0xFFE53935),
+              color: colors.danger,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1478,31 +1415,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Expanded(
                         child: Text(
                           displayTitle,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                            color: isDark ? Colors.white : const Color(0xFF2D3436),
+                          style: AppText.bodyDense.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colors.text,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       if (showStatus) ...[
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE53935).withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(4),
+                            color: colors.statusBg(colors.danger),
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.pill),
                           ),
                           child: Text(
                             item.status,
-                            style: const TextStyle(
-                              fontSize: 10,
+                            style: TextStyle(
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFE53935),
+                              color: colors.danger,
                             ),
                           ),
                         ),
@@ -1512,12 +1448,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 4),
                   Text(
                     timeLocation,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? Colors.white70
-                          : const Color(0xFF7F8C8D),
-                    ),
+                    style: AppText.caption.copyWith(color: colors.textMuted),
                   ),
                 ],
               ),
@@ -1545,7 +1476,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: baseColor,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.innerAll,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1669,7 +1600,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required List<Widget> items,
   }) {
     if (items.isEmpty) return const SizedBox.shrink();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1679,10 +1610,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppText.sectionTitle.copyWith(color: colors.text),
             ),
             GestureDetector(
               onTap: onMore,
@@ -1692,7 +1620,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Icon(
                   Icons.chevron_right_rounded,
                   size: 22,
-                  color: isDark ? Colors.white54 : Colors.grey,
+                  color: colors.textMuted,
                 ),
               ),
             ),
@@ -1703,18 +1631,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFE0E0E0),
-              width: 1,
-            ),
+            color: colors.surface,
+            borderRadius: AppRadius.cardAll,
+            border: Border.all(color: colors.border, width: 1),
           ),
           child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: AppRadius.cardAll,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1738,7 +1661,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String time,
     String status = '',
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1752,10 +1675,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 15,
+                style: AppText.bodyDense.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : const Color(0xFF222222),
+                  color: colors.text,
                 ),
               ),
               if (time.isNotEmpty) ...[
@@ -1764,10 +1686,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   time,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white60 : Colors.black54,
-                  ),
+                  style: AppText.caption.copyWith(color: colors.textMuted),
                 ),
               ],
               if (status.isNotEmpty) ...[
@@ -1776,10 +1695,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   status,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white60 : Colors.black54,
-                  ),
+                  style: AppText.caption.copyWith(color: colors.textMuted),
                 ),
               ],
             ],
@@ -1795,7 +1711,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required Widget child,
   }) {
     return InkWell(
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: AppRadius.controlAll,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -1813,7 +1729,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // 首页最多展示 3 条，其余进问卷页看
     final display = pending.take(3).toList();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return _buildMergedSection(
       title: context.l10n.pendingQuestionnaires,
@@ -1826,9 +1741,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onTap: () => _openQuestionnaireDetail(context, item),
                 child: _buildSectionRow(
                   icon: Icons.assignment_outlined,
-                  iconColor: isDark
-                      ? const Color(0xFF81C784)
-                      : const Color(0xFF2E7D32),
+                  iconColor: context.colors.brand,
                   title: item.title.isEmpty
                       ? context.l10n.unnamedQuestionnaire
                       : item.title,
@@ -2026,31 +1939,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String balanceText,
     required Color balanceColor,
     required VoidCallback onTap,
-    required bool isDark,
     bool isSelected = false,
   }) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: isSelected
-            ? theme.colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.08)
-            : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
-        borderRadius: BorderRadius.circular(6),
+            ? colors.statusBg(colors.brand)
+            : colors.surface,
+        borderRadius: AppRadius.cardAll,
         border: Border.all(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : (isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFE0E0E0)),
+          color: isSelected ? colors.brand : colors.border,
           width: isSelected ? 1.5 : 1,
         ),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.cardAll,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: AppRadius.cardAll,
           onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -2068,10 +1976,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15,
+                        style: AppText.bodyDense.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : const Color(0xFF222222),
+                          color: colors.text,
                         ),
                       ),
                       if (subtitle.isNotEmpty) ...[
@@ -2080,10 +1987,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           subtitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: isDark ? Colors.white60 : Colors.black54,
-                          ),
+                          style:
+                              AppText.caption.copyWith(color: colors.textMuted),
                         ),
                       ],
                     ],
@@ -2092,9 +1997,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(width: 12),
                 Text(
                   balanceText,
-                  style: TextStyle(
+                  style: AppText.keyNumber.copyWith(
                     fontSize: 17,
-                    fontWeight: FontWeight.bold,
                     color: balanceColor,
                   ),
                 ),
@@ -2118,29 +2022,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required BuildContext context,
     required List<int> roomSlots,
     required DormitoryElectricityState eleState,
-    required bool isDark,
     bool isSelected = false,
   }) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: isSelected
-            ? theme.colorScheme.primary.withValues(alpha: isDark ? 0.2 : 0.08)
-            : (isDark ? const Color(0xFF1E1E1E) : Colors.white),
-        borderRadius: BorderRadius.circular(6),
+            ? colors.statusBg(colors.brand)
+            : colors.surface,
+        borderRadius: AppRadius.cardAll,
         border: Border.all(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : (isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFE0E0E0)),
+          color: isSelected ? colors.brand : colors.border,
           width: isSelected ? 1.5 : 1,
         ),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.cardAll,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Column(
@@ -2177,11 +2076,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       : null;
                   final bool isLowBalance = eleBal != null && eleBal <= 10.0;
                   final Color eleBalanceColor = isLowBalance
-                      ? const Color(0xFFE53935)
-                      : (isDark ? Colors.white : const Color(0xFF202124));
+                      ? colors.danger
+                      : colors.text;
 
                   return InkWell(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: AppRadius.controlAll,
                     onTap: () => _openElectricity(context, initialSlot: slot),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -2206,12 +2105,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   eleTitle,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 15,
+                                  style: AppText.bodyDense.copyWith(
                                     fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? Colors.white
-                                        : const Color(0xFF222222),
+                                    color: colors.text,
                                   ),
                                 ),
                                 if (eleSubtitle.isNotEmpty) ...[
@@ -2220,11 +2116,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     eleSubtitle,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: isDark
-                                          ? Colors.white60
-                                          : Colors.black54,
+                                    style: AppText.caption.copyWith(
+                                      color: colors.textMuted,
                                     ),
                                   ),
                                 ],
@@ -2234,9 +2127,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           const SizedBox(width: 12),
                           Text(
                             balanceText,
-                            style: TextStyle(
+                            style: AppText.keyNumber.copyWith(
                               fontSize: 17,
-                              fontWeight: FontWeight.bold,
                               color: eleBalanceColor,
                             ),
                           ),
@@ -2267,7 +2159,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return const SizedBox.shrink();
     }
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final List<Widget> cards = [];
 
     // 1. 宿舍电费卡片（若保存了两个宿舍，合并为一个卡片，且只有一个电的 icon）
@@ -2287,7 +2178,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           context: context,
           roomSlots: validRoomSlots,
           eleState: eleState,
-          isDark: isDark,
           isSelected: isEleSelected,
         ),
       );
@@ -2315,8 +2205,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final double? eleBal = balanceInfo != null ? double.tryParse(balanceInfo.balance) : null;
       final bool isLowBalance = eleBal != null && eleBal <= 10.0;
       final Color eleBalanceColor = isLowBalance
-          ? const Color(0xFFE53935)
-          : (isDark ? Colors.white : const Color(0xFF202124));
+          ? context.colors.danger
+          : context.colors.text;
 
       cards.add(
         _buildBalanceCardItem(
@@ -2327,7 +2217,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           balanceText: balanceText,
           balanceColor: eleBalanceColor,
           onTap: () => _openElectricity(context, initialSlot: i),
-          isDark: isDark,
           isSelected: _selectedActionId == 'ele_recharge_$i',
         ),
       );
@@ -2358,9 +2247,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           title: context.l10n.funcCampusCard,
           subtitle: cardSubtitle,
           balanceText: balanceText,
-          balanceColor: isDark ? Colors.white : const Color(0xFF202124),
+          balanceColor: context.colors.text,
           onTap: () => _openCampusCard(context),
-          isDark: isDark,
           isSelected: _selectedActionId == 'campus_card',
         ),
       );
@@ -2374,10 +2262,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 16),
         Text(
           context.l10n.feedBalance,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppText.sectionTitle.copyWith(color: context.colors.text),
         ),
         const SizedBox(height: 12),
         for (int i = 0; i < cards.length; i++) ...[

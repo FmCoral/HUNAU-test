@@ -7,6 +7,7 @@ import '../../../core/state/auth_state.dart';
 import '../../../core/widgets/login_required_placeholder.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/utils/route_utils.dart';
+import '../../../core/theme/app_tokens.dart';
 
 class NoticeListScreen extends ConsumerStatefulWidget {
   const NoticeListScreen({super.key});
@@ -72,7 +73,6 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
         }
 
         if (isLargeScreen) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
           return Scaffold(
             body: Row(
               children: [
@@ -82,10 +82,8 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
                 ),
                 VerticalDivider(
                   width: 1,
-                  thickness: 0.5,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : const Color(0x1A000000),
+                  thickness: 1,
+                  color: context.colors.border,
                 ),
                 Expanded(
                   flex: 1,
@@ -103,7 +101,6 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
   }
 
   Widget _buildDetailPane(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       reverseDuration: const Duration(milliseconds: 250),
@@ -132,14 +129,13 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
                   Icon(
                     Icons.mark_email_unread_outlined,
                     size: 64,
-                    color: isDark ? Colors.white24 : Colors.grey[400],
+                    color: context.colors.textMuted,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
                   Text(
                     context.l10n.selectNoticeHint,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: isDark ? Colors.white54 : Colors.grey[600],
+                    style: AppText.bodyDense.copyWith(
+                      color: context.colors.textMuted,
                     ),
                   ),
                 ],
@@ -174,36 +170,39 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(context.l10n.loadingNotices),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              context.l10n.loadingNotices,
+              style: AppText.bodyDense.copyWith(color: context.colors.textMuted),
+            ),
           ],
         ),
       );
     }
-    
+
     if (noticeState.errorMessage != null && noticeState.messages.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
+            Icon(Icons.error_outline, size: 64, color: context.colors.danger),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               context.l10n.loadFailed,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: AppText.sectionTitle.copyWith(color: context.colors.text),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
               child: Text(
                 noticeState.errorMessage!,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
+                style: AppText.bodyDense.copyWith(
+                  color: context.colors.textMuted,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             ElevatedButton.icon(
               onPressed: () => ref.read(noticeProvider.notifier).refresh(),
               icon: const Icon(Icons.refresh),
@@ -213,35 +212,32 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
         ),
       );
     }
-    
+
     if (noticeState.messages.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.notifications_none, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
+            Icon(Icons.notifications_none,
+                size: 80, color: context.colors.textMuted),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               context.l10n.noNotices,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: AppText.sectionTitle.copyWith(color: context.colors.text),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               context.l10n.noNoticesSubtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white38 : Colors.grey[600],
+              style: AppText.caption.copyWith(
+                color: context.colors.textMuted,
               ),
             ),
           ],
         ),
       );
     }
-    
+
     return RefreshIndicator(
-      backgroundColor: Theme.of(context).cardColor,
-      color: Theme.of(context).primaryColor,
       onRefresh: () => ref.read(noticeProvider.notifier).refresh(),
       child: ListView.builder(
         controller: _scrollController,
@@ -271,13 +267,19 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  const SizedBox(width: 12),
-                  Text(context.l10n.loadingMore, style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(width: AppSpacing.md),
+                  Text(
+                    context.l10n.loadingMore,
+                    style: AppText.caption.copyWith(color: context.colors.textMuted),
+                  ),
                 ],
               )
-            : noticeState.hasMore 
+            : noticeState.hasMore
                 ? const SizedBox.shrink()
-                : Text(context.l10n.noMoreNotices, style: const TextStyle(color: Colors.grey)),
+                : Text(
+                    context.l10n.noMoreNotices,
+                    style: AppText.caption.copyWith(color: context.colors.textMuted),
+                  ),
       ),
     );
   }
@@ -302,29 +304,24 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
       initial = message.createrName[0];
     }
 
-    // 为不同的发送者生成固定的颜色
-    final avatarColor = Colors.primaries[message.createrName.hashCode % Colors.primaries.length];
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = isLargeScreen && _selectedNoticeId == message.idCode;
 
     return Padding(
       padding: isLargeScreen
-          ? const EdgeInsets.symmetric(horizontal: 10, vertical: 2)
+          ? const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2)
           : EdgeInsets.zero,
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : const Color(0xFFEBEBEB))
+              ? context.colors.statusBg(context.colors.brand)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadius.innerAll,
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadius.innerAll,
           child: InkWell(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: AppRadius.innerAll,
             onTap: () {
               if (isLargeScreen) {
                 setState(() {
@@ -342,20 +339,25 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
               }
             },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.page, vertical: AppSpacing.md),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 左侧头像
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: avatarColor,
+                  backgroundColor:
+                      context.colors.statusBg(context.colors.brand),
                   child: Text(
                     initial,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: AppText.bodyDense.copyWith(
+                      color: context.colors.brandText,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: AppSpacing.lg),
                 // 中间内容
                 Expanded(
                   child: Column(
@@ -367,12 +369,11 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
                           Expanded(
                             child: Text(
                               message.createrName.isEmpty ? context.l10n.systemNotice : message.createrName,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: message.isRead ? FontWeight.normal : FontWeight.bold,
-                                color: Theme.of(context).brightness == Brightness.dark 
-                                    ? (message.isRead ? Colors.white70 : Colors.white) 
-                                    : (message.isRead ? const Color(0xFF5F6368) : const Color(0xFF202124)),
+                              style: AppText.body.copyWith(
+                                fontWeight: message.isRead ? FontWeight.w400 : FontWeight.w600,
+                                color: message.isRead
+                                    ? context.colors.textMuted
+                                    : context.colors.text,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -381,9 +382,8 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
                           // 时间
                           Text(
                             timeDisplay,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
+                            style: AppText.caption.copyWith(
+                              color: context.colors.textMuted,
                             ),
                           ),
                         ],
@@ -392,12 +392,11 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
                       // 标题
                       Text(
                         message.title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).brightness == Brightness.dark 
-                              ? (message.isRead ? Colors.white60 : Colors.white) 
-                              : (message.isRead ? const Color(0xFF5F6368) : const Color(0xFF202124)),
-                          fontWeight: message.isRead ? FontWeight.normal : FontWeight.bold,
+                        style: AppText.bodyDense.copyWith(
+                          color: message.isRead
+                              ? context.colors.textMuted
+                              : context.colors.text,
+                          fontWeight: message.isRead ? FontWeight.w400 : FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -406,9 +405,8 @@ class _NoticeListScreenState extends ConsumerState<NoticeListScreen> with Automa
                       // 内容摘要
                       Text(
                         message.content.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '').trim(),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
+                        style: AppText.caption.copyWith(
+                          color: context.colors.textMuted,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

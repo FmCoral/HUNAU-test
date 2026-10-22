@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../models/repair_models.dart';
 import '../services/repair_service.dart';
@@ -48,23 +49,26 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
   Future<void> _onCancel(RepairOrder order) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(context.l10n.repairsCancelConfirmTitle),
-        content: Text(context.l10n.repairsCancelConfirmMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+      builder: (context) {
+        final colors = context.colors;
+        return AlertDialog(
+          title: Text(context.l10n.repairsCancelConfirmTitle),
+          content: Text(context.l10n.repairsCancelConfirmMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(context.l10n.cancel),
             ),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(context.l10n.confirm),
-          ),
-        ],
-      ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.danger,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(context.l10n.confirm),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true || !mounted) return;
 
@@ -104,18 +108,10 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final order = _detail ?? widget.order;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: bgColor,
       appBar: AppBar(
-        backgroundColor: bgColor,
-        surfaceTintColor: bgColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        elevation: 0,
-        scrolledUnderElevation: 0,
         title: Text(context.l10n.repairsOrderDetail),
         actions: [
           IconButton(
@@ -127,72 +123,71 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
       ),
       body: _loading && _detail == null
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF09C489)),
+              child: CircularProgressIndicator(),
             )
           : RefreshIndicator(
-              color: const Color(0xFF09C489),
               onRefresh: _load,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.page, AppSpacing.md, AppSpacing.page, 32),
                 children: [
                   if (_error != null) ...[
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(8),
+                        color: colors.statusBg(colors.danger),
+                        borderRadius: AppRadius.controlAll,
                       ),
                       child: Text(
                         _error!,
-                        style: TextStyle(
-                            color: theme.colorScheme.onErrorContainer),
+                        style:
+                            AppText.bodyDense.copyWith(color: colors.danger),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                   ],
 
                   // 1. 基本信息卡片
-                  _buildHeaderCard(order, theme),
+                  _buildHeaderCard(order, colors),
                   const SizedBox(height: 14),
 
                   // 2. 问题描述与处理情况
-                  _buildContentCard(order, theme),
+                  _buildContentCard(order, colors),
                   const SizedBox(height: 14),
 
                   // 3. 附件图片（如有）
                   if (order.attachments.isNotEmpty) ...[
-                    _buildAttachmentsCard(order, theme),
+                    _buildAttachmentsCard(order, colors),
                     const SizedBox(height: 14),
                   ],
 
                   // 4. 流转历史记录
-                  _buildTimelineCard(order, theme),
-                  const SizedBox(height: 20),
+                  _buildTimelineCard(order, colors),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // 5. 取消报修操作按钮（若当前节点支持）
                   if (order.canCancel) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        FilledButton(
+                        ElevatedButton(
                           onPressed:
                               _cancelling ? null : () => _onCancel(order),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: theme.colorScheme.error,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colors.danger,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onError,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 28, vertical: 12),
                           ),
                           child: _cancelling
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 18,
                                   height: 18,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    color:
+                                        Theme.of(context).colorScheme.onError,
                                   ),
                                 )
                               : Text(context.l10n.cancel),
@@ -206,151 +201,179 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
     );
   }
 
-  Widget _buildHeaderCard(RepairOrder order, ThemeData theme) {
+  Widget _buildHeaderCard(RepairOrder order, AppSemanticColors colors) {
     final statusColor = order.isDone
-        ? Colors.blueGrey
-        : (order.isDraft ? Colors.orange : const Color(0xFF09C489));
+        ? colors.brand
+        : (order.isDraft ? colors.warning : colors.info);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                order.title.isEmpty
-                    ? context.l10n.repairsUnnamedOrder
-                    : order.title,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.card),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  order.title.isEmpty
+                      ? context.l10n.repairsUnnamedOrder
+                      : order.title,
+                  style: AppText.sectionTitle.copyWith(color: colors.text),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                order.status,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: statusColor,
+              const SizedBox(width: AppSpacing.sm),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colors.statusBg(statusColor),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Text(
+                  order.status,
+                  style: AppText.caption.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        _row(context.l10n.repairsOrderNumber, order.code),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _row(context.l10n.repairsOrderNumber, order.code, colors),
           if (order.catalog.isNotEmpty)
-            _row(context.l10n.repairsOrderType, order.catalog),
+            _row(context.l10n.repairsOrderType, order.catalog, colors),
           if (order.currentNode.isNotEmpty && order.currentNode != order.status)
-            _row(context.l10n.repairsCurrentNode, order.currentNode),
+            _row(context.l10n.repairsCurrentNode, order.currentNode, colors),
           if (order.priority.isNotEmpty)
-            _row(context.l10n.repairsPriority, order.priority),
+            _row(context.l10n.repairsPriority, order.priority, colors),
           if (order.applicant.isNotEmpty)
-            _row(context.l10n.repairsApplicant, order.applicant),
+            _row(context.l10n.repairsApplicant, order.applicant, colors),
           if (order.applicantDepartment.isNotEmpty)
             _row(context.l10n.repairsApplicantDepartment,
-                order.applicantDepartment),
+                order.applicantDepartment, colors),
           if (order.phone.isNotEmpty)
-            _row(context.l10n.repairsPhone, order.phone),
+            _row(context.l10n.repairsPhone, order.phone, colors),
           if (order.department.isNotEmpty)
-            _row(context.l10n.repairsDepartment, order.department),
+            _row(context.l10n.repairsDepartment, order.department, colors),
           if (order.handler.isNotEmpty)
-            _row(context.l10n.repairsHandler, order.handler),
-          _row(context.l10n.repairsCreatedAt, _formatDate(order.createdAt)),
+            _row(context.l10n.repairsHandler, order.handler, colors),
+          _row(context.l10n.repairsCreatedAt, _formatDate(order.createdAt),
+              colors),
           if (order.closedAt != null)
-            _row(context.l10n.repairsCompletedAt, _formatDate(order.closedAt)),
-      ],
+            _row(context.l10n.repairsCompletedAt, _formatDate(order.closedAt),
+                colors),
+        ],
+      ),
     );
   }
 
-  Widget _buildContentCard(RepairOrder order, ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.repairsDescription,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        const SizedBox(height: 8),
-        SelectableText(
-          order.description.isEmpty
-              ? context.l10n.repairsNoDescription
-              : order.description,
-          style: const TextStyle(height: 1.6),
-        ),
-        if (order.handleResult.trim().isNotEmpty) ...[
-          const SizedBox(height: 14),
+  Widget _buildContentCard(RepairOrder order, AppSemanticColors colors) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.card),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            context.l10n.repairsHandleResult,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            context.l10n.repairsDescription,
+            style: AppText.sectionTitle.copyWith(color: colors.text),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           SelectableText(
-            order.handleResult,
-            style: const TextStyle(height: 1.6),
+            order.description.isEmpty
+                ? context.l10n.repairsNoDescription
+                : order.description,
+            style: AppText.bodyDense.copyWith(
+                color: colors.text, height: 1.6),
           ),
-        ],
-        if (order.supplement.isNotEmpty) ...[
-          const SizedBox(height: 14),
-          Text(
-            context.l10n.repairsSupplement,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-              color: theme.textTheme.bodySmall?.color,
+          if (order.handleResult.trim().isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              context.l10n.repairsHandleResult,
+              style: AppText.sectionTitle.copyWith(color: colors.text),
             ),
-          ),
-          const SizedBox(height: 4),
-          SelectableText(
-            order.supplement,
-            style: const TextStyle(height: 1.5),
-          ),
-        ],
-        if (order.userResponse.isNotEmpty || order.score != null) ...[
-          const SizedBox(height: 14),
-          Row(
-              children: [
-                Text(
-                  context.l10n.repairsUserFeedback,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14),
+            const SizedBox(height: AppSpacing.sm),
+            SelectableText(
+              order.handleResult,
+              style:
+                  AppText.bodyDense.copyWith(color: colors.text, height: 1.6),
+            ),
+          ],
+          if (order.supplement.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              context.l10n.repairsSupplement,
+              style: AppText.caption.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 4),
+            SelectableText(
+              order.supplement,
+              style:
+                  AppText.bodyDense.copyWith(color: colors.text, height: 1.5),
+            ),
+          ],
+          if (order.userResponse.isNotEmpty || order.score != null) ...[
+            const SizedBox(height: 14),
+            Row(children: [
+              Text(
+                context.l10n.repairsUserFeedback,
+                style: AppText.bodyDense.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colors.text,
                 ),
-                if (order.score != null) ...[
-                  const SizedBox(width: 8),
-                  Icon(Icons.star_rounded, color: Colors.amber[700], size: 18),
-                  Text(' ${order.score!.toStringAsFixed(1)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
+              ),
+              if (order.score != null) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Icon(Icons.star_rounded, color: colors.warning, size: 18),
+                Text(' ${order.score!.toStringAsFixed(1)}',
+                    style: AppText.bodyDense.copyWith(
+                        color: colors.text, fontWeight: FontWeight.w700)),
               ],
-            ),
+            ]),
             if (order.userResponse.isNotEmpty) ...[
               const SizedBox(height: 4),
-              SelectableText(order.userResponse),
+              SelectableText(
+                order.userResponse,
+                style: AppText.bodyDense.copyWith(color: colors.text),
+              ),
             ],
           ],
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildAttachmentsCard(RepairOrder order, ThemeData theme) {
-    return Column(
+  Widget _buildAttachmentsCard(RepairOrder order, AppSemanticColors colors) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.card),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             context.l10n.repairsAttachments,
-            style: TextStyle(
+            style: AppText.caption.copyWith(
               fontWeight: FontWeight.w600,
-              fontSize: 13,
-              color: theme.textTheme.bodySmall?.color,
+              color: colors.textMuted,
             ),
           ),
           const SizedBox(height: 10),
@@ -371,33 +394,30 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
                             margin: const EdgeInsets.only(right: 8),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color:
-                                    theme.dividerColor.withValues(alpha: 0.3),
-                              ),
+                              border: Border.all(color: colors.border),
                             ),
                             clipBehavior: Clip.antiAlias,
                             child: AuthenticatedBxptImage(
                               url: file.thumbnailUrl!,
                               fit: BoxFit.cover,
-                              errorWidget: const Icon(
+                              errorWidget: Icon(
                                 Icons.image_outlined,
                                 size: 18,
-                                color: Color(0xFF09C489),
+                                color: colors.brand,
                               ),
                             ),
                           )
                         else ...[
-                          const Icon(Icons.image_outlined,
-                              size: 18, color: Color(0xFF09C489)),
-                          const SizedBox(width: 8),
+                          Icon(Icons.image_outlined,
+                              size: 18, color: colors.brand),
+                          const SizedBox(width: AppSpacing.sm),
                         ],
                         Expanded(
                           child: Text(
                             file.fileName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 13),
+                            style: AppText.caption.copyWith(color: colors.text),
                           ),
                         ),
                       ],
@@ -405,14 +425,16 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
                   ),
                 ),
               )),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildLogDescription(RepairActivityLog log, bool isFirst) {
-    final baseStyle = TextStyle(
-      fontSize: 13,
-      fontWeight: isFirst ? FontWeight.w600 : FontWeight.normal,
+  Widget _buildLogDescription(
+      RepairActivityLog log, bool isFirst, AppSemanticColors colors) {
+    final baseStyle = AppText.caption.copyWith(
+      fontWeight: isFirst ? FontWeight.w600 : FontWeight.w400,
+      color: colors.text,
     );
     final segments = parseRepairLogDescription(log.description);
     if (segments.isEmpty) {
@@ -464,33 +486,35 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
     );
   }
 
-  Widget _buildTimelineCard(RepairOrder order, ThemeData theme) {
+  Widget _buildTimelineCard(RepairOrder order, AppSemanticColors colors) {
     final logs = order.logs;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.card),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: colors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             children: [
-              const Icon(Icons.timeline_rounded, size: 20),
+              Icon(Icons.timeline_rounded, size: 20, color: colors.textMuted),
               const SizedBox(width: 6),
               Text(
                 context.l10n.repairsActivityTimeline,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                style: AppText.sectionTitle.copyWith(color: colors.text),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           if (logs.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 context.l10n.repairsNoActivity,
-                style: TextStyle(
-                  color: theme.textTheme.bodySmall?.color
-                      ?.withValues(alpha: 0.7),
-                  fontSize: 13,
-                ),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
             )
           else
@@ -507,9 +531,7 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
                           width: 10,
                           height: 10,
                           decoration: BoxDecoration(
-                            color: index == 0
-                                ? const Color(0xFF09C489)
-                                : theme.dividerColor,
+                            color: index == 0 ? colors.brand : colors.border,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -517,40 +539,35 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
                           Expanded(
                             child: Container(
                               width: 2,
-                              color: theme.dividerColor.withValues(alpha: 0.5),
+                              color: colors.border,
                             ),
                           ),
                       ],
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildLogDescription(log, index == 0),
+                            _buildLogDescription(log, index == 0, colors),
                             const SizedBox(height: 3),
                             Row(
                               children: [
                                 if (log.userName.isNotEmpty) ...[
                                   Text(
                                     log.userName,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: theme.textTheme.bodySmall?.color,
-                                    ),
+                                    style: AppText.caption
+                                        .copyWith(color: colors.textMuted),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: AppSpacing.sm),
                                 ],
                                 if (log.time != null)
                                   Text(
                                     _formatDate(log.time),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: theme.textTheme.bodySmall?.color
-                                          ?.withValues(alpha: 0.7),
-                                    ),
+                                    style: AppText.caption
+                                        .copyWith(color: colors.textMuted),
                                   ),
                               ],
                             ),
@@ -562,11 +579,12 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
                 ),
               );
             }),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _row(String label, String value) => Padding(
+  Widget _row(String label, String value, AppSemanticColors colors) => Padding(
         padding: const EdgeInsets.only(top: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,16 +593,13 @@ class _RepairDetailScreenState extends ConsumerState<RepairDetailScreen> {
               width: 82,
               child: Text(
                 label,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                ),
+                style: AppText.caption.copyWith(color: colors.textMuted),
               ),
             ),
             Expanded(
               child: SelectableText(
                 value.isEmpty ? '—' : value,
-                style: const TextStyle(fontSize: 13),
+                style: AppText.caption.copyWith(color: colors.text),
               ),
             ),
           ],

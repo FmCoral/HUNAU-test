@@ -6,7 +6,7 @@ Ensures:
 2. Mandarin ratio measured by scripts/measure_dialect.py <= 30.0%.
 3. Pure simplified Chinese characters (no traditional characters).
 4. Strict assertions in test/core/state/locale_provider_test.dart:
-   - appTitle: "自在东湖"
+   - appTitle: "牛×5"
    - settings: "设定"
    - traditionalChineseHK: "繁体中文（中国香港）"
    - traditionalChineseTW: "繁体中文"
@@ -26,7 +26,7 @@ YUE_ARB = Path("lib/l10n/app_yue.arb")
 
 # Strict test assertions
 STRICT_TEST_KEYS = {
-    "appTitle": "自在东湖",
+    "appTitle": "牛×5",
     "settings": "设定",
     "traditionalChineseHK": "繁体中文（中国香港）",
     "traditionalChineseTW": "繁体中文",
@@ -46,7 +46,7 @@ INVARIANT_KEYS = {
 # High-quality Cantonese translations (simplified Chinese)
 YUE_MAP = {
     # Test strict assertions
-    "appTitle": "自在东湖",
+    "appTitle": "牛×5",
     "settings": "设定",
     "traditionalChineseHK": "繁体中文（中国香港）",
     "traditionalChineseTW": "繁体中文",
@@ -318,9 +318,9 @@ YUE_MAP = {
     "courseName": "科目名字",
     "inputCourseHint": "输入属于边门课",
     "remark": "备忘注脚",
-    "defaultHitokoto": "自在东湖喺湖东！",
+    "defaultHitokoto": "牛×5喺湖东！",
     "systemNotice": "系统通告",
-    "feedbackEmailSubject": "自在东湖 App 反馈意见",
+    "feedbackEmailSubject": "牛×5 App 反馈意见",
     "timetableSettings": "上堂表",
     "timetableAutoSync": "自动同步上堂表",
     "disableAutoSyncTitle": "关咗自动同步？",
@@ -571,7 +571,7 @@ YUE_MAP = {
     "dataSyncSettings": "数据资料",
     "dataBackup": "汇出数据",
     "backupSecurityTip": "备份唔包登入密码，但包咗自定 AI Key，唔该小心保管好",
-    "backupShareText": "我嘅自在东湖数据备份",
+    "backupShareText": "我嘅牛×5数据备份",
     "backupExportSuccess": "备份已经汇出，可以拣储低或者分享畀人",
     "backupExportFailed": "汇出搞唔成: {error}",
     "dataImport": "汇入数据",

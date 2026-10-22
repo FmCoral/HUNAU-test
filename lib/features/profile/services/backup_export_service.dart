@@ -160,7 +160,7 @@ class BackupExportService {
       throw const FormatException('不是有效的备份文件');
     }
     if (!isSupportedFormat(decoded['format']?.toString())) {
-      throw const FormatException('不是自在东湖备份文件');
+      throw const FormatException('不是牛×5备份文件');
     }
     final version = decoded['version'];
     final v = version is int ? version : int.tryParse('$version') ?? -1;
@@ -188,7 +188,7 @@ class BackupExportService {
   static Future<void> applyBackupData(Map<String, dynamic> backup) async {
     // 先校验，避免写一半才发现版本不对
     if (!isSupportedFormat(backup['format']?.toString())) {
-      throw const FormatException('不是自在东湖备份文件');
+      throw const FormatException('不是牛×5备份文件');
     }
     final settings = backup['settings'] is Map
         ? Map<String, dynamic>.from(backup['settings'] as Map)

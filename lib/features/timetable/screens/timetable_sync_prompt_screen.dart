@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/download_timetable_screen.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 
 class TimetableSyncPromptScreen extends StatelessWidget {
@@ -34,17 +35,14 @@ class TimetableSyncPromptScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        surfaceTintColor: Theme.of(context).scaffoldBackgroundColor,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFF5F6368)),
+          icon: Icon(Icons.close, color: colors.textMuted),
           onPressed: () {
             if (onSkip != null) {
               onSkip!();
@@ -55,34 +53,29 @@ class TimetableSyncPromptScreen extends StatelessWidget {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xxl),
             Text(
               context.l10n.fetchTimetable,
-              style: TextStyle(
+              style: AppText.pageTitle.copyWith(
                 fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(0xFF202124),
+                color: colors.text,
                 letterSpacing: -0.5,
               ),
               textAlign: TextAlign.left,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Text(
               context.l10n.syncTimetablePrompt,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(0xFF5F6368),
-                height: 1.5,
-              ),
+              style: AppText.bodyDense.copyWith(color: colors.textMuted, height: 1.5),
               textAlign: TextAlign.left,
             ),
-            
+
             const Spacer(),
-            
+
             // 底部操作按钮 (右对齐)
             Align(
               alignment: Alignment.centerRight,
@@ -98,12 +91,12 @@ class TimetableSyncPromptScreen extends StatelessWidget {
                       }
                     },
                     style: TextButton.styleFrom(
-                       foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(0xFF5F6368),
+                      foregroundColor: colors.textMuted,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
                     child: Text(context.l10n.skip, style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: AppSpacing.sm),
                   ElevatedButton.icon(
                     onPressed: () async {
                       // 1. 跳转到导入详情页
@@ -111,7 +104,7 @@ class TimetableSyncPromptScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(builder: (context) => const DownloadTimetableScreen()),
                       );
-                      
+
                       // 2. 如果导入成功 (返回了 true)
                       if (result == true) {
                         if (onSkip != null) {
@@ -121,19 +114,8 @@ class TimetableSyncPromptScreen extends StatelessWidget {
                         }
                       }
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      minimumSize: const Size(88, 36),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                      elevation: 0,
-                    ),
                     icon: const Icon(Icons.download_rounded, size: 18),
-                    label: Text(
-                      context.l10n.syncNow,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
+                    label: Text(context.l10n.syncNow),
                   ),
                 ],
               ),

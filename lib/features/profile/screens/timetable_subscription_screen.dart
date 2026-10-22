@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/l10n_extension.dart';
 import '../../../core/widgets/brand_switch.dart';
 import '../../timetable/services/timetable_subscription_service.dart';
@@ -35,7 +36,7 @@ class _TimetableSubscriptionScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.syncFailed(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -74,10 +75,9 @@ class _TimetableSubscriptionScreenState
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(
-              l10n.confirm,
-              style: const TextStyle(color: Colors.red),
-            ),
+            style: TextButton.styleFrom(
+                foregroundColor: context.colors.danger),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -95,7 +95,7 @@ class _TimetableSubscriptionScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.syncFailed(e.toString())),
-            backgroundColor: Colors.red,
+            backgroundColor: context.colors.danger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -107,7 +107,7 @@ class _TimetableSubscriptionScreenState
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     final l10n = context.l10n;
     final state = ref.watch(settingsProvider);
     final isEnabled = state.timetableSubscriptionEnabled;
@@ -117,106 +117,96 @@ class _TimetableSubscriptionScreenState
         : '';
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(l10n.timetableSubscription),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        centerTitle: false,
-        titleTextStyle: TextStyle(
-          color: isDark ? Colors.white : const Color(0xFF202124),
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-        iconTheme: IconThemeData(
-          color: isDark ? Colors.white : Colors.black87,
-        ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.all(AppSpacing.page),
         children: [
           // 开关项
-          InkWell(
-            onTap: _isSwitching ? null : () => _handleToggle(!isEnabled),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.cloud_upload_outlined,
-                    size: 24,
-                    color: Color(0xFF5F6368),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      l10n.timetableSubscriptionAutoUpload,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color:
-                            isDark ? Colors.white : const Color(0xFF202124),
+          Container(
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(color: colors.border),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: _isSwitching ? null : () => _handleToggle(!isEnabled),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_upload_outlined,
+                      size: 22,
+                      color: colors.textMuted,
+                    ),
+                    const SizedBox(width: AppSpacing.lg),
+                    Expanded(
+                      child: Text(
+                        l10n.timetableSubscriptionAutoUpload,
+                        style: AppText.body.copyWith(color: colors.text),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  if (_isSwitching)
-                    const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  else
-                    BrandSwitch(
-                      value: isEnabled,
-                      onChanged: _handleToggle,
-                    ),
-                ],
+                    const SizedBox(width: AppSpacing.sm),
+                    if (_isSwitching)
+                      const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    else
+                      BrandSwitch(
+                        value: isEnabled,
+                        onChanged: _handleToggle,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
 
           if (isEnabled && subscriptionUrl.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            const SizedBox(height: AppSpacing.lg),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: AppRadius.cardAll,
+                border: Border.all(color: colors.border),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     l10n.timetableSubscriptionUrl,
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppText.bodyDense.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white70 : const Color(0xFF5F6368),
+                      color: colors.textMuted,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   // URL 显示框
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white12
-                            : const Color(0xFFE0E0E0),
-                      ),
+                      color: colors.surfaceSubtle,
+                      borderRadius: AppRadius.innerAll,
+                      border: Border.all(color: colors.border),
                     ),
                     child: SelectableText(
                       subscriptionUrl,
-                      style: TextStyle(
+                      style: AppText.caption.copyWith(
                         fontFamily: 'monospace',
-                        fontSize: 13,
-                        color: isDark
-                            ? const Color(0xFF8AB4F8)
-                            : const Color(0xFF1A73E8),
+                        color: colors.info,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   // 操作按钮组：只保留复制链接和重置链接，同一行右对齐并对齐样式
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -225,22 +215,12 @@ class _TimetableSubscriptionScreenState
                         onPressed: () => _handleCopyUrl(subscriptionUrl),
                         icon: const Icon(Icons.copy_rounded, size: 18),
                         label: Text(l10n.copySubscriptionUrl),
-                        style: TextButton.styleFrom(
-                          foregroundColor: isDark
-                              ? Colors.white70
-                              : const Color(0xFF5F6368),
-                        ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: AppSpacing.xs),
                       TextButton.icon(
                         onPressed: _isResetting ? null : _handleResetUrl,
                         icon: const Icon(Icons.refresh_rounded, size: 18),
                         label: Text(l10n.resetSubscriptionUrl),
-                        style: TextButton.styleFrom(
-                          foregroundColor: isDark
-                              ? Colors.white70
-                              : const Color(0xFF5F6368),
-                        ),
                       ),
                     ],
                   ),

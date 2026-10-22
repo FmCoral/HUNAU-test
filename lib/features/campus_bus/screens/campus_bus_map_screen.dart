@@ -6,18 +6,9 @@ class CampusBusMapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      // 深色模式下采用更深沉内敛的深炭灰（比中灰更黑，但非纯黑）
-      backgroundColor: isDark ? const Color(0xFF202225) : Colors.white,
       appBar: AppBar(
-        title: Text(
-          context.l10n.funcCampusBusRoute,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        elevation: 0,
-        scrolledUnderElevation: 1,
+        title: Text(context.l10n.funcCampusBusRoute),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {

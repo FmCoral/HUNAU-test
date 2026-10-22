@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/exceptions/app_exceptions.dart';
-import '../../auth/services/http_login_service.dart';
+import '../../features/auth/services/http_login_service.dart';
 
 /// 执行登录，返回需要持久化的 cookies（原生端直接保存到 CookieJar）
 Future<HttpLoginResult> doLoginViaBackend(String username, String password) async {
